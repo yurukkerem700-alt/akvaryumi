@@ -20,6 +20,10 @@ Online co-op / PvP 3D denizaltı oyunu (Three.js, tek dosya, sunucusuz — oyunc
 - **Akvaryum tabelası**: "YÖRÜKHAN STÜDYO" altında süre, avlanan balık raporu ve toplam skor paneli.
 - **Otomatik güncelleme**: yeni sürüm arka planda indirilir, ana menüde GÜNCELLE uyarısı çıkar.
 
+### v2.1: mobil öğretici + telefona yükle
+- **Mobil öğretici** (10 adım): gerçek düğmeleri vurgular, sürüş çubuğu / kamera / ▲▼⚡ / ateş / silah değiştirme gibi adımlarda kullanıcı dokununca otomatik ilerler. Öğretici sırasında hasar alınmaz. Telefonda ilk açılışta (tek başına modda) kendiliğinden başlar; sonra lobideki **📖 NASIL OYNANIR?** düğmesinden ya da oyun içindeki **❓** düğmesinden tekrar açılır. TR/EN. Test için: `?ogretici=1`.
+- **📲 Uygulamayı yükle**: Lobide her zaman görünür (yüklüyse gizlenir). Chrome/Edge'de tek dokunuşla yükleme penceresi açılır; iPhone/iPad, Android (Samsung/Firefox dahil), uygulama içi tarayıcı (Instagram, WhatsApp…) ve bilgisayar için adım adım yönerge penceresi gösterilir.
+
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-1`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 

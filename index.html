@@ -164,6 +164,24 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
 .touch .subGrid{grid-template-columns:1fr 1fr}
 @media(max-width:560px){.subGrid{grid-template-columns:1fr 1fr}.upR{flex-wrap:wrap}}
 .toast{z-index:30}
+
+/* ---- v3: mobil öğretici + telefona yükle ---- */
+.touch #lobby .card{display:flex;flex-direction:column}.touch #lobby .card>*{order:1}.touch #lobby .card>.updbar,.touch #lobby .card>.eyebrow,.touch #lobby .card>h1,.touch #lobby .card>p,.touch #lobby .card>.act{order:0}
+#tutBtn{display:none}.touch #tutBtn{display:inline-block}
+.touch #installBtn{background:var(--green);color:#03231a;border-color:transparent}
+#tut{position:fixed;inset:0;z-index:25;display:none;pointer-events:none}#tut.on{display:block}
+#tutHole{position:fixed;border-radius:16px;border:2px solid var(--cyan);box-shadow:0 0 0 100vmax rgba(0,8,14,.74);pointer-events:none;transition:left .28s,top .28s,width .28s,height .28s;animation:tutPulse 1.4s ease-in-out infinite}
+#tutHole.none{border-color:transparent;animation:none}
+@keyframes tutPulse{0%,100%{border-color:rgba(111,224,255,.95)}50%{border-color:rgba(111,224,255,.3)}}
+#tutCard{position:fixed;width:min(400px,calc(100vw - 24px));padding:12px 14px 12px;border-radius:14px;pointer-events:auto;border-color:rgba(111,224,255,.4);background:rgba(3,20,32,.94)}
+#tutCard .tk{display:flex;justify-content:space-between;align-items:center}
+#tutCard h3{margin:2px 0 4px;font-size:16px}#tutCard h3.ok{color:var(--green)}
+#tutCard p{margin:0;font-size:12.5px;line-height:1.5;color:#cfe3ea}#tutCard p.extra{color:var(--gold);margin-top:5px}
+.tdots{display:flex;gap:4px}.tdots i{width:7px;height:7px;border-radius:50%;background:#2a4a5a}.tdots i.on{background:var(--cyan)}.tdots i.past{background:#4a8aa0}
+.tbtns{display:flex;gap:6px;margin-top:10px}.tbtns .btn{flex:1;padding:9px 6px}.tbtns .btn.skip{flex:0 0 auto;background:transparent;border-color:transparent;color:var(--muted)}
+.inSteps{margin:10px 0 6px;padding-left:22px;line-height:1.65;font-size:14px;color:#dcecf2}.inSteps li{margin-bottom:6px}.inSteps b{color:var(--gold)}
+.inWhy{margin:6px 0 0;font-size:13px;color:#bdd5de;line-height:1.5}.inTitle{font-size:20px;font-weight:950;margin:8px 0 2px}
+.inNote{margin:8px 0 12px;padding:9px 11px;border-radius:10px;background:rgba(255,213,108,.1);border:1px solid rgba(255,213,108,.35);font-size:12.5px;line-height:1.5;color:#ffe9b0}
 </style>
 </head>
 <body>
@@ -215,7 +233,7 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
 <div id="touch">
   <div id="joy"><i id="joyK"></i></div>
   <div class="tvb"><button data-t="down">▼</button><button data-t="up">▲</button><button data-t="boost">⚡</button></div>
-  <div class="ttop"><button data-t="cat">📖</button><button data-t="room" id="roomB">👥</button><button data-t="map">🗺</button><button data-t="chatb" id="chatB">💬</button><button data-t="light">💡</button><button data-t="food">🍤</button><button data-t="quest">🎯</button><button data-t="view">👁</button><button data-t="gar">🏪</button></div>
+  <div class="ttop"><button data-t="cat">📖</button><button data-t="room" id="roomB">👥</button><button data-t="map">🗺</button><button data-t="chatb" id="chatB">💬</button><button data-t="light">💡</button><button data-t="food">🍤</button><button data-t="quest">🎯</button><button data-t="view">👁</button><button data-t="gar">🏪</button><button data-t="help">❓</button></div>
   <div class="tfire">
     <button class="fire" data-t="fire" id="fireB">🚀</button>
     <button class="sm" style="--a:0deg" data-t="wpn" id="wpnB">⇄</button>
@@ -243,7 +261,7 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
       <button class="btn gold" id="hostBtn" data-i="host">ODA KUR (ONLINE)</button>
       <div class="joinBox"><input class="txt" id="codeIn" maxlength="5" autocomplete="off"><button class="btn" id="joinBtn" data-i="join">KATIL</button></div>
     </div>
-    <div class="row" style="margin:0 0 10px"><button class="btn gold" id="garBtn2" data-i="garageBtn">🏪 TERSANE</button><span class="k" style="align-self:center">🪙 <b class="goldV">0</b></span><button class="btn" id="installBtn" style="display:none" data-i="install">UYGULAMAYI YÜKLE</button><span class="k" id="iosHint" style="display:none;align-self:center" data-i="iosHint"></span></div>
+    <div class="row act" style="margin:0 0 10px"><button class="btn gold" id="garBtn2" data-i="garageBtn">🏪 TERSANE</button><span class="k" style="align-self:center">🪙 <b class="goldV">0</b></span><button class="btn" id="tutBtn" data-i="tutBtn">📖 NASIL OYNANIR? (ÖĞRETİCİ)</button><button class="btn" id="installBtn" data-i="install">📲 UYGULAMAYI YÜKLE</button></div>
     <div class="status" id="lobbyStatus"></div>
     <div class="grid">
       <div class="tip"><b data-i="t1h"></b><span data-i="t1"></span></div>
@@ -264,6 +282,23 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
 
 <div class="modal" id="mapM"><div class="card"><div class="k" data-i="map" style="margin-bottom:8px">AKVARYUM HARİTASI</div><canvas id="mapC" width="1400" height="820"></canvas><div class="foot" data-i="mapClose"></div></div></div>
 
+<div class="modal" id="installM" style="display:none"><div class="card" style="width:min(520px,100%)">
+  <div class="eyebrow" data-i="inH">UYGULAMAYI YÜKLE</div>
+  <div class="inTitle" id="inTitle"></div>
+  <p class="inWhy" data-i="inWhy"></p>
+  <ol class="inSteps" id="inSteps"></ol>
+  <div class="inNote" id="inNote" style="display:none"></div>
+  <button class="btn primary" id="inClose" data-i="close">KAPAT</button>
+</div></div>
+
+<div id="tut"><div id="tutHole" class="none"></div>
+  <div id="tutCard" class="glass">
+    <div class="tk"><span class="k" id="tutStep"></span><div class="tdots" id="tutDots"></div></div>
+    <h3 id="tutTitle"></h3><p id="tutText"></p><p class="extra" id="tutExtra" style="display:none"></p>
+    <div class="tbtns"><button class="btn skip" id="tutSkip" data-i="tutSkip">ATLA</button><button class="btn" id="tutBack" data-i="tutBack">← GERİ</button><button class="btn primary" id="tutNext" data-i="tutNext">İLERİ →</button></div>
+  </div>
+</div>
+
 <div class="err" id="err"><div class="box"><b>3B motor yüklenemedi.</b><p>Three.js dosyalarına erişilemedi. İnternet bağlantını kontrol edip sayfayı yenile.<br><small>3D engine could not be loaded. Check your connection and reload.</small></p></div></div>
 
 <script>
@@ -273,7 +308,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.02-1',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.02-2',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -323,12 +358,30 @@ connecting:'Odaya bağlanılıyor…',hosting:'Oda açılıyor…',netFail:'Bağ
 found:'YENİ TÜR KEŞFEDİLDİ',by:'Keşfeden: ',byYou:'Keşfeden: sen',allFound:'Tebrikler! Akvaryumdaki 16 türün hepsi keşfedildi!',sonar:'Sonar darbesi',sonarCd:'Sonar şarj oluyor…',food:'Yem bırakıldı — balıklar geliyor!',foodCd:'Yem hazırlanıyor…',lightOn:'Işıklar açık',lightOff:'Işıklar kapalı',chatPh:'Mesaj yaz · ENTER gönder · ESC kapat',map:'AKVARYUM HARİTASI',mapClose:'M ya da ESC ile kapat',you:'sen',start:'Sefer başladı! Oyuna tıklayıp fareyle bakabilirsin.',sonarBy:' sonar gönderdi',foodBy:' yem bıraktı',leave:'Menüye dönmek sefer bağlantısını kapatır. Emin misin?',
 hull:'GÖVDE',w1:'TORPİDO',w2:'SALVO',w3:'MAYIN',w4:'EMP',w5:'KALKAN',w6:'TAMİR',w7:'ŞOK',swvOn:'ŞOK DALGASI!',swvCd:'Şok dalgası şarj oluyor…',shieldOn:'Kalkan açık!',shieldCd:'Kalkan şarj oluyor…',shieldDown:'Kalkan kırıldı!',repairStart:'Tamir başladı…',repairFull:'Gövde zaten tam',noKit:'Tamir kiti kalmadı — yenisi hazırlanıyor…',repairDone:'Tamir tamamlandı',kitGain:'+1 tamir kiti',rotHint:'Daha rahat oynamak için telefonu yatay tut',noMine:'Mayın kalmadı — yenisi hazırlanıyor…',mineDrop:'Mayın bırakıldı',empCd:'EMP şarj oluyor…',lowBat:'EMP için batarya yetersiz',stunned:'Sistemler devre dışı!',salvoNeed:'Salvo için en az 3 torpido gerek',slain:' yok edildi!',youSunk:'DENİZALTIN BATTI',respawnIn:'Yeniden doğuyor:',
 sunk:(v,k)=>v+', '+k+' tarafından batırıldı',
-install:'⬇ UYGULAMAYI YÜKLE (MASAÜSTÜ / ANA EKRAN)',iosHint:'iPhone/iPad: Paylaş → Ana Ekrana Ekle',surfaced:'Yüzeydesin — gece gökyüzü ve yıldızlar!',noSurfFire:'Yüzeyde torpido atılamaz — biraz dal',surface:'YÜZEY',
+install:'📲 UYGULAMAYI YÜKLE',iosHint:'iPhone/iPad: Paylaş → Ana Ekrana Ekle',surfaced:'Yüzeydesin — gece gökyüzü ve yıldızlar!',noSurfFire:'Yüzeyde torpido atılamaz — biraz dal',surface:'YÜZEY',
 w8:'AĞ',w9:'YAKIN',netCd:'Ağ hazırlanıyor…',netOn:'Ağ fırlatıldı!',netCaught:'Ağda yakalandı: ',netted:'AĞA YAKALANDIN!',meleeCd:'Yakın saldırı hazırlanıyor…',battEmpty:'Batarya bitti — hızlanma kapandı',discShort:'keşfedildi',
 quests:'GÖREVLER',questDone:'Görev tamamlandı! +',garage:'TERSANE',garageBtn:'🏪 TERSANE',garageSub:'Denizaltı ve cephane geliştirmeleri — görev ödülleriyle satın al',close:'KAPAT',subsH:'DENİZALTILAR',upH:'GELİŞTİRMELER',equip:'SEÇ',equipped:'SEÇİLİ',buy:'SATIN AL',upgrade:'GELİŞTİR',maxed:'MAKS',needGold:'Yeterli altın yok',boughtSub:'Yeni denizaltı hazır!',boughtUp:'Geliştirme tamamlandı!',
 u_ammo:'Cephane kapasitesi',u_reload:'Yeniden yükleme',u_armor:'Zırh',u_motor:'Motor',u_battery:'Batarya verimi',hullL:'Gövde',torpL:'Torpido',mineL:'Mayın',spdL:'Hız',
 updMsg:'Yeni sürüm indirildi — yüklemek için güncelle',updBtn:'GÜNCELLE',viewFp:'Birinci şahıs bakış',viewTp:'Üçüncü şahıs bakış',
 sTime:'SÜRE',sScore:'TOPLAM SKOR',sFish:'ÖLDÜRÜLEN BALIK',sRep:'AVCI RAPORU',sNone:'Henüz av yok',sEn:'Düşman',sDisc:'Keşif',sStr:'Yapı',sGold:'Altın',
+tutBtn:'📖 NASIL OYNANIR? (ÖĞRETİCİ)',tutNext:'İLERİ →',tutBack:'← GERİ',tutSkip:'ATLA',tutDone:'BİTİR ✓',tutOk:'✓ Harika!',tutStepOf:'ADIM',tutDoIt:'👉 Şimdi sen dene!',
+tut:[
+['Hoş geldin kaptan!','Denizaltını telefonda 1 dakikada öğren. Gerçek düğmelere dokunarak dene — öğretici sırasında hiçbir şey seni batıramaz.'],
+['Sürüş çubuğu','Sol baş parmağınla çubuğu it: yukarı ileri, aşağı geri, sağa-sola dönüş.'],
+['Kamera','Ekranın boş bir yerinde parmağını sürükle: etrafına bakarsın.'],
+['Yüksel · Alçal · Hızlan','▲ yüzeye çıkar (orada gece gökyüzü var), ▼ dalar, ⚡ hızlandırır ama batarya harcar. Tek dokunuşla açılır, tekrar dokununca kapanır — basılı tutmana gerek yok.'],
+['Ateş','🚀 düğmesine bas: ateş! Basılı tutarsan torpido art arda gider. Ekranın ortasındaki nişan bir hedefe kilitlenince kırmızı olur.'],
+['Silah değiştir','⇄ düğmesi sırayla torpido → salvo → mayın → EMP seçer. Üstündeki sayı kalan cephanedir.'],
+['Özel yetenekler','🛡 kalkan · 🔧 tamir · 📡 sonar (çevreyi tarar) · 💥 şok dalgası · 🕸 ağ (balık ya da düşman yakalar) · ⚔ yakın saldırı. Altlarındaki sayı bekleme süresidir, ✓ hazır demek.'],
+['Üst düğmeler','📖 tür kataloğu · 👥 oda (online) · 🗺 harita · 💬 sohbet · 💡 ışık · 🍤 yem (balıkları çeker) · 🎯 görevler · 👁 bakış açısı · 🏪 tersane · ❓ bu öğretici.'],
+['Göstergeler','BATARYA hızlanınca azalır, durunca dolar. GÖVDE canındır: bitince batarsın ama kısa süre sonra yeniden doğarsın. TORPİDO cephanedir. Radar yakındaki canlıları ve düşmanları gösterir.'],
+['Amacın','Akvaryumdaki 16 canlı türünü bul ve keşfet. Görevleri tamamla, altın kazan, 🏪 tersanede daha güçlü denizaltı ve geliştirmeler al. İyi seferler!']
+],
+inH:'UYGULAMAYI YÜKLE',inWhy:'Ana ekrana eklersen oyun tam ekran açılır, adres çubuğu görünmez ve internet olmasa da açılır.',inDone:'Uygulama zaten yüklü ✓',inDoneToast:'Uygulama yüklendi! Ana ekranından aç.',
+inIosT:'iPhone / iPad',inIosS:['Safari\'de alttaki (iPad\'de üstteki) <b>Paylaş</b> düğmesine dokun','Listeyi yukarı kaydır, <b>Ana Ekrana Ekle</b>\'ye dokun','Sağ üstteki <b>Ekle</b>\'ye bas — oyun ana ekranında!'],inIosN:'Paylaş düğmesini göremiyorsan bu sayfayı <b>Safari</b>\'de aç, sonra aynı adımları uygula.',
+inAndT:'Android',inAndS:['Tarayıcının sağ üstündeki <b>⋮</b> menüsüne dokun','<b>Uygulamayı yükle</b> (ya da <b>Ana ekrana ekle</b>) seçeneğine dokun','<b>Yükle</b>\'ye bas — oyun ana ekranında!'],inAndN:'Samsung Internet: <b>☰</b> menü → <b>Ana ekrana ekle</b>. Firefox: <b>⋮</b> → <b>Yükle</b>. Seçenek yoksa sayfayı <b>Chrome</b>\'da aç.',
+inDeskT:'Bilgisayar (Chrome / Edge)',inDeskS:['Adres çubuğunun sağındaki <b>yükle</b> simgesine tıkla (ekran + ok işareti)','<b>Yükle</b>\'ye bas'],inDeskN:'Safari (Mac): Dosya → Dock\'a Ekle. Firefox masaüstünde uygulama yüklemeyi desteklemez.',
+inAppN:'Bu sayfa bir uygulamanın (Instagram, WhatsApp, TikTok…) içindeki tarayıcıda açık, burada yükleme çalışmaz. Sağ üstteki <b>⋯</b> menüsünden <b>Tarayıcıda aç</b>\'ı seç, sonra tekrar dene.',
 
 zones:{ice:'Buzul Kutbu',volcano:'Yanardağ Bacaları',abyss:'Karanlık Uçurum',crystal:'Kristal Mağaraları',lagoon:'Turkuaz Lagün',sunken:'Batık Şehir',bluehole:'Mavi Okyanus',canyon:'Kızıl Kanyon',trench:'Derin Çukur',temple:'Kayıp Tapınak',graveyard:'Gemi Mezarlığı',dunes:'Kum Tepeleri',coral:'Mercan Bahçesi',kelp:'Yosun Ormanı',grass:'Deniz Çayırı',wreck:'Batık Gemi Çukuru',arch:'Kaya Kemerleri',jelly:'Denizanası Koyu',open:'Açık Su'}},
 en:{title:'Aquarium Expedition',desc:'Glide through a gigantic glass aquarium in your submarine, discover 16 species, explore 12 biomes, surface to watch the starry night sky and survive sharks, electric eels, giant squids and piranhas. Smash rocks, ships and pillars with torpedoes and mines. Open a room and share the code: in online mode you can hurt each other too. No server: players connect browser to browser.',
@@ -341,12 +394,30 @@ connecting:'Connecting to room…',hosting:'Opening room…',netFail:'Could not 
 found:'NEW SPECIES DISCOVERED',by:'Found by: ',byYou:'Found by: you',allFound:'Congratulations! All 16 species in the aquarium are discovered!',sonar:'Sonar pulse',sonarCd:'Sonar recharging…',food:'Food dropped — fish incoming!',foodCd:'Preparing food…',lightOn:'Lights on',lightOff:'Lights off',chatPh:'Type a message · ENTER send · ESC close',map:'AQUARIUM MAP',mapClose:'Close with M or ESC',you:'you',start:'Expedition started! Click the game to look around with the mouse.',sonarBy:' sent a sonar pulse',foodBy:' dropped food',leave:'Returning to the menu closes the expedition connection. Sure?',
 hull:'HULL',w1:'TORPEDO',w2:'SALVO',w3:'MINE',w4:'EMP',w5:'SHIELD',w6:'REPAIR',w7:'SHOCK',swvOn:'SHOCKWAVE!',swvCd:'Shockwave recharging…',shieldOn:'Shield up!',shieldCd:'Shield recharging…',shieldDown:'Shield broken!',repairStart:'Repairing…',repairFull:'Hull is already full',noKit:'Out of repair kits — building a new one…',repairDone:'Repair complete',kitGain:'+1 repair kit',rotHint:'Hold your phone in landscape for a better view',noMine:'Out of mines — building a new one…',mineDrop:'Mine dropped',empCd:'EMP recharging…',lowBat:'Not enough battery for EMP',stunned:'Systems disabled!',salvoNeed:'Salvo needs at least 3 torpedoes',slain:' destroyed!',youSunk:'YOUR SUBMARINE SANK',respawnIn:'Respawning:',
 sunk:(v,k)=>v+' was sunk by '+k,
-install:'⬇ INSTALL APP (DESKTOP / HOME SCREEN)',iosHint:'iPhone/iPad: Share → Add to Home Screen',surfaced:'Surfaced — the night sky and the stars!',noSurfFire:'Cannot fire torpedoes at the surface — dive a little',surface:'SURFACE',
+install:'📲 INSTALL THE APP',iosHint:'iPhone/iPad: Share → Add to Home Screen',surfaced:'Surfaced — the night sky and the stars!',noSurfFire:'Cannot fire torpedoes at the surface — dive a little',surface:'SURFACE',
 w8:'NET',w9:'MELEE',netCd:'Net is reloading…',netOn:'Net launched!',netCaught:'Caught in the net: ',netted:'YOU ARE NETTED!',meleeCd:'Melee is recharging…',battEmpty:'Battery empty — boost off',discShort:'discovered',
 quests:'QUESTS',questDone:'Quest complete! +',garage:'SHIPYARD',garageBtn:'🏪 SHIPYARD',garageSub:'Submarine and ammo upgrades — buy them with quest rewards',close:'CLOSE',subsH:'SUBMARINES',upH:'UPGRADES',equip:'EQUIP',equipped:'EQUIPPED',buy:'BUY',upgrade:'UPGRADE',maxed:'MAX',needGold:'Not enough gold',boughtSub:'New submarine ready!',boughtUp:'Upgrade complete!',
 u_ammo:'Ammo capacity',u_reload:'Reload speed',u_armor:'Armor',u_motor:'Engine',u_battery:'Battery efficiency',hullL:'Hull',torpL:'Torpedo',mineL:'Mine',spdL:'Speed',
 updMsg:'A new version was downloaded — update to install it',updBtn:'UPDATE',viewFp:'First-person view',viewTp:'Third-person view',
 sTime:'TIME',sScore:'TOTAL SCORE',sFish:'FISH HUNTED',sRep:'HUNTER REPORT',sNone:'No hunts yet',sEn:'Enemies',sDisc:'Found',sStr:'Structures',sGold:'Gold',
+tutBtn:'📖 HOW TO PLAY (TUTORIAL)',tutNext:'NEXT →',tutBack:'← BACK',tutSkip:'SKIP',tutDone:'FINISH ✓',tutOk:'✓ Great!',tutStepOf:'STEP',tutDoIt:'👉 Now you try!',
+tut:[
+['Welcome aboard, captain!','Learn your submarine on a phone in one minute. Try the real buttons — nothing can sink you during the tutorial.'],
+['Drive stick','Push the stick with your left thumb: up is forward, down is reverse, left/right turns.'],
+['Camera','Drag your finger on an empty part of the screen to look around.'],
+['Rise · Dive · Boost','▲ goes up to the surface (night sky up there), ▼ dives, ⚡ boosts but drains battery. One tap turns it on, another turns it off — no need to hold.'],
+['Fire','Press 🚀 to fire! Hold it for continuous torpedoes. The reticle in the middle turns red when it locks onto a target.'],
+['Switch weapon','⇄ cycles torpedo → salvo → mine → EMP. The number on it is your remaining ammo.'],
+['Special abilities','🛡 shield · 🔧 repair · 📡 sonar (scans around) · 💥 shockwave · 🕸 net (catches fish or enemies) · ⚔ melee. The number under each is its cooldown; ✓ means ready.'],
+['Top buttons','📖 species catalog · 👥 room (online) · 🗺 map · 💬 chat · 💡 light · 🍤 food (attracts fish) · 🎯 quests · 👁 camera view · 🏪 shipyard · ❓ this tutorial.'],
+['Gauges','BATTERY drains when boosting and refills when you stop. HULL is your health: at zero you sink but respawn shortly. TORPEDO is your ammo. The radar shows nearby creatures and enemies.'],
+['Your goal','Find and discover all 16 species in the aquarium. Finish quests, earn gold and buy stronger submarines and upgrades at the 🏪 shipyard. Happy sailing!']
+],
+inH:'INSTALL THE APP',inWhy:'Add it to your home screen: the game opens full screen with no address bar and even works offline.',inDone:'App is already installed ✓',inDoneToast:'App installed! Open it from your home screen.',
+inIosT:'iPhone / iPad',inIosS:['In Safari, tap the <b>Share</b> button at the bottom (top on iPad)','Scroll the list and tap <b>Add to Home Screen</b>','Tap <b>Add</b> at the top right — the game is on your home screen!'],inIosN:'If you do not see the Share button, open this page in <b>Safari</b> and repeat the steps.',
+inAndT:'Android',inAndS:['Tap the <b>⋮</b> menu at the top right of the browser','Tap <b>Install app</b> (or <b>Add to Home screen</b>)','Tap <b>Install</b> — the game is on your home screen!'],inAndN:'Samsung Internet: <b>☰</b> menu → <b>Add to Home screen</b>. Firefox: <b>⋮</b> → <b>Install</b>. If there is no option, open the page in <b>Chrome</b>.',
+inDeskT:'Desktop (Chrome / Edge)',inDeskS:['Click the <b>install</b> icon at the right of the address bar (screen with an arrow)','Click <b>Install</b>'],inDeskN:'Safari (Mac): File → Add to Dock. Desktop Firefox does not support installing apps.',
+inAppN:'This page is open inside another app\'s browser (Instagram, WhatsApp, TikTok…) where installing does not work. Use the <b>⋯</b> menu at the top right and choose <b>Open in browser</b>, then try again.',
 
 zones:{ice:'Polar Ice',volcano:'Volcanic Vents',abyss:'Dark Abyss',crystal:'Crystal Caverns',lagoon:'Turquoise Lagoon',sunken:'Sunken City',bluehole:'Blue Ocean',canyon:'Red Canyon',trench:'Deep Trench',temple:'Lost Temple',graveyard:'Ship Graveyard',dunes:'Sand Dunes',coral:'Coral Garden',kelp:'Kelp Forest',grass:'Seagrass Meadow',wreck:'Shipwreck Trench',arch:'Rock Arches',jelly:'Jellyfish Cove',open:'Open Water'}}
 };
@@ -1984,7 +2055,7 @@ function enemyFx(m){
 
 /* ================= Gövde, ölüm ve oyuncular arası hasar ================= */
 function hurt(d,by,ink,kb){
-  if(dead||invuln>0||!(d>0))return;
+  if(dead||invuln>0||tutOn||!(d>0))return;
   if(shieldT>0){
     const a=Math.min(shieldHp,d);shieldHp-=a;d-=a;shieldFlash=.35;sfx.shieldHit();shake=Math.max(shake,.12);
     if(kb&&kb.isVector3)subVel.add(kb.clampLength(0,20).multiplyScalar(.3));
@@ -2476,7 +2547,7 @@ if(isTouch){
   canvas.addEventListener('pointermove',e=>{if(e.pointerId!==lid||!running)return;camYaw-=(e.clientX-tx)*.005;camPitch=pitchClamp(camPitch+(e.clientY-ty)*.004);tx=e.clientX;ty=e.clientY;});
   const endL=e=>{if(e.pointerId===lid)lid=null;};canvas.addEventListener('pointerup',endL);canvas.addEventListener('pointercancel',endL);
   let fireIv=null;const stopFire=()=>{clearInterval(fireIv);fireIv=null;};
-  const ACT={swv:doShock,sonar:doSonar,food:doFood,light:toggleLight,shield:doShield,repair:doRepair,map:()=>toggleMap(),chatb:()=>{if(net.mode!=='solo')openChat();},cat:toggleCatalog,room:()=>$('roomP').classList.toggle('open'),wpn:()=>setWeapon((weapon+1)%4),net:doNet,melee:doMelee,quest:()=>$('questP').classList.toggle('open'),view:toggleView,gar:()=>toggleGarage()};
+  const ACT={swv:doShock,sonar:doSonar,food:doFood,light:toggleLight,shield:doShield,repair:doRepair,map:()=>toggleMap(),chatb:()=>{if(net.mode!=='solo')openChat();},cat:toggleCatalog,room:()=>$('roomP').classList.toggle('open'),wpn:()=>setWeapon((weapon+1)%4),net:doNet,melee:doMelee,quest:()=>$('questP').classList.toggle('open'),view:toggleView,gar:()=>toggleGarage(),help:()=>startTutorial()};
   const TOG={up:1,down:1,boost:1};
   document.querySelectorAll('#touch button').forEach(b=>{const t=b.dataset.t;
     b.addEventListener('pointerdown',e=>{e.preventDefault();if(t==='fire'){fireWeapon();if(weapon===0){stopFire();fireIv=setInterval(fireWeapon,160);}}else if(ACT[t])ACT[t]();else if(TOG[t]){vk[t]=vk[t]?0:1;if(vk[t]&&t==='up')vk.down=0;if(vk[t]&&t==='down')vk.up=0;syncTog();}else vk[t]=1;});
@@ -2677,7 +2748,8 @@ function enterGame(){
   if(isTouch){$('touch').style.display='block';$('roomB').style.display=$('chatB').style.display=net.mode==='solo'?'none':'';}
   const spawnA=Math.random()*6.28;sub.position.set(Math.cos(spawnA)*10,-4,8+Math.sin(spawnA)*6);
   renderCatalog();renderPlayers();
-  if(net.mode==='solo')toast(T.start);
+  if(net.mode==='solo'&&!tutOn)toast(T.start);
+  if(isTouch&&net.mode==='solo'&&!tutOn&&!store.get('aqua-tut'))setTimeout(()=>{if(running&&!tutOn)startTutorial();},900);
   store.set('aqua-name',me.name);store.set('aqua-color',me.color);
 }
 function readLobby(){me.name=cleanName($('nameIn').value);local.paint.color.set(me.color);}
@@ -2700,15 +2772,119 @@ $('copyBtn').onclick=()=>{
 };
 {const de=document.documentElement;if(!de.requestFullscreen&&!de.webkitRequestFullscreen)$('fsBtn').style.display='none';
 $('fsBtn').onclick=()=>{if(document.fullscreenElement||document.webkitFullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document);}else{(de.requestFullscreen||de.webkitRequestFullscreen).call(de);try{screen.orientation.lock('landscape').catch(()=>{});}catch{}}};}
-$('langBtn').onclick=()=>{lang=lang==='tr'?'en':'tr';store.set('aqua-lang',lang);applyLang();};
+$('langBtn').onclick=()=>{lang=lang==='tr'?'en':'tr';store.set('aqua-lang',lang);applyLang();if(tutOn)tutShow(tutI);};
 $('soundBtn').onclick=()=>{muted=!muted;store.set('aqua-mute',muted?'1':'0');$('soundBtn').textContent=muted?'🔇':'🔊';if(master)master.gain.value=muted?0:.55;};
 $('soundBtn').textContent=muted?'🔇':'🔊';
 $('menuBtn').onclick=()=>{if(!running||net.mode==='solo'||confirm(T.leave)){try{net.peer&&net.peer.destroy();}catch{};location.reload();}};
+/* ---- Telefona / bilgisayara yükle ---- */
 let deferredInstall=null;
-addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;$('installBtn').style.display='';});
-$('installBtn').onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice;}catch{}deferredInstall=null;$('installBtn').style.display='none';};
-addEventListener('appinstalled',()=>{$('installBtn').style.display='none';});
-if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!navigator.standalone&&document.querySelector('link[rel=manifest]'))$('iosHint').style.display='';
+const isStandalone=()=>{try{return matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;}catch{return navigator.standalone===true;}};
+const refreshInstallBtn=()=>{$('installBtn').style.display=isStandalone()?'none':'';};
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;refreshInstallBtn();});
+addEventListener('appinstalled',()=>{deferredInstall=null;$('installBtn').style.display='none';$('installM').style.display='none';toast(T.inDoneToast);});
+function installGuide(){
+  const ua=navigator.userAgent||'';
+  const ios=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const android=/android/i.test(ua);
+  const inApp=/FBAN|FBAV|Instagram|Line\/|TikTok|musical_ly|Twitter|Snapchat|Telegram|WhatsApp|MicroMessenger|; wv\)/i.test(ua);
+  if(ios)return {t:T.inIosT,s:T.inIosS,n:inApp?T.inAppN:T.inIosN};
+  if(android)return {t:T.inAndT,s:T.inAndS,n:inApp?T.inAppN:T.inAndN};
+  return {t:T.inDeskT,s:T.inDeskS,n:T.inDeskN};
+}
+function showInstallHelp(){
+  const g=installGuide();
+  $('inTitle').textContent=g.t;
+  $('inSteps').innerHTML=g.s.map(x=>'<li>'+x+'</li>').join('');
+  const n=$('inNote');n.innerHTML=g.n||'';n.style.display=g.n?'':'none';
+  $('installM').style.display='grid';
+}
+$('installBtn').onclick=async()=>{
+  if(isStandalone()){toast(T.inDone);return;}
+  if(deferredInstall){
+    const d=deferredInstall;deferredInstall=null;
+    try{d.prompt();const r=await d.userChoice;if(r&&r.outcome==='accepted'){$('installBtn').style.display='none';return;}}catch{}
+  }
+  showInstallHelp();
+};
+$('inClose').onclick=()=>{$('installM').style.display='none';};
+$('installM').addEventListener('click',e=>{if(e.target===$('installM'))$('installM').style.display='none';});
+refreshInstallBtn();
+
+/* ---- Mobil öğretici: gerçek düğmeleri vurgular, dokununca ilerler ---- */
+let tutOn=false,tutI=0,tutDoneT=0,tutPoll=null,tutCam=[0,0];
+const tutHit={};
+document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('#touch button[data-t]');if(b)tutHit[b.dataset.t]=1;},true);
+const TUTS=[
+ {sel:null},
+ {sel:['#joy'],wait:()=>Math.abs(vk.fwd)>.35||Math.abs(vk.turn)>.35},
+ {sel:()=>({left:innerWidth*.32,top:innerHeight*.28,width:innerWidth*.36,height:innerHeight*.34}),wait:()=>Math.abs(camYaw-tutCam[0])>.35||Math.abs(camPitch-tutCam[1])>.18},
+ {sel:['.tvb'],wait:()=>vk.up||vk.down||vk.boost},
+ {sel:['#fireB'],wait:()=>tutHit.fire},
+ {sel:['#wpnB'],wait:()=>tutHit.wpn},
+ {sel:['#shB','#rpB','.tfire .sm[data-t="sonar"]','#swB','#netB','#melB']},
+ {sel:['.ttop']},
+ {sel:['.hud .side:first-child','#radarP']},
+ {sel:null}
+];
+function tutRect(sel){
+  if(!sel)return null;
+  if(typeof sel==='function')return sel();
+  let l=1e9,t=1e9,r=-1e9,b=-1e9,ok=false;
+  for(const q of sel){const el=document.querySelector(q);if(!el)continue;const c=el.getBoundingClientRect();if(c.width<2||c.height<2)continue;ok=true;l=Math.min(l,c.left);t=Math.min(t,c.top);r=Math.max(r,c.right);b=Math.max(b,c.bottom);}
+  return ok?{left:l,top:t,width:r-l,height:b-t}:null;
+}
+function tutShow(i){
+  tutI=i;tutDoneT=0;const st=TUTS[i],tx=T.tut[i],last=i===TUTS.length-1;
+  for(const k in tutHit)delete tutHit[k];
+  tutCam=[camYaw,camPitch];
+  $('tutStep').textContent=T.tutStepOf+' '+(i+1)+'/'+TUTS.length;
+  $('tutDots').innerHTML=TUTS.map((_,k)=>'<i class="'+(k===i?'on':k<i?'past':'')+'"></i>').join('');
+  const h=$('tutTitle');h.textContent=tx[0];h.className='';
+  $('tutText').textContent=tx[1]+((i===0&&innerHeight>innerWidth)?' '+T.rotHint+'.':'');
+  const ex=$('tutExtra');ex.style.display=st.wait?'':'none';ex.textContent=T.tutDoIt;
+  $('tutBack').style.visibility=i?'visible':'hidden';$('tutSkip').style.display=last?'none':'';
+  $('tutNext').textContent=last?T.tutDone:T.tutNext;
+  const hole=$('tutHole'),r=tutRect(st.sel),card=$('tutCard'),pad=8;
+  if(r){
+    hole.classList.remove('none');
+    hole.style.left=(r.left-pad)+'px';hole.style.top=(r.top-pad)+'px';hole.style.width=(r.width+pad*2)+'px';hole.style.height=(r.height+pad*2)+'px';
+  }else{
+    hole.classList.add('none');hole.style.left=innerWidth/2+'px';hole.style.top=innerHeight/2+'px';hole.style.width='0px';hole.style.height='0px';
+  }
+  Object.assign(card.style,{top:'auto',bottom:'auto',left:'auto',right:'auto',transform:'none'});
+  const safeT='calc(8px + env(safe-area-inset-top))',safeB='calc(8px + env(safe-area-inset-bottom))';
+  if(!r){card.style.top='50%';card.style.left='50%';card.style.transform='translate(-50%,-50%)';}
+  else{
+    const cy=r.top+r.height/2,cx=r.left+r.width/2;
+    if(cy>innerHeight*.5)card.style.top=safeT;else card.style.bottom=safeB;
+    if(cx<innerWidth*.5)card.style.right='12px';else card.style.left='12px';
+  }
+}
+function tutEnd(){
+  tutOn=false;clearInterval(tutPoll);tutPoll=null;$('tut').classList.remove('on');
+  store.set('aqua-tut','1');
+  vk.up=vk.down=vk.boost=0;try{syncTog();}catch{}
+}
+function startTutorial(){
+  if(!running){readLobby();net.mode='solo';enterGame();}
+  $('garageM').style.display='none';$('mapM').style.display='none';
+  tutOn=true;$('tut').classList.add('on');tutShow(0);
+  clearInterval(tutPoll);
+  tutPoll=setInterval(()=>{
+    if(!tutOn)return;const st=TUTS[tutI];
+    if(st.wait&&!tutDoneT&&st.wait()){
+      tutDoneT=1;const h=$('tutTitle');h.textContent=T.tutOk;h.className='ok';
+      setTimeout(()=>{if(tutOn&&tutI<TUTS.length-1)tutShow(tutI+1);},950);
+    }
+  },120);
+}
+$('tutNext').onclick=()=>{if(tutI>=TUTS.length-1)tutEnd();else tutShow(tutI+1);};
+$('tutBack').onclick=()=>{if(tutI>0)tutShow(tutI-1);};
+$('tutSkip').onclick=tutEnd;
+$('tutBtn').onclick=startTutorial;
+addEventListener('resize',()=>{if(tutOn)tutShow(tutI);});
+addEventListener('orientationchange',()=>setTimeout(()=>{if(tutOn)tutShow(tutI);},300));
+if(qs.get('ogretici')==='1'&&isTouch)setTimeout(()=>{if(!running)startTutorial();},400);
 if(store.get('aqua-lang')==='en')lang='en';
 fillQuests();persist();applyLoadout(true);if(fp)camPitch=0;
 $('garBtn').onclick=$('garBtn2').onclick=()=>toggleGarage();$('garClose').onclick=()=>toggleGarage(false);

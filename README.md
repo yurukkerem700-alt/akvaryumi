@@ -33,6 +33,9 @@ Online co-op / PvP 3D denizaltı oyunu (Three.js, tek dosya, sunucusuz — oyunc
 - Su sisi sıklaştırıldı (kalite seviyesine göre); sis tamamen kapattığı mesafenin ötesindeki bitki, kaya ve yapı örnekleri hiç çizilmez, kameraya yaklaşınca belirir (`streamReg` / `restream`). Kırılan/yıkılan nesnelerin dizinleri korunur.
 - Bu kazanç sayesinde render çözünürlüğü, arazi ayrıntısı ve bitki sayısı (artık seyreltme yok) geri yükseltildi; telefonda varsayılan kalite ORTA.
 
+### v2.3.1: mobil ses düzeltmesi
+- İlk dokunuşta ses bağlamı açılır ve `resume()` edilir; iPhone'da sessiz anahtarını aşmak için sessiz bir `<audio>` döngüsü çalınır; uygulamaya geri dönünce ses yeniden açılır.
+
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-1`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 

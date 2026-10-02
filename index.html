@@ -312,7 +312,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.02-4',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.02-5',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -1267,7 +1267,25 @@ function audioInit(){
   const buf=ac.createBuffer(1,ac.sampleRate*3,ac.sampleRate),d=buf.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){l=(l+.02*(Math.random()*2-1))/1.02;d[i]=l*3.2;}
   const src=ac.createBufferSource();src.buffer=buf;src.loop=true;const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=420;const g=ac.createGain();g.gain.value=.5;src.connect(lp).connect(g).connect(master);src.start();
   engO=ac.createOscillator();engO.type='sawtooth';engO.frequency.value=48;const el=ac.createBiquadFilter();el.type='lowpass';el.frequency.value=180;engG=ac.createGain();engG.gain.value=0;engO.connect(el).connect(engG).connect(master);engO.start();
+  ac.onstatechange=()=>{if(ac.state!=='running')audioWake();};
 }
+/* Mobil ses kilidi: tarayıcılar sesi ilk dokunuşa kadar kapalı tutar (iOS ayrıca sessiz anahtarında WebAudio'yu susturur).
+   İlk dokunuşta bağlamı oluştur + resume et, sessiz bir <audio> döngüsüyle iOS'ta medya kanalına geç; arka plandan dönünce yeniden aç. */
+let silentEl=null;
+function audioWake(){
+  if(!ac)return;
+  if(ac.state!=='running'){try{const r=ac.resume();if(r&&r.catch)r.catch(()=>{});}catch{}}
+  if(!silentEl){try{
+    const n=800,h=new DataView(new ArrayBuffer(44+n));const w=(o,t)=>{for(let i=0;i<t.length;i++)h.setUint8(o+i,t.charCodeAt(i));};
+    w(0,'RIFF');h.setUint32(4,36+n,true);w(8,'WAVEfmt ');h.setUint32(16,16,true);h.setUint16(20,1,true);h.setUint16(22,1,true);h.setUint32(24,8000,true);h.setUint32(28,8000,true);h.setUint16(32,1,true);h.setUint16(34,8,true);w(36,'data');h.setUint32(40,n,true);for(let i=0;i<n;i++)h.setUint8(44+i,128);
+    silentEl=new Audio(URL.createObjectURL(new Blob([h.buffer],{type:'audio/wav'})));silentEl.loop=true;silentEl.volume=.01;silentEl.setAttribute('playsinline','');
+    const pr=silentEl.play();if(pr&&pr.catch)pr.catch(()=>{silentEl=null;});
+  }catch{silentEl=null;}}
+}
+function audioUnlock(){audioInit();audioWake();if(ac&&ac.state==='running'&&(!silentEl||!silentEl.paused))['touchstart','touchend','pointerdown','click','keydown'].forEach(e=>removeEventListener(e,audioUnlock,true));}
+['touchstart','touchend','pointerdown','click','keydown'].forEach(e=>addEventListener(e,audioUnlock,{capture:true,passive:true}));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){audioWake();if(silentEl&&silentEl.paused)silentEl.play().catch(()=>{});}});
+addEventListener('pageshow',audioWake);
 function tone(f0,f1,dur,type='sine',vol=.3,delay=0){if(!ac||muted)return;const t=ac.currentTime+delay,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g).connect(master);o.start(t);o.stop(t+dur+.05);}
 const sfx={slash(v=1){noise(.28,6500,900,.3*v);tone(1100,220,.22,'sawtooth',.16*v);},net(v=1){tone(420,980,.35,'triangle',.2*v);noise(.35,3500,700,.14*v);},sonar(v=1){tone(1500,900,1.1,'sine',.28*v);tone(1500,900,1.1,'sine',.12*v,.35);tone(1500,900,1.1,'sine',.05*v,.7);},food(){tone(500,200,.18,'triangle',.2);},disc(){[660,880,1320].forEach((f,i)=>tone(f,f*1.01,.35,'triangle',.18,i*.11));},chat(){tone(900,1100,.08,'sine',.08);},
   launch(v=1){tone(95,38,.4,'sine',.55*v);noise(.55,2400,300,.22*v);},motor(v=1){tone(260,1300,1.1,'sawtooth',.035*v);noise(.9,5000,1800,.05*v,.05);},

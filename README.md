@@ -29,6 +29,10 @@ Online co-op / PvP 3D denizaltı oyunu (Three.js, tek dosya, sunucusuz — oyunc
 - **Performans**: mobilde render çözünürlüğü, arazi ayrıntısı, bitki/balık sayısı, ışık huzmeleri ve spot ışıklar düşürüldü; dinamik çözünürlük ayarı sıkılaştırıldı.
 - **⚙ GRAFİK** düğmesi: DÜŞÜK / ORTA / YÜKSEK. Telefon için varsayılan düşük/orta; hâlâ kasarsa DÜŞÜK seç.
 
+### v2.3: görüş mesafesi + akışlı yapılar
+- Su sisi sıklaştırıldı (kalite seviyesine göre); sis tamamen kapattığı mesafenin ötesindeki bitki, kaya ve yapı örnekleri hiç çizilmez, kameraya yaklaşınca belirir (`streamReg` / `restream`). Kırılan/yıkılan nesnelerin dizinleri korunur.
+- Bu kazanç sayesinde render çözünürlüğü, arazi ayrıntısı ve bitki sayısı (artık seyreltme yok) geri yükseltildi; telefonda varsayılan kalite ORTA.
+
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-1`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 

@@ -312,7 +312,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.02-3',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.02-4',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -452,12 +452,13 @@ const isTouch=matchMedia('(pointer:coarse)').matches||('ontouchstart' in window&
 if(isTouch)document.body.classList.add('touch');
 /* Grafik kalitesi: telefonda varsayılan DÜŞÜK (akıcı); lobideki ⚙ düğmesiyle değişir. Bilgisayarda hep YÜKSEK. */
 const QUAL=['low','mid','high'];
-let Q=store.get('aqua-q');if(!QUAL.includes(Q))Q=isTouch?'low':'high';
-const QP={low:{pr:[.5,.85,.7],cnt:.55,seg:[220,126],cap:26,shaft:6,spot:0},mid:{pr:[.6,1.1,.95],cnt:.85,seg:[300,172],cap:0,shaft:3,spot:1},high:{pr:null,cnt:1,seg:[380,217],cap:0,shaft:3,spot:1}};
+let Q=store.get('aqua-q');if(!QUAL.includes(Q))Q=isTouch?'mid':'high';
+/* vis: sis çarpanı (büyüdükçe görüş kısalır). Sis tam kapandığı mesafenin ötesindeki bitki/kaya/yapılar hiç çizilmez; yaklaşınca belirir (bkz. stream) */
+const QP={low:{pr:[.6,1,.8],cnt:1,seg:[300,172],cap:26,shaft:6,spot:0,vis:2},mid:{pr:[.75,1.3,1.1],cnt:1,seg:[380,217],cap:0,shaft:3,spot:1,vis:1.7},high:{pr:null,cnt:1,seg:[380,217],cap:0,shaft:3,spot:1,vis:1.35}};
 const QC=isTouch?QP[Q]:QP.high;
-const lowCount=(m,f)=>{if(isTouch)m.count=Math.ceil(m.count*f*QC.cnt);return m;};
+const lowCount=(m,f)=>m;
 /* Seyreltmeden önce listeyi sabit tohumla karıştır: ilk N eleman tüm haritaya eşit yayılır (dizinler regFlora ile tutarlı kalır) */
-function thinOrder(l){if(!isTouch||QC.cnt>=1)return l;let s=1234567;const rnd=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296;};for(let i=l.length-1;i>0;i--){const j=(rnd()*(i+1))|0,t=l[i];l[i]=l[j];l[j]=t;}return l;}
+function thinOrder(l){return l;let s=1234567;const rnd=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296;};for(let i=l.length-1;i>0;i--){const j=(rnd()*(i+1))|0,t=l[i];l[i]=l[j];l[j]=t;}return l;}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const cleanName=n=>String(n||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,16)||'Kaptan';
 const cleanColor=c=>COLORS.includes(c)?c:COLORS[0];
@@ -516,7 +517,7 @@ const zp=id=>{const q=ZONES.find(o=>o.id===id);return [rr(q.x[0],q.x[1]),rr(q.z[
 const scene=new THREE.Scene();
 const WATER=new THREE.Color(0x0c7390);
 scene.background=WATER.clone();
-scene.fog=new THREE.FogExp2(WATER,.0056);
+scene.fog=new THREE.FogExp2(WATER,.0056*QC.vis);
 const renderer=new THREE.WebGLRenderer({antialias:!isTouch,powerPreference:'high-performance'});
 const PR_DPR=Math.min(window.devicePixelRatio||1,2),PRQ=isTouch&&QC.pr;
 const PR_MAX=PRQ?Math.min(PR_DPR,PRQ[1]):PR_DPR,PR_MIN=PRQ?Math.min(PRQ[0],PR_MAX):(isTouch?.7:.9);let prCur=PRQ?Math.min(PR_MAX,PRQ[2]):Math.min(PR_MAX,isTouch?1.25:1.75);
@@ -557,7 +558,36 @@ const merge=a=>mergeGeometries(a.map(g=>g.index?g.toNonIndexed():g),false);
 function inst(geo,mat,list,withColor){
   const m=new THREE.InstancedMesh(geo,mat,list.length);
   list.forEach((o,i)=>{_m.compose(_v.set(o.x,o.y,o.z),_q.setFromEuler(_e.set(o.rx||0,o.ry||0,o.rz||0)),_s.set(o.sx??o.s,o.sy??o.s,o.sz??o.s));m.setMatrixAt(i,_m);if(withColor)m.setColorAt(i,new THREE.Color(o.c));});
-  m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true;m.frustumCulled=false;scene.add(m);return m;
+  m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true;m.frustumCulled=false;scene.add(m);
+  if(list.length>=24)streamReg(m,list);
+  return m;
+}
+/* Akışlı örnekleme: her örneğin ana matrisi (M) saklanır; sadece kameraya STR_R içindeki örnekler GPU tamponunun başına dizilir.
+   Dışarıdaki kod yine ana dizinle (setMatrixAt(idx)) çalışır; çağrılar hem ana kopyaya hem (varsa) canlı yuvaya yazılır. */
+const streams=[];let strR=200,strX=1e9,strZ=1e9,strRl=0;
+function streamReg(m,list){
+  const n=list.length,M=new Float32Array(m.instanceMatrix.array),C=m.instanceColor?new Float32Array(m.instanceColor.array):null,P=new Float32Array(n*2),slot=new Int32Array(n).fill(-1);
+  for(let i=0;i<n;i++){P[i*2]=list[i].x;P[i*2+1]=list[i].z;}
+  m.setMatrixAt=(i,mat)=>{mat.toArray(M,i*16);const k=slot[i];if(k>=0)mat.toArray(m.instanceMatrix.array,k*16);};
+  if(C)m.setColorAt=(i,c)=>{C[i*3]=c.r;C[i*3+1]=c.g;C[i*3+2]=c.b;const k=slot[i];if(k>=0){const a=m.instanceColor.array;a[k*3]=c.r;a[k*3+1]=c.g;a[k*3+2]=c.b;}};
+  streams.push({m,n,M,C,P,slot});
+}
+function restream(cx,cz){
+  const R2=strR*strR;
+  for(const S of streams){
+    const {m,n,M,C,P,slot}=S,a=m.instanceMatrix.array,ca=m.instanceColor?m.instanceColor.array:null;let k=0;
+    for(let i=0;i<n;i++){
+      const dx=P[i*2]-cx,dz=P[i*2+1]-cz;
+      if(dx*dx+dz*dz<R2){a.set(M.subarray(i*16,i*16+16),k*16);if(ca)ca.set(C.subarray(i*3,i*3+3),k*3);slot[i]=k++;}else slot[i]=-1;
+    }
+    m.count=k;
+    const im=m.instanceMatrix;if(im.clearUpdateRanges){im.clearUpdateRanges();im.addUpdateRange(0,Math.max(k,1)*16);}im.needsUpdate=true;
+    if(m.instanceColor){const ic=m.instanceColor;if(ic.clearUpdateRanges){ic.clearUpdateRanges();ic.addUpdateRange(0,Math.max(k,1)*3);}ic.needsUpdate=true;}
+  }
+}
+function updateStream(){
+  const x=camera.position.x,z=camera.position.z;
+  if(Math.hypot(x-strX,z-strZ)>8||Math.abs(strR-strRl)>14){strX=x;strZ=z;strRl=strR;restream(x,z);}
 }
 const colliders=[];
 const structs=[],flora=[];
@@ -658,12 +688,12 @@ function splash(x,z,v){
 }
 function updateEnv(dt){
   const e=ZENV[zoneAt(camera.position.x,camera.position.z)]||[0x0c7390,.0056,1],k=1-Math.exp(-dt*1.2);
-  envCol.lerp(envTgt.setHex(e[0]),k);envD+=(e[1]-envD)*k;envL+=(e[2]-envL)*k;
+  envCol.lerp(envTgt.setHex(e[0]),k);envD+=(e[1]-envD)*k;envL+=(e[2]-envL)*k;strR=clamp(1.6/(envD*QC.vis),85,250);updateStream();
   const above=camera.position.y>SURF+.15;
   if(above!==aboveWater){aboveWater=above;sky.visible=above;for(const r of rays)r.visible=r.userData.keep&&!above;if(snowPts)snowPts.visible=!above;}
   skyK+=((above?1:0)-skyK)*(1-Math.exp(-dt*3));
   if(above){scene.background.copy(NIGHT_BG);scene.fog.color.copy(NIGHT_BG);scene.fog.density=.0012;}
-  else{scene.background.copy(envCol);scene.fog.color.copy(envCol);scene.fog.density=envD;}
+  else{scene.background.copy(envCol);scene.fog.color.copy(envCol);scene.fog.density=envD*QC.vis;}
   hemi.intensity=2*envL*(1-skyK)+.9*skyK;hemi.color.lerpColors(HC_UNDER,HC_NIGHT,skyK);
   sun.intensity=2.6*envL*(1-skyK)+1.3*skyK;sun.color.lerpColors(SUN_UNDER,SUN_NIGHT,skyK);
   surfaceMat.color.lerpColors(SURF_UNDER,SURF_NIGHT,skyK);surfaceMat.opacity=.62+.26*skyK;surfaceMat.emissiveIntensity=.55-.35*skyK;

@@ -24,6 +24,18 @@ Online co-op / PvP 3D denizaltı oyunu (Three.js, tek dosya, sunucusuz — oyunc
 - **Mobil öğretici** (10 adım): gerçek düğmeleri vurgular, sürüş çubuğu / kamera / ▲▼⚡ / ateş / silah değiştirme gibi adımlarda kullanıcı dokununca otomatik ilerler. Öğretici sırasında hasar alınmaz. Telefonda ilk açılışta (tek başına modda) kendiliğinden başlar; sonra lobideki **📖 NASIL OYNANIR?** düğmesinden ya da oyun içindeki **❓** düğmesinden tekrar açılır. TR/EN. Test için: `?ogretici=1`.
 - **📲 Uygulamayı yükle**: Lobide her zaman görünür (yüklüyse gizlenir). Chrome/Edge'de tek dokunuşla yükleme penceresi açılır; iPhone/iPad, Android (Samsung/Firefox dahil), uygulama içi tarayıcı (Instagram, WhatsApp…) ve bilgisayar için adım adım yönerge penceresi gösterilir.
 
+### v2.2: mobil performans + yatay mod
+- **Yatay oyun**: telefon dikeyse "Telefonu yan çevir" uyarısı çıkar ve oyun durur; oyun başlarken tam ekran + yatay kilit denenir. Yüklenen uygulama (PWA) her zaman yatay açılır.
+- **Performans**: mobilde render çözünürlüğü, arazi ayrıntısı, bitki/balık sayısı, ışık huzmeleri ve spot ışıklar düşürüldü; dinamik çözünürlük ayarı sıkılaştırıldı.
+- **⚙ GRAFİK** düğmesi: DÜŞÜK / ORTA / YÜKSEK. Telefon için varsayılan düşük/orta; hâlâ kasarsa DÜŞÜK seç.
+
+### v2.3: görüş mesafesi + akışlı yapılar
+- Su sisi sıklaştırıldı (kalite seviyesine göre); sis tamamen kapattığı mesafenin ötesindeki bitki, kaya ve yapı örnekleri hiç çizilmez, kameraya yaklaşınca belirir (`streamReg` / `restream`). Kırılan/yıkılan nesnelerin dizinleri korunur.
+- Bu kazanç sayesinde render çözünürlüğü, arazi ayrıntısı ve bitki sayısı (artık seyreltme yok) geri yükseltildi; telefonda varsayılan kalite ORTA.
+
+### v2.3.1: mobil ses düzeltmesi
+- İlk dokunuşta ses bağlamı açılır ve `resume()` edilir; iPhone'da sessiz anahtarını aşmak için sessiz bir `<audio>` döngüsü çalınır; uygulamaya geri dönünce ses yeniden açılır.
+
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-1`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 

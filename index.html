@@ -167,6 +167,8 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
 
 /* ---- v3: mobil öğretici + telefona yükle ---- */
 .touch #lobby .card{display:flex;flex-direction:column}.touch #lobby .card>*{order:1}.touch #lobby .card>.updbar,.touch #lobby .card>.eyebrow,.touch #lobby .card>h1,.touch #lobby .card>p,.touch #lobby .card>.act{order:0}
+#qBtn{display:none}.touch #qBtn{display:inline-block}
+#rot{display:none;position:fixed;inset:0;z-index:60;background:#04202e;color:#fff;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:24px;line-height:1.5}#rot b{font-size:22px}#rot span{max-width:320px;color:#bdd5de;font-size:14px}.rotIc{font-size:72px;animation:rotP 2.4s ease-in-out infinite}@keyframes rotP{0%,25%{transform:rotate(0)}65%,100%{transform:rotate(-90deg)}}@media (orientation:portrait){.touch #rot{display:flex}}
 #tutBtn{display:none}.touch #tutBtn{display:inline-block}
 .touch #installBtn{background:var(--green);color:#03231a;border-color:transparent}
 #tut{position:fixed;inset:0;z-index:25;display:none;pointer-events:none}#tut.on{display:block}
@@ -261,7 +263,7 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
       <button class="btn gold" id="hostBtn" data-i="host">ODA KUR (ONLINE)</button>
       <div class="joinBox"><input class="txt" id="codeIn" maxlength="5" autocomplete="off"><button class="btn" id="joinBtn" data-i="join">KATIL</button></div>
     </div>
-    <div class="row act" style="margin:0 0 10px"><button class="btn gold" id="garBtn2" data-i="garageBtn">🏪 TERSANE</button><span class="k" style="align-self:center">🪙 <b class="goldV">0</b></span><button class="btn" id="tutBtn" data-i="tutBtn">📖 NASIL OYNANIR? (ÖĞRETİCİ)</button><button class="btn" id="installBtn" data-i="install">📲 UYGULAMAYI YÜKLE</button></div>
+    <div class="row act" style="margin:0 0 10px"><button class="btn gold" id="garBtn2" data-i="garageBtn">🏪 TERSANE</button><span class="k" style="align-self:center">🪙 <b class="goldV">0</b></span><button class="btn" id="tutBtn" data-i="tutBtn">📖 NASIL OYNANIR? (ÖĞRETİCİ)</button><button class="btn" id="qBtn">⚙ GRAFİK</button><button class="btn" id="installBtn" data-i="install">📲 UYGULAMAYI YÜKLE</button></div>
     <div class="status" id="lobbyStatus"></div>
     <div class="grid">
       <div class="tip"><b data-i="t1h"></b><span data-i="t1"></span></div>
@@ -291,6 +293,8 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
   <button class="btn primary" id="inClose" data-i="close">KAPAT</button>
 </div></div>
 
+<div id="rot"><div class="rotIc">📱</div><b data-i="rotT">Telefonu yan çevir</b><span data-i="rotD"></span></div>
+
 <div id="tut"><div id="tutHole" class="none"></div>
   <div id="tutCard" class="glass">
     <div class="tk"><span class="k" id="tutStep"></span><div class="tdots" id="tutDots"></div></div>
@@ -308,7 +312,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.02-2',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.02-5',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -364,7 +368,7 @@ quests:'GÖREVLER',questDone:'Görev tamamlandı! +',garage:'TERSANE',garageBtn:
 u_ammo:'Cephane kapasitesi',u_reload:'Yeniden yükleme',u_armor:'Zırh',u_motor:'Motor',u_battery:'Batarya verimi',hullL:'Gövde',torpL:'Torpido',mineL:'Mayın',spdL:'Hız',
 updMsg:'Yeni sürüm indirildi — yüklemek için güncelle',updBtn:'GÜNCELLE',viewFp:'Birinci şahıs bakış',viewTp:'Üçüncü şahıs bakış',
 sTime:'SÜRE',sScore:'TOPLAM SKOR',sFish:'ÖLDÜRÜLEN BALIK',sRep:'AVCI RAPORU',sNone:'Henüz av yok',sEn:'Düşman',sDisc:'Keşif',sStr:'Yapı',sGold:'Altın',
-tutBtn:'📖 NASIL OYNANIR? (ÖĞRETİCİ)',tutNext:'İLERİ →',tutBack:'← GERİ',tutSkip:'ATLA',tutDone:'BİTİR ✓',tutOk:'✓ Harika!',tutStepOf:'ADIM',tutDoIt:'👉 Şimdi sen dene!',
+rotT:'Telefonu yan çevir',rotD:'Akvaryum Seferi yatay (yan) oynanır. Ekran dikey kalıyorsa telefonun otomatik döndürme kilidini aç.',qLbl:'GRAFİK',qLow:'DÜŞÜK (AKICI)',qMid:'ORTA',qHigh:'YÜKSEK',qSet:'Grafik değişti, oyun yenileniyor…',tutBtn:'📖 NASIL OYNANIR? (ÖĞRETİCİ)',tutNext:'İLERİ →',tutBack:'← GERİ',tutSkip:'ATLA',tutDone:'BİTİR ✓',tutOk:'✓ Harika!',tutStepOf:'ADIM',tutDoIt:'👉 Şimdi sen dene!',
 tut:[
 ['Hoş geldin kaptan!','Denizaltını telefonda 1 dakikada öğren. Gerçek düğmelere dokunarak dene — öğretici sırasında hiçbir şey seni batıramaz.'],
 ['Sürüş çubuğu','Sol baş parmağınla çubuğu it: yukarı ileri, aşağı geri, sağa-sola dönüş.'],
@@ -400,7 +404,7 @@ quests:'QUESTS',questDone:'Quest complete! +',garage:'SHIPYARD',garageBtn:'🏪 
 u_ammo:'Ammo capacity',u_reload:'Reload speed',u_armor:'Armor',u_motor:'Engine',u_battery:'Battery efficiency',hullL:'Hull',torpL:'Torpedo',mineL:'Mine',spdL:'Speed',
 updMsg:'A new version was downloaded — update to install it',updBtn:'UPDATE',viewFp:'First-person view',viewTp:'Third-person view',
 sTime:'TIME',sScore:'TOTAL SCORE',sFish:'FISH HUNTED',sRep:'HUNTER REPORT',sNone:'No hunts yet',sEn:'Enemies',sDisc:'Found',sStr:'Structures',sGold:'Gold',
-tutBtn:'📖 HOW TO PLAY (TUTORIAL)',tutNext:'NEXT →',tutBack:'← BACK',tutSkip:'SKIP',tutDone:'FINISH ✓',tutOk:'✓ Great!',tutStepOf:'STEP',tutDoIt:'👉 Now you try!',
+rotT:'Rotate your phone',rotD:'Aquarium Expedition is played in landscape. If the screen stays upright, turn off your phone\'s rotation lock.',qLbl:'GRAPHICS',qLow:'LOW (SMOOTH)',qMid:'MEDIUM',qHigh:'HIGH',qSet:'Graphics changed, reloading…',tutBtn:'📖 HOW TO PLAY (TUTORIAL)',tutNext:'NEXT →',tutBack:'← BACK',tutSkip:'SKIP',tutDone:'FINISH ✓',tutOk:'✓ Great!',tutStepOf:'STEP',tutDoIt:'👉 Now you try!',
 tut:[
 ['Welcome aboard, captain!','Learn your submarine on a phone in one minute. Try the real buttons — nothing can sink you during the tutorial.'],
 ['Drive stick','Push the stick with your left thumb: up is forward, down is reverse, left/right turns.'],
@@ -446,7 +450,15 @@ const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k
 const qs=new URLSearchParams(location.search);
 const isTouch=matchMedia('(pointer:coarse)').matches||('ontouchstart' in window&&!matchMedia('(pointer:fine)').matches);
 if(isTouch)document.body.classList.add('touch');
-const lowCount=(m,f)=>{if(isTouch)m.count=Math.ceil(m.count*f);return m;};
+/* Grafik kalitesi: telefonda varsayılan DÜŞÜK (akıcı); lobideki ⚙ düğmesiyle değişir. Bilgisayarda hep YÜKSEK. */
+const QUAL=['low','mid','high'];
+let Q=store.get('aqua-q');if(!QUAL.includes(Q))Q=isTouch?'mid':'high';
+/* vis: sis çarpanı (büyüdükçe görüş kısalır). Sis tam kapandığı mesafenin ötesindeki bitki/kaya/yapılar hiç çizilmez; yaklaşınca belirir (bkz. stream) */
+const QP={low:{pr:[.6,1,.8],cnt:1,seg:[300,172],cap:26,shaft:6,spot:0,vis:2},mid:{pr:[.75,1.3,1.1],cnt:1,seg:[380,217],cap:0,shaft:3,spot:1,vis:1.7},high:{pr:null,cnt:1,seg:[380,217],cap:0,shaft:3,spot:1,vis:1.35}};
+const QC=isTouch?QP[Q]:QP.high;
+const lowCount=(m,f)=>m;
+/* Seyreltmeden önce listeyi sabit tohumla karıştır: ilk N eleman tüm haritaya eşit yayılır (dizinler regFlora ile tutarlı kalır) */
+function thinOrder(l){return l;let s=1234567;const rnd=()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296;};for(let i=l.length-1;i>0;i--){const j=(rnd()*(i+1))|0,t=l[i];l[i]=l[j];l[j]=t;}return l;}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const cleanName=n=>String(n||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,16)||'Kaptan';
 const cleanColor=c=>COLORS.includes(c)?c:COLORS[0];
@@ -456,7 +468,7 @@ function applyLang(){
   T=TEXT[lang];document.documentElement.lang=lang;
   document.querySelectorAll('[data-i]').forEach(el=>{const v=T[el.dataset.i];if(typeof v==='string')el.textContent=v;});
   $('codeIn').placeholder=T.codePh;$('chatIn').placeholder=T.chatPh;$('langBtn').textContent=lang==='tr'?'EN':'TR';
-  renderCatalog();renderPlayers();renderWpn();renderQuests();drawSign();if(garageOpen())renderGarage();
+  renderCatalog();renderPlayers();renderWpn();renderQuests();drawSign();if(garageOpen())renderGarage();qLabel();
 }
 
 /* ================= Sabitler ve yardımcılar ================= */
@@ -505,9 +517,11 @@ const zp=id=>{const q=ZONES.find(o=>o.id===id);return [rr(q.x[0],q.x[1]),rr(q.z[
 const scene=new THREE.Scene();
 const WATER=new THREE.Color(0x0c7390);
 scene.background=WATER.clone();
-scene.fog=new THREE.FogExp2(WATER,.0056);
+scene.fog=new THREE.FogExp2(WATER,.0056*QC.vis);
 const renderer=new THREE.WebGLRenderer({antialias:!isTouch,powerPreference:'high-performance'});
-const PR_MAX=Math.min(window.devicePixelRatio||1,2),PR_MIN=isTouch?.7:.9;let prCur=Math.min(PR_MAX,isTouch?1.25:1.75);
+const PR_DPR=Math.min(window.devicePixelRatio||1,2),PRQ=isTouch&&QC.pr;
+const PR_MAX=PRQ?Math.min(PR_DPR,PRQ[1]):PR_DPR,PR_MIN=PRQ?Math.min(PRQ[0],PR_MAX):(isTouch?.7:.9);let prCur=PRQ?Math.min(PR_MAX,PRQ[2]):Math.min(PR_MAX,isTouch?1.25:1.75);
+const GOV_SLOW=QC.cap?.042:.027,GOV_FAST=QC.cap?.0345:.0185;
 renderer.setPixelRatio(prCur);
 renderer.setSize(innerWidth,innerHeight);
 renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -544,7 +558,36 @@ const merge=a=>mergeGeometries(a.map(g=>g.index?g.toNonIndexed():g),false);
 function inst(geo,mat,list,withColor){
   const m=new THREE.InstancedMesh(geo,mat,list.length);
   list.forEach((o,i)=>{_m.compose(_v.set(o.x,o.y,o.z),_q.setFromEuler(_e.set(o.rx||0,o.ry||0,o.rz||0)),_s.set(o.sx??o.s,o.sy??o.s,o.sz??o.s));m.setMatrixAt(i,_m);if(withColor)m.setColorAt(i,new THREE.Color(o.c));});
-  m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true;m.frustumCulled=false;scene.add(m);return m;
+  m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true;m.frustumCulled=false;scene.add(m);
+  if(list.length>=24)streamReg(m,list);
+  return m;
+}
+/* Akışlı örnekleme: her örneğin ana matrisi (M) saklanır; sadece kameraya STR_R içindeki örnekler GPU tamponunun başına dizilir.
+   Dışarıdaki kod yine ana dizinle (setMatrixAt(idx)) çalışır; çağrılar hem ana kopyaya hem (varsa) canlı yuvaya yazılır. */
+const streams=[];let strR=200,strX=1e9,strZ=1e9,strRl=0;
+function streamReg(m,list){
+  const n=list.length,M=new Float32Array(m.instanceMatrix.array),C=m.instanceColor?new Float32Array(m.instanceColor.array):null,P=new Float32Array(n*2),slot=new Int32Array(n).fill(-1);
+  for(let i=0;i<n;i++){P[i*2]=list[i].x;P[i*2+1]=list[i].z;}
+  m.setMatrixAt=(i,mat)=>{mat.toArray(M,i*16);const k=slot[i];if(k>=0)mat.toArray(m.instanceMatrix.array,k*16);};
+  if(C)m.setColorAt=(i,c)=>{C[i*3]=c.r;C[i*3+1]=c.g;C[i*3+2]=c.b;const k=slot[i];if(k>=0){const a=m.instanceColor.array;a[k*3]=c.r;a[k*3+1]=c.g;a[k*3+2]=c.b;}};
+  streams.push({m,n,M,C,P,slot});
+}
+function restream(cx,cz){
+  const R2=strR*strR;
+  for(const S of streams){
+    const {m,n,M,C,P,slot}=S,a=m.instanceMatrix.array,ca=m.instanceColor?m.instanceColor.array:null;let k=0;
+    for(let i=0;i<n;i++){
+      const dx=P[i*2]-cx,dz=P[i*2+1]-cz;
+      if(dx*dx+dz*dz<R2){a.set(M.subarray(i*16,i*16+16),k*16);if(ca)ca.set(C.subarray(i*3,i*3+3),k*3);slot[i]=k++;}else slot[i]=-1;
+    }
+    m.count=k;
+    const im=m.instanceMatrix;if(im.clearUpdateRanges){im.clearUpdateRanges();im.addUpdateRange(0,Math.max(k,1)*16);}im.needsUpdate=true;
+    if(m.instanceColor){const ic=m.instanceColor;if(ic.clearUpdateRanges){ic.clearUpdateRanges();ic.addUpdateRange(0,Math.max(k,1)*3);}ic.needsUpdate=true;}
+  }
+}
+function updateStream(){
+  const x=camera.position.x,z=camera.position.z;
+  if(Math.hypot(x-strX,z-strZ)>8||Math.abs(strR-strRl)>14){strX=x;strZ=z;strRl=strR;restream(x,z);}
 }
 const colliders=[];
 const structs=[],flora=[];
@@ -561,7 +604,7 @@ let signCv=null,signTex=null;
 /* ================= Akvaryum: zemin, cam, salon ================= */
 {
   const ZT=[{b:[300,545,-305,-175],c:[.86,.93,.98],k:.8},{b:[-545,-300,-305,-175],c:[.03,.025,.025],k:.97},{b:[-545,-300,175,305],c:[.2,.25,.32],k:.7},{b:[300,545,175,305],c:[.38,.27,.6],k:.6},{b:[-295,295,-305,-175],c:[.98,.96,.88],k:.55},{b:[-295,295,175,305],c:[.58,.55,.5],k:.5},{b:[300,545,-170,170],c:[.7,.82,.9],k:.45},{b:[-545,-300,-170,170],c:[.8,.4,.24],k:.8}],_zc=new THREE.Color();
-  const g=new THREE.PlaneGeometry(TW,TD,isTouch?380:560,isTouch?217:320);g.rotateX(-Math.PI/2);
+  const g=new THREE.PlaneGeometry(TW,TD,isTouch?QC.seg[0]:560,isTouch?QC.seg[1]:320);g.rotateX(-Math.PI/2);
   const p=g.attributes.position,col=new Float32Array(p.count*3),c=new THREE.Color();
   for(let i=0;i<p.count;i++){
     const x=p.getX(i),z=p.getZ(i),h=floorH(x,z);p.setY(i,h);
@@ -645,12 +688,12 @@ function splash(x,z,v){
 }
 function updateEnv(dt){
   const e=ZENV[zoneAt(camera.position.x,camera.position.z)]||[0x0c7390,.0056,1],k=1-Math.exp(-dt*1.2);
-  envCol.lerp(envTgt.setHex(e[0]),k);envD+=(e[1]-envD)*k;envL+=(e[2]-envL)*k;
+  envCol.lerp(envTgt.setHex(e[0]),k);envD+=(e[1]-envD)*k;envL+=(e[2]-envL)*k;strR=clamp(1.6/(envD*QC.vis),85,250);updateStream();
   const above=camera.position.y>SURF+.15;
   if(above!==aboveWater){aboveWater=above;sky.visible=above;for(const r of rays)r.visible=r.userData.keep&&!above;if(snowPts)snowPts.visible=!above;}
   skyK+=((above?1:0)-skyK)*(1-Math.exp(-dt*3));
   if(above){scene.background.copy(NIGHT_BG);scene.fog.color.copy(NIGHT_BG);scene.fog.density=.0012;}
-  else{scene.background.copy(envCol);scene.fog.color.copy(envCol);scene.fog.density=envD;}
+  else{scene.background.copy(envCol);scene.fog.color.copy(envCol);scene.fog.density=envD*QC.vis;}
   hemi.intensity=2*envL*(1-skyK)+.9*skyK;hemi.color.lerpColors(HC_UNDER,HC_NIGHT,skyK);
   sun.intensity=2.6*envL*(1-skyK)+1.3*skyK;sun.color.lerpColors(SUN_UNDER,SUN_NIGHT,skyK);
   surfaceMat.color.lerpColors(SURF_UNDER,SURF_NIGHT,skyK);surfaceMat.opacity=.62+.26*skyK;surfaceMat.emissiveIntensity=.55-.35*skyK;
@@ -698,13 +741,13 @@ function rockGeo(seed){
   for(let i=0;i<260;i++){const [x,z]=zp('kelp');addK(x,z);}
   for(let i=0;i<420;i++){const x=rr(-HX+6,HX-6),z=(R()<.5?-1:1)*rr(HZ-12,HZ-5);addK(x,z);}
   const sway='float sw=sin(uT*.9+ip.x*.21+ip.z*.17+position.y*2.2)*2.2+sin(uT*1.7+ip.z*.3)*.5;transformed.x+=sw*position.y*position.y;transformed.z+=cos(uT*.7+ip.x*.13+position.y*1.8)*1.3*position.y*position.y;';
-  regFlora(inst(kelpGeo,stdMat({roughness:.8,side:THREE.DoubleSide},'kelp',{v:sway,caus:.6}),kl,true),kl,4.5);
+  lowCount(regFlora(inst(kelpGeo,stdMat({roughness:.8,side:THREE.DoubleSide},'kelp',{v:sway,caus:.6}),thinOrder(kl),true),kl,4.5),1);
   const grassParts=[];for(let k=0;k<3;k++){const g=new THREE.PlaneGeometry(.2,1,1,5);g.translate(rr(-.2,.2),.5,rr(-.2,.2));g.rotateY(k*Math.PI/3);grassParts.push(g);}
   const grassGeo=merge(grassParts);
   const gl=[];const addG=(x,z)=>gl.push({x,y:floorH(x,z)-.05,z,ry:rr(0,6),sx:rr(.8,1.3),sy:rr(1.2,3.6),sz:rr(.8,1.3),c:['#4c9a3c','#6aa23a','#3b8a4a','#8aa83a'][(R()*4)|0]});
   for(let i=0;i<2600;i++){const [x,z]=zp('grass');addG(x,z);}
   for(let p=0;p<300;p++){const cx=rr(-HX+10,HX-10),cz=rr(-HZ+10,HZ-10);const zn=zoneAt(cx,cz);for(let i=0;i<30;i++){const gx=cx+rr(-5,5),gz=cz+rr(-5,5);if(zn!=='ice'&&zn!=='volcano'&&zn!=='crystal'&&zn!=='canyon')addG(gx,gz);}}
-  lowCount(regFlora(inst(grassGeo,stdMat({roughness:.9,side:THREE.DoubleSide},'grass',{v:'transformed.x+=sin(uT*1.3+ip.x*.4+ip.z*.3)*.45*position.y*position.y;transformed.z+=cos(uT*1.1+ip.z*.35)*.3*position.y*position.y;',caus:.7}),gl,true),gl,6),.5);
+  lowCount(regFlora(inst(grassGeo,stdMat({roughness:.9,side:THREE.DoubleSide},'grass',{v:'transformed.x+=sin(uT*1.3+ip.x*.4+ip.z*.3)*.45*position.y*position.y;transformed.z+=cos(uT*1.1+ip.z*.35)*.3*position.y*position.y;',caus:.7}),thinOrder(gl),true),gl,6),.5);
 }
 
 /* ================= Mercanlar ve şakayıklar ================= */
@@ -735,7 +778,7 @@ const anemones=[];
   for(const [cx,cz] of clownHomes){for(let i=0;i<5;i++){const x=cx+rr(-2.5,2.5),z=cz+rr(-2.5,2.5);A.push({x,y:floorH(x,z)-.05,z,ry:rr(0,6),s:rr(1.1,1.8),c:['#ff7ab0','#b8ff8a','#ffd1f0','#9df2ff'][(R()*4)|0]});}anemones.push([cx,floorH(cx,cz),cz]);}
   for(let i=0;i<30;i++){const [x,z]=zp('coral');A.push({x,y:floorH(x,z)-.05,z,ry:rr(0,6),s:rr(.8,1.4),c:['#ff7ab0','#b8ff8a','#ffd1f0','#9df2ff'][(R()*4)|0]});}
   const cm=k=>stdMat({roughness:.75,side:k==='fan'||k==='tube'?THREE.DoubleSide:THREE.FrontSide},'c-'+k,{caus:.8,v:k==='fan'?'transformed.z+=sin(uT*1.2+ip.x)*.08*position.y;':k==='anem'?'float up=max(position.y-.5,0.);transformed.x+=sin(uT*2.+ip.x+position.z*4.)*.25*up;transformed.z+=cos(uT*1.7+ip.z+position.x*4.)*.25*up;':''});
-  lowCount(regFlora(inst(branchGeo,cm('branch'),B,true),B,5.5),.5);lowCount(regFlora(inst(brain,cm('brain'),Bn,true),Bn,5.5),.7);lowCount(regFlora(inst(fan,cm('fan'),F,true),F,5.5),.7);lowCount(regFlora(inst(tubeGeo,cm('tube'),Tu,true),Tu,5.5),.7);
+  lowCount(regFlora(inst(branchGeo,cm('branch'),thinOrder(B),true),B,5.5),.5);lowCount(regFlora(inst(brain,cm('brain'),thinOrder(Bn),true),Bn,5.5),.7);lowCount(regFlora(inst(fan,cm('fan'),thinOrder(F),true),F,5.5),.7);lowCount(regFlora(inst(tubeGeo,cm('tube'),thinOrder(Tu),true),Tu,5.5),.7);
   const am=cm('anem');am.emissive=new THREE.Color(0x401030);regFlora(inst(anemGeo,am,A,true),A,5);
 }
 
@@ -796,7 +839,7 @@ const rays=[];let snowPts=null;
   const mat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,uniforms:{uT:U.t},
     vertexShader:'varying vec2 vUv;varying float vF;void main(){vUv=uv;vec4 mv=modelViewMatrix*vec4(position,1.);vec3 n=normalize(normalMatrix*normal);vF=abs(dot(n,normalize(-mv.xyz)));gl_Position=projectionMatrix*mv;}',
     fragmentShader:'uniform float uT;varying vec2 vUv;varying float vF;void main(){float a=pow(vUv.y,1.6)*vF*vF*.085*(.75+.25*sin(uT*.6+vUv.x*6.28));gl_FragColor=vec4(.8,.97,1.,a);}'});
-  for(let i=0;i<150;i++){const h=rr(55,74),m=new THREE.Mesh(new THREE.CylinderGeometry(rr(2,4),rr(7,12),h,20,1,true),mat);m.position.set(rr(-HX+15,HX-15),SURF-h/2,rr(-HZ+12,HZ-12));m.rotation.set(rr(-.12,.12),0,rr(-.12,.12));m.userData.b=m.rotation.clone();m.userData.p=R()*6;m.userData.keep=!(isTouch&&i%3);m.visible=m.userData.keep;scene.add(m);rays.push(m);}
+  for(let i=0;i<150;i++){const h=rr(55,74),m=new THREE.Mesh(new THREE.CylinderGeometry(rr(2,4),rr(7,12),h,isTouch?10:20,1,true),mat);m.position.set(rr(-HX+15,HX-15),SURF-h/2,rr(-HZ+12,HZ-12));m.rotation.set(rr(-.12,.12),0,rr(-.12,.12));m.userData.b=m.rotation.clone();m.userData.p=R()*6;m.userData.keep=!(isTouch&&i%QC.shaft);m.visible=m.userData.keep;scene.add(m);rays.push(m);}
 }
 {
   const n=3000,a=new Float32Array(n*3);for(let i=0;i<n*3;i++)a[i]=Math.random()*60;
@@ -1071,7 +1114,7 @@ const local=makeSub(me.color);
 const sub=local.g;scene.add(sub);
 sub.position.set(-8,-6,40);
 const subVel=new THREE.Vector3();let subYaw=Math.PI,subPitch=0,subRoll=0,lightOn=true;
-const spot=new THREE.SpotLight(0xfff4dc,90,55,.42,.55,1.3);spot.position.set(0,-.3,2.2);sub.add(spot);sub.add(spot.target);spot.target.position.set(0,-2,20);
+const spot=new THREE.SpotLight(0xfff4dc,90,55,.42,.55,1.3);spot.position.set(0,-.3,2.2);if(QC.spot){sub.add(spot);sub.add(spot.target);}spot.target.position.set(0,-2,20);
 
 /* ================= Durum ================= */
 let subAir=false,wasAfl=false,surfT=-1e9;
@@ -1224,7 +1267,25 @@ function audioInit(){
   const buf=ac.createBuffer(1,ac.sampleRate*3,ac.sampleRate),d=buf.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){l=(l+.02*(Math.random()*2-1))/1.02;d[i]=l*3.2;}
   const src=ac.createBufferSource();src.buffer=buf;src.loop=true;const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=420;const g=ac.createGain();g.gain.value=.5;src.connect(lp).connect(g).connect(master);src.start();
   engO=ac.createOscillator();engO.type='sawtooth';engO.frequency.value=48;const el=ac.createBiquadFilter();el.type='lowpass';el.frequency.value=180;engG=ac.createGain();engG.gain.value=0;engO.connect(el).connect(engG).connect(master);engO.start();
+  ac.onstatechange=()=>{if(ac.state!=='running')audioWake();};
 }
+/* Mobil ses kilidi: tarayıcılar sesi ilk dokunuşa kadar kapalı tutar (iOS ayrıca sessiz anahtarında WebAudio'yu susturur).
+   İlk dokunuşta bağlamı oluştur + resume et, sessiz bir <audio> döngüsüyle iOS'ta medya kanalına geç; arka plandan dönünce yeniden aç. */
+let silentEl=null;
+function audioWake(){
+  if(!ac)return;
+  if(ac.state!=='running'){try{const r=ac.resume();if(r&&r.catch)r.catch(()=>{});}catch{}}
+  if(!silentEl){try{
+    const n=800,h=new DataView(new ArrayBuffer(44+n));const w=(o,t)=>{for(let i=0;i<t.length;i++)h.setUint8(o+i,t.charCodeAt(i));};
+    w(0,'RIFF');h.setUint32(4,36+n,true);w(8,'WAVEfmt ');h.setUint32(16,16,true);h.setUint16(20,1,true);h.setUint16(22,1,true);h.setUint32(24,8000,true);h.setUint32(28,8000,true);h.setUint16(32,1,true);h.setUint16(34,8,true);w(36,'data');h.setUint32(40,n,true);for(let i=0;i<n;i++)h.setUint8(44+i,128);
+    silentEl=new Audio(URL.createObjectURL(new Blob([h.buffer],{type:'audio/wav'})));silentEl.loop=true;silentEl.volume=.01;silentEl.setAttribute('playsinline','');
+    const pr=silentEl.play();if(pr&&pr.catch)pr.catch(()=>{silentEl=null;});
+  }catch{silentEl=null;}}
+}
+function audioUnlock(){audioInit();audioWake();if(ac&&ac.state==='running'&&(!silentEl||!silentEl.paused))['touchstart','touchend','pointerdown','click','keydown'].forEach(e=>removeEventListener(e,audioUnlock,true));}
+['touchstart','touchend','pointerdown','click','keydown'].forEach(e=>addEventListener(e,audioUnlock,{capture:true,passive:true}));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){audioWake();if(silentEl&&silentEl.paused)silentEl.play().catch(()=>{});}});
+addEventListener('pageshow',audioWake);
 function tone(f0,f1,dur,type='sine',vol=.3,delay=0){if(!ac||muted)return;const t=ac.currentTime+delay,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g).connect(master);o.start(t);o.stop(t+dur+.05);}
 const sfx={slash(v=1){noise(.28,6500,900,.3*v);tone(1100,220,.22,'sawtooth',.16*v);},net(v=1){tone(420,980,.35,'triangle',.2*v);noise(.35,3500,700,.14*v);},sonar(v=1){tone(1500,900,1.1,'sine',.28*v);tone(1500,900,1.1,'sine',.12*v,.35);tone(1500,900,1.1,'sine',.05*v,.7);},food(){tone(500,200,.18,'triangle',.2);},disc(){[660,880,1320].forEach((f,i)=>tone(f,f*1.01,.35,'triangle',.18,i*.11));},chat(){tone(900,1100,.08,'sine',.08);},
   launch(v=1){tone(95,38,.4,'sine',.55*v);noise(.55,2400,300,.22*v);},motor(v=1){tone(260,1300,1.1,'sawtooth',.035*v);noise(.9,5000,1800,.05*v,.05);},
@@ -2691,12 +2752,13 @@ function govern(rd){
   if(rd>.12||document.hidden)return;
   govAcc+=rd;if(++govN<40)return;
   const avg=govAcc/govN;govAcc=0;govN=0;let nx=prCur;
-  if(avg>.027&&prCur>PR_MIN){nx=Math.max(PR_MIN,prCur-.15);govUp=0;}
-  else if(avg<.0185&&prCur<PR_MAX){if(++govUp>=3){nx=Math.min(PR_MAX,prCur+.1);govUp=0;}}
+  if(avg>GOV_SLOW&&prCur>PR_MIN){nx=Math.max(PR_MIN,prCur-.15);govUp=0;}
+  else if(avg<GOV_FAST&&prCur<PR_MAX){if(++govUp>=3){nx=Math.min(PR_MAX,prCur+.1);govUp=0;}}
   else govUp=0;
   if(nx!==prCur){prCur=nx;renderer.setPixelRatio(prCur);renderer.setSize(innerWidth,innerHeight);}
 }
 function loop(){
+  if(isTouch){const n0=performance.now();if(innerHeight>innerWidth||(QC.cap&&n0-lastT<QC.cap)){if(innerHeight>innerWidth)lastT=n0;requestAnimationFrame(loop);return;}}
   const now=performance.now(),rawDt=(now-lastT)/1000,dt=Math.min(rawDt,.05);lastT=now;frameN++;if(running)govern(rawDt);
   const t=worldTime();U.t.value=t;U.cam.value.copy(camera.position);
   let spd=0;
@@ -2759,9 +2821,19 @@ $('swatches').innerHTML=COLORS.map(c=>`<button style="background:${c}" data-c="$
 const markSw=()=>document.querySelectorAll('#swatches button').forEach(b=>b.classList.toggle('on',b.dataset.c===me.color));
 $('swatches').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;me.color=b.dataset.c;markSw();readLobby();});
 markSw();readLobby();
-$('soloBtn').onclick=()=>{readLobby();net.mode='solo';enterGame();};
-$('hostBtn').onclick=()=>{readLobby();startHost();};
-$('joinBtn').onclick=()=>{readLobby();startJoin($('codeIn').value);};
+/* Telefonda başlarken tam ekran + yatay kilit dener (Android Chrome); olmazsa 'telefonu çevir' ekranı devrede */
+function tryLandscape(){
+  if(!isTouch)return;
+  try{
+    const de=document.documentElement,fs=de.requestFullscreen||de.webkitRequestFullscreen,lock=()=>{try{screen.orientation.lock('landscape').catch(()=>{});}catch{}};
+    if(fs&&!document.fullscreenElement&&!document.webkitFullscreenElement){const r=fs.call(de);if(r&&r.then)r.then(lock,()=>{});else lock();}else lock();
+  }catch{}
+}
+$('soloBtn').onclick=()=>{tryLandscape();readLobby();net.mode='solo';enterGame();};
+$('hostBtn').onclick=()=>{tryLandscape();readLobby();startHost();};
+$('joinBtn').onclick=()=>{tryLandscape();readLobby();startJoin($('codeIn').value);};
+function qLabel(){$('qBtn').textContent='⚙ '+T.qLbl+': '+T[{low:'qLow',mid:'qMid',high:'qHigh'}[Q]];}
+$('qBtn').onclick=()=>{const n=QUAL[(QUAL.indexOf(Q)+1)%3];store.set('aqua-q',n);toast(T.qSet);setTimeout(()=>location.reload(),350);};
 $('codeIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('joinBtn').click();});
 const inviteCode=(qs.get('oda')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
 if(inviteCode)$('codeIn').value=inviteCode;
@@ -2800,6 +2872,7 @@ function showInstallHelp(){
 }
 $('installBtn').onclick=async()=>{
   if(isStandalone()){toast(T.inDone);return;}
+  if(window.top!==window){try{window.open(location.href.split('?')[0],'_blank');}catch{}return;}
   if(deferredInstall){
     const d=deferredInstall;deferredInstall=null;
     try{d.prompt();const r=await d.userChoice;if(r&&r.outcome==='accepted'){$('installBtn').style.display='none';return;}}catch{}
@@ -2881,7 +2954,7 @@ function startTutorial(){
 $('tutNext').onclick=()=>{if(tutI>=TUTS.length-1)tutEnd();else tutShow(tutI+1);};
 $('tutBack').onclick=()=>{if(tutI>0)tutShow(tutI-1);};
 $('tutSkip').onclick=tutEnd;
-$('tutBtn').onclick=startTutorial;
+$('tutBtn').onclick=()=>{tryLandscape();startTutorial();};
 addEventListener('resize',()=>{if(tutOn)tutShow(tutI);});
 addEventListener('orientationchange',()=>setTimeout(()=>{if(tutOn)tutShow(tutI);},300));
 if(qs.get('ogretici')==='1'&&isTouch)setTimeout(()=>{if(!running)startTutorial();},400);

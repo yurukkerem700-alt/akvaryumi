@@ -3,7 +3,7 @@
 Online co-op / PvP 3D denizaltı oyunu (Three.js, tek dosya, sunucusuz — oyuncular PeerJS ile tarayıcıdan tarayıcıya bağlanır).
 
 - 1120×640 birimlik dev akvaryum (önceki sürümün 4 katı alan)
-- 16 canlı türü, 12 biyom (Mercan Bahçesi, Yosun Ormanı, Buzul Kutbu, Yanardağ Bacaları, Kristal Mağaraları, Karanlık Uçurum, Batık Şehir, Turkuaz Lagün, Mavi Okyanus, Kızıl Kanyon …)
+- 27 canlı türü, 12 biyom (Mercan Bahçesi, Yosun Ormanı, Buzul Kutbu, Yanardağ Bacaları, Kristal Mağaraları, Karanlık Uçurum, Batık Şehir, Turkuaz Lagün, Mavi Okyanus, Kızıl Kanyon …)
 - Su yüzeyine çıkılabilir: yüzeyde yıldızlı gece gökyüzü, ay, kayan yıldızlar ve aurora
 - PWA: masaüstüne / ana ekrana yüklenebilir (Chrome/Edge: adres çubuğundaki yükle simgesi veya oyun içi "Uygulamayı yükle" düğmesi; iOS: Paylaş → Ana Ekrana Ekle)
 
@@ -36,8 +36,16 @@ Online co-op / PvP 3D denizaltı oyunu (Three.js, tek dosya, sunucusuz — oyunc
 ### v2.3.1: mobil ses düzeltmesi
 - İlk dokunuşta ses bağlamı açılır ve `resume()` edilir; iPhone'da sessiz anahtarını aşmak için sessiz bir `<audio>` döngüsü çalınır; uygulamaya geri dönünce ses yeniden açılır.
 
+### v3.0: kokpit, zengin deniz altı, hazine avı
+- **Kokpit (birinci şahıs, artık varsayılan)**: denizaltının içinden bakarsın — perçinli çelik gövde, kavisli cam, nemlenme damlaları, yükselen kabarcıklar, hafif sarsıntı/yalpa ve baş hareketine göre kayan kaput. Alt konsolda gerçek zamanlı derinlik, pusula, hız göstergeleri, gövde/batarya çubukları ve uyarı lambaları var. `B` / 👁 ile üçüncü şahsa geçilir. Telefonda ince bir çerçeve olarak kalır (dokunmatik düğmeleri kapatmaz).
+- **Daha canlı harita**: kum tepecikleri ve dalgacıkları, zemin renginde yosun çayırları/çakıl/kabuk lekeleri; kum üzerinde binlerce çayır tutamı, uzun şerit otlar, yosun çalıları, sargassum dalları, dev yosun ormanları, süngerler, deniz kestaneleri, deniz yıldızları, tarak kabukları, amforalar ve kaya-mercan bahçeleri. Hepsi akışlı (sadece yakındakiler çizilir).
+- **Antik harabeler (15 yer)**: sütun sıraları, kapılar (lento), heykeller, tiyatro basamakları, duvarlar ve platformlar; yıkılabilir ve destek kaybedince çöker.
+- **11 yeni canlı (toplam 27)**: Sardalya, Kelebek Balığı, Barakuda, Yunus, Çekiç Başlı Köpekbalığı, Kılıç Balığı, Murana, Ahtapot, Mürekkep Balığı, Yaprak Deniz Ejderi, Blob Balığı.
+- **Yeni para kazanma yolları**: ~180 hazine — hazine/altın sandıklar, antik amfora/heykelcik/tablet/taç, dev inciler, mücevherler; **teknoloji sandıkları kalıcı yükseltme verir** (bir kez), **ikmal sandıkları** cephane/gövde/bataryayı doldurur. Harabe keşfi bonusu, yeni tür keşfi (+35), düşman avı (+15–30) ve "hazine topla" görevi altın kazandırır. **SPACE sonar** yakındaki hazineleri işaretler (radar + harita). Antik eserler **Müze** koleksiyonunda (🏪 Tersane) toplanır; ilk bulunuşta bonus, hepsi tamamlanınca +2000 🪙.
+- **Profesyonel harita (M)**: gölgelendirilmiş derinlik haritası, 100 m ızgara, bölge etiketleri, harabe simgeleri, hazine işaretleri, ölçek çubuğu, pusula gülü ve simge açıklaması.
+
 ### Yeni sürüm yayınlarken
-`index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-1`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
+`index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 
 ## Yayınlama (Vercel)
 

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Akvaryum Seferi — Online 3D Denizaltı</title>
-<meta name="description" content="Akvaryum Seferi: online co-op 3D denizaltı oyunu. 16 canlı türü, 12 biyom, su yüzeyi ve yıldızlı gökyüzü. Ücretsiz, tarayıcıda oyna; masaüstüne veya ana ekrana yükle.">
+<meta name="description" content="Akvaryum Seferi: online co-op 3D denizaltı oyunu. 27 canlı türü, 12 biyom, su yüzeyi ve yıldızlı gökyüzü. Ücretsiz, tarayıcıda oyna; masaüstüne veya ana ekrana yükle.">
 <meta name="theme-color" content="#04202e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -78,6 +78,23 @@ input.txt:focus{border-color:var(--cyan)}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.tip{padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.03);font-size:10.5px;color:#c8dde5;line-height:1.45}.tip b{display:block;color:#fff;margin-bottom:3px;font-size:11px}
 .foot{margin-top:10px;color:#7f9ba7;font-size:10px;line-height:1.5}
 #mapM{display:none}#mapM .card{width:min(980px,100%);padding:16px}#mapC{width:100%;display:block;border-radius:12px;background:#062535}
+
+#museum{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px;align-items:center}.mus{font-size:12px;color:var(--muted);width:100%;margin-top:4px}.mus b{color:#ffd56c}
+/* Kokpit (birinci şahıs) */
+#cockpit{position:fixed;inset:0;z-index:3;pointer-events:none;display:none;overflow:hidden}
+body.fp.run #cockpit{display:block}
+#ckInner{position:absolute;left:-24px;top:-24px;will-change:transform}
+#ckInner>svg,#ckGlass,#ckDash{position:absolute;left:0;top:0;display:block}
+#ckGlass{border-radius:60px;background:linear-gradient(112deg,rgba(255,255,255,.075) 0%,rgba(255,255,255,0) 20%,rgba(255,255,255,0) 58%,rgba(255,255,255,.045) 66%,rgba(255,255,255,0) 76%),radial-gradient(ellipse at 50% 40%,rgba(0,0,0,0) 55%,rgba(0,12,20,.5) 100%);box-shadow:inset 0 0 60px rgba(0,16,26,.6),inset 0 0 0 2px rgba(170,225,255,.1)}
+#ckGlass::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle at 7% 82%,rgba(210,245,255,.28) 0 2px,transparent 3px),radial-gradient(circle at 11% 90%,rgba(210,245,255,.22) 0 3px,transparent 4px),radial-gradient(circle at 93% 85%,rgba(210,245,255,.26) 0 2px,transparent 3px),radial-gradient(circle at 89% 93%,rgba(210,245,255,.2) 0 3px,transparent 4px),radial-gradient(circle at 16% 12%,rgba(210,245,255,.16) 0 2px,transparent 3px),radial-gradient(circle at 84% 9%,rgba(210,245,255,.18) 0 2px,transparent 3px),radial-gradient(circle at 4% 50%,rgba(210,245,255,.14) 0 3px,transparent 4px),radial-gradient(circle at 96% 46%,rgba(210,245,255,.14) 0 3px,transparent 4px)}
+#ckGlass::after{content:"";position:absolute;left:0;right:0;bottom:0;height:26%;border-radius:0 0 inherit inherit;background:linear-gradient(0deg,rgba(255,190,110,.13),rgba(255,190,110,0))}
+#ckGlass i{position:absolute;bottom:-8px;width:8px;height:8px;border-radius:50%;border:1px solid rgba(220,250,255,.55);background:rgba(220,250,255,.12);animation:ckRise linear infinite}
+@keyframes ckRise{0%{transform:translateY(0) scale(.6);opacity:0}12%{opacity:.8}100%{transform:translateY(-75vh) translateX(14px) scale(1.5);opacity:0}}
+body.fp.run .cross{border-color:rgba(160,240,255,.55)}
+body.fp.run:not(.touch) #wpn{left:auto;right:12px;top:auto;bottom:12px;transform:none;display:grid;grid-template-columns:repeat(3,66px);background:rgba(2,14,24,.78)}
+body.fp.run:not(.touch) #catalogP{max-height:calc(100vh - 62px - 205px)}
+body.fp.run:not(.touch) .hint{bottom:calc(25vh + 10px)}
+body.fp.run #hurtV{z-index:4}
 #touch{display:none;position:fixed;inset:0;z-index:5;pointer-events:none}
 #joy{position:fixed;left:24px;bottom:210px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid var(--line);pointer-events:auto;touch-action:none}
 #joy i{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px;border-radius:50%;background:rgba(111,224,255,.45)}
@@ -191,6 +208,7 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
 <div id="game"></div>
 <div class="cross" id="cross"><i></i></div><div class="aimInfo" id="aimInfo"></div><div id="flashV"></div><div id="hurtV"></div><div id="inkV"></div>
 <div id="tags"></div>
+<div id="cockpit"><div id="ckInner"><svg id="ckFrame"></svg><div id="ckGlass"></div><svg id="ckDash"></svg></div></div>
 
 <div class="hud">
   <div class="side">
@@ -198,7 +216,7 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
     <div class="stat glass"><span data-i="battery">BATARYA</span><b id="battery">100%</b><div class="meterB"><i id="batteryBar"></i></div></div>
     <div class="stat glass opt"><span data-i="depth">DERİNLİK</span><b id="depth">0 m</b></div>
     <div class="stat glass opt"><span data-i="speed">HIZ</span><b id="speed">0 kn</b></div>
-    <div class="stat glass opt"><span data-i="species">TÜRLER</span><b id="live">0/16</b></div>
+    <div class="stat glass opt"><span data-i="species">TÜRLER</span><b id="live">0/27</b></div>
     <div class="stat glass"><span data-i="hull">GÖVDE</span><b id="hull">100%</b><div class="meterB h"><i id="hullBar"></i></div></div>
     <div class="stat glass"><span data-i="torp">TORPİDO</span><b id="torp">6/6</b><div class="meterB"><i id="torpBar"></i></div></div>
   </div>
@@ -282,6 +300,7 @@ body{touch-action:none;overscroll-behavior:none;-webkit-touch-callout:none;-webk
   <div class="garTop"><div><div class="eyebrow" data-i="garage">TERSANE</div><div class="garSub" data-i="garageSub"></div></div><div class="garGold">🪙 <b class="goldV">0</b></div><button class="btn" id="garClose" data-i="close">KAPAT</button></div>
   <div class="k" data-i="subsH">DENİZALTILAR</div><div class="subGrid" id="subGrid"></div>
   <div class="k" data-i="upH">GELİŞTİRMELER</div><div id="upList"></div>
+  <div class="k" id="museumH">MÜZE</div><div id="museum"></div>
 </div></div>
 
 <div class="modal" id="mapM"><div class="card"><div class="k" data-i="map" style="margin-bottom:8px">AKVARYUM HARİTASI</div><canvas id="mapC" width="1400" height="820"></canvas><div class="foot" data-i="mapClose"></div></div></div>
@@ -314,7 +333,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.03-1',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.03-2',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -354,14 +373,14 @@ window.__aquaOK=true;
 /* ================= Metinler ================= */
 const $=id=>document.getElementById(id);
 const TEXT={
-tr:{title:'Akvaryum Seferi',desc:'Kocaman bir cam akvaryumun içinde denizaltınla süzül, 16 canlı türünü keşfet, 12 farklı biyomu gez, su yüzeyine çıkıp yıldızlı gökyüzünü izle ve köpekbalıklarına, elektrikli yılan balıklarına, dev kalamarlara, piranhalara karşı hayatta kal. Torpido ve mayınlarla kayaları, gemileri, sütunları yık. Oda kur, kodu gönder: online modda birbirinize de zarar verirsiniz. Sunucu yok: oyuncular tarayıcıdan tarayıcıya doğrudan bağlanır.',
+tr:{title:'Akvaryum Seferi',desc:'Kocaman bir cam akvaryumun içinde denizaltınla süzül, 27 canlı türünü keşfet, 12 farklı biyomu gez, su yüzeyine çıkıp yıldızlı gökyüzünü izle ve köpekbalıklarına, elektrikli yılan balıklarına, dev kalamarlara, piranhalara karşı hayatta kal. Torpido ve mayınlarla kayaları, gemileri, sütunları yık. Oda kur, kodu gönder: online modda birbirinize de zarar verirsiniz. Sunucu yok: oyuncular tarayıcıdan tarayıcıya doğrudan bağlanır.',
 nameL:'KAPTAN ADI',colorL:'DENİZALTI RENGİ',solo:'TEK BAŞINA KEŞFET',host:'ODA KUR (ONLINE)',join:'KATIL',codePh:'KOD',
 t1h:'Sürüş',t1:'WASD sür ve dön · Q/E yüksel/alçal (yüzeye çık: gökyüzü, orada sabit durursun!) · SHIFT hızlan · Telefonda ▲ ▼ ⚡ tek dokunuşla açılıp kapanır',t2h:'Kamera',t2:'Oyuna tıkla, fareyle etrafa bak · tekerlek: yakınlaştır',t3h:'Silahlar',t3:'Sol tık ateş · 1 torpido · 2 salvo · 3 mayın · 4 EMP · 5/C kalkan · 6/R tamir · 7/V şok · 8/N ağı hazırla (sol tık fırlatır) · 9/X ya da sağ tık yakın saldırı · SPACE sonar · F yem · B bakış · T katalog',t4h:'Online',t4:'8 kişiye kadar · torpidolar birbirinize zarar verir · ENTER sohbet',
 foot:'Online mod, bağlantıyı kurmak için yalnızca ücretsiz ve herkese açık PeerJS eşleştirme hizmetini kullanır; oyun verisi doğrudan oyuncular arasında akar. Oda sahibi çıkarsa oda kapanır.',
 battery:'BATARYA',torp:'TORPİDO',noTorp:'Torpido kalmadı — tüpler dolduruluyor…',hit:' vuruldu!',lock:'KİLİTLENDİ',torpBy:' torpido fırlattı',depth:'DERİNLİK',speed:'HIZ',species:'TÜRLER',catalog:'TÜR KATALOĞU',room:'ODA KODU',copy:'DAVET LİNKİNİ KOPYALA',copied:'Davet linki kopyalandı',copyManual:'Kodu arkadaşına söyle: ',zone:'BÖLGE',menu:'MENÜ',
 hint:'Tıkla: fareyle bak · Sol tık: ateş · Sağ tık/X: yakın saldırı · 1-4 silah · 5/C kalkan · 6/R tamir · 7/V şok · 8/N ağ · WASD sür · Q/E yüksel/alçal · SHIFT hız · SPACE sonar · F yem · L ışık · B bakış · T katalog · G tersane · M harita',
 connecting:'Odaya bağlanılıyor…',hosting:'Oda açılıyor…',netFail:'Bağlantı kurulamadı. İnternetini kontrol et ya da tek başına oyna.',noRoom:'Bu kodla açık bir oda bulunamadı.',badCode:'5 haneli oda kodunu yaz.',full:'Oda dolu (8/8).',hostLeft:'Oda sahibi ayrıldı. Tek başına devam ediyorsun.',joined:'odaya katıldı',left:'ayrıldı',welcome:'Odaya hoş geldin! Birlikte keşfedin.',roomOpen:'Oda hazır! Kodu arkadaşlarına gönder: ',
-found:'YENİ TÜR KEŞFEDİLDİ',by:'Keşfeden: ',byYou:'Keşfeden: sen',allFound:'Tebrikler! Akvaryumdaki 16 türün hepsi keşfedildi!',sonar:'Sonar darbesi',sonarCd:'Sonar şarj oluyor…',food:'Yem bırakıldı — balıklar geliyor!',foodCd:'Yem hazırlanıyor…',lightOn:'Işıklar açık',lightOff:'Işıklar kapalı',chatPh:'Mesaj yaz · ENTER gönder · ESC kapat',map:'AKVARYUM HARİTASI',mapClose:'M ya da ESC ile kapat',you:'sen',start:'Sefer başladı! Oyuna tıklayıp fareyle bakabilirsin.',sonarBy:' sonar gönderdi',foodBy:' yem bıraktı',leave:'Menüye dönmek sefer bağlantısını kapatır. Emin misin?',
+found:'YENİ TÜR KEŞFEDİLDİ',by:'Keşfeden: ',byYou:'Keşfeden: sen',allFound:'Tebrikler! Akvaryumdaki 27 türün hepsi keşfedildi!',sonar:'Sonar darbesi',sonarCd:'Sonar şarj oluyor…',food:'Yem bırakıldı — balıklar geliyor!',foodCd:'Yem hazırlanıyor…',lightOn:'Işıklar açık',lightOff:'Işıklar kapalı',chatPh:'Mesaj yaz · ENTER gönder · ESC kapat',map:'AKVARYUM HARİTASI',mapClose:'M ya da ESC ile kapat',you:'sen',start:'Sefer başladı! Oyuna tıklayıp fareyle bakabilirsin.',sonarBy:' sonar gönderdi',foodBy:' yem bıraktı',leave:'Menüye dönmek sefer bağlantısını kapatır. Emin misin?',
 hull:'GÖVDE',w1:'TORPİDO',w2:'SALVO',w3:'MAYIN',w4:'EMP',w5:'KALKAN',w6:'TAMİR',w7:'ŞOK',swvOn:'ŞOK DALGASI!',swvCd:'Şok dalgası şarj oluyor…',shieldOn:'Kalkan açık!',shieldCd:'Kalkan şarj oluyor…',shieldDown:'Kalkan kırıldı!',repairStart:'Tamir başladı…',repairFull:'Gövde zaten tam',noKit:'Tamir kiti kalmadı — yenisi hazırlanıyor…',repairDone:'Tamir tamamlandı',kitGain:'+1 tamir kiti',rotHint:'Daha rahat oynamak için telefonu yatay tut',noMine:'Mayın kalmadı — yenisi hazırlanıyor…',mineDrop:'Mayın bırakıldı',empCd:'EMP şarj oluyor…',lowBat:'EMP için batarya yetersiz',stunned:'Sistemler devre dışı!',salvoNeed:'Salvo için en az 3 torpido gerek',slain:' yok edildi!',youSunk:'DENİZALTIN BATTI',respawnIn:'Yeniden doğuyor:',
 sunk:(v,k)=>v+', '+k+' tarafından batırıldı',
 install:'📲 UYGULAMAYI YÜKLE',iosHint:'iPhone/iPad: Paylaş → Ana Ekrana Ekle',surfaced:'Yüzeydesin — gece gökyüzü ve yıldızlar!',noSurfFire:'Yüzeyde torpido atılamaz — biraz dal',surface:'YÜZEY',
@@ -381,7 +400,7 @@ tut:[
 ['Özel yetenekler','🛡 kalkan · 🔧 tamir · 📡 sonar (çevreyi tarar) · 💥 şok dalgası · 🕸 ağ (önce hazırla, sonra ATEŞ ile fırlat; balıkları çeker, düşmanı yakalar) · ⚔ yakın saldırı. Altlarındaki sayı bekleme süresidir, ✓ hazır demek.'],
 ['Üst düğmeler','📖 tür kataloğu · 👥 oda (online) · 🗺 harita · 💬 sohbet · 💡 ışık · 🍤 yem (balıkları çeker) · 🎯 görevler · 👁 bakış açısı · 🏪 tersane · ❓ bu öğretici.'],
 ['Göstergeler','BATARYA hızlanınca azalır, durunca dolar. GÖVDE canındır: bitince batarsın ama kısa süre sonra yeniden doğarsın. TORPİDO cephanedir. Radar yakındaki canlıları ve düşmanları gösterir.'],
-['Amacın','Akvaryumdaki 16 canlı türünü bul ve keşfet. Görevleri tamamla, altın kazan, 🏪 tersanede daha güçlü denizaltı ve geliştirmeler al. İyi seferler!']
+['Amacın','Akvaryumdaki 27 canlı türünü bul ve keşfet. Görevleri tamamla, altın kazan, 🏪 tersanede daha güçlü denizaltı ve geliştirmeler al. İyi seferler!']
 ],
 inH:'UYGULAMAYI YÜKLE',inWhy:'Ana ekrana eklersen oyun tam ekran açılır, adres çubuğu görünmez ve internet olmasa da açılır.',inDone:'Uygulama zaten yüklü ✓',inDoneToast:'Uygulama yüklendi! Ana ekranından aç.',
 inIosT:'iPhone / iPad',inIosS:['Safari\'de alttaki (iPad\'de üstteki) <b>Paylaş</b> düğmesine dokun','Listeyi yukarı kaydır, <b>Ana Ekrana Ekle</b>\'ye dokun','Sağ üstteki <b>Ekle</b>\'ye bas — oyun ana ekranında!'],inIosN:'Paylaş düğmesini göremiyorsan bu sayfayı <b>Safari</b>\'de aç, sonra aynı adımları uygula.',
@@ -390,14 +409,14 @@ inDeskT:'Bilgisayar (Chrome / Edge)',inDeskS:['Adres çubuğunun sağındaki <b>
 inAppN:'Bu sayfa bir uygulamanın (Instagram, WhatsApp, TikTok…) içindeki tarayıcıda açık, burada yükleme çalışmaz. Sağ üstteki <b>⋯</b> menüsünden <b>Tarayıcıda aç</b>\'ı seç, sonra tekrar dene.',
 
 zones:{ice:'Buzul Kutbu',volcano:'Yanardağ Bacaları',abyss:'Karanlık Uçurum',crystal:'Kristal Mağaraları',lagoon:'Turkuaz Lagün',sunken:'Batık Şehir',bluehole:'Mavi Okyanus',canyon:'Kızıl Kanyon',trench:'Derin Çukur',temple:'Kayıp Tapınak',graveyard:'Gemi Mezarlığı',dunes:'Kum Tepeleri',coral:'Mercan Bahçesi',kelp:'Yosun Ormanı',grass:'Deniz Çayırı',wreck:'Batık Gemi Çukuru',arch:'Kaya Kemerleri',jelly:'Denizanası Koyu',open:'Açık Su'}},
-en:{title:'Aquarium Expedition',desc:'Glide through a gigantic glass aquarium in your submarine, discover 16 species, explore 12 biomes, surface to watch the starry night sky and survive sharks, electric eels, giant squids and piranhas. Smash rocks, ships and pillars with torpedoes and mines. Open a room and share the code: in online mode you can hurt each other too. No server: players connect browser to browser.',
+en:{title:'Aquarium Expedition',desc:'Glide through a gigantic glass aquarium in your submarine, discover 27 species, explore 12 biomes, surface to watch the starry night sky and survive sharks, electric eels, giant squids and piranhas. Smash rocks, ships and pillars with torpedoes and mines. Open a room and share the code: in online mode you can hurt each other too. No server: players connect browser to browser.',
 nameL:'CAPTAIN NAME',colorL:'SUBMARINE COLOR',solo:'EXPLORE SOLO',host:'HOST ROOM (ONLINE)',join:'JOIN',codePh:'CODE',
 t1h:'Driving',t1:'WASD drive & turn · Q/E rise/dive (reach the surface: night sky, you float there!) · SHIFT boost · On phones ▲ ▼ ⚡ toggle with one tap',t2h:'Camera',t2:'Click the game, look with the mouse · wheel: zoom',t3h:'Weapons',t3:'Left click fire · 1 torpedo · 2 salvo · 3 mine · 4 EMP · 5/C shield · 6/R repair · 7/V shock · 8/N ready the net (left click throws) · 9/X or right click melee · SPACE sonar · F food · B view · T catalog',t4h:'Online',t4:'Up to 8 players · torpedoes hurt each other · ENTER chat',
 foot:'Online mode only uses the free public PeerJS matchmaking service to open the connection; game data flows directly between players. The room closes if the host leaves.',
 battery:'BATTERY',torp:'TORPEDO',noTorp:'Out of torpedoes — reloading tubes…',hit:' hit!',lock:'LOCKED',torpBy:' fired a torpedo',depth:'DEPTH',speed:'SPEED',species:'SPECIES',catalog:'SPECIES CATALOG',room:'ROOM CODE',copy:'COPY INVITE LINK',copied:'Invite link copied',copyManual:'Tell your friend the code: ',zone:'ZONE',menu:'MENU',
 hint:'Click: mouse look · Left click: fire · Right click/X: melee · 1-4 weapon · 5/C shield · 6/R repair · 7/V shock · 8/N net · WASD drive · Q/E rise/dive · SHIFT boost · SPACE sonar · F food · L light · B view · T catalog · G shipyard · M map',
 connecting:'Connecting to room…',hosting:'Opening room…',netFail:'Could not connect. Check your internet or play solo.',noRoom:'No open room with this code.',badCode:'Type the 5-character room code.',full:'Room is full (8/8).',hostLeft:'The host left. You continue solo.',joined:'joined the room',left:'left',welcome:'Welcome aboard! Explore together.',roomOpen:'Room ready! Send the code to your friends: ',
-found:'NEW SPECIES DISCOVERED',by:'Found by: ',byYou:'Found by: you',allFound:'Congratulations! All 16 species in the aquarium are discovered!',sonar:'Sonar pulse',sonarCd:'Sonar recharging…',food:'Food dropped — fish incoming!',foodCd:'Preparing food…',lightOn:'Lights on',lightOff:'Lights off',chatPh:'Type a message · ENTER send · ESC close',map:'AQUARIUM MAP',mapClose:'Close with M or ESC',you:'you',start:'Expedition started! Click the game to look around with the mouse.',sonarBy:' sent a sonar pulse',foodBy:' dropped food',leave:'Returning to the menu closes the expedition connection. Sure?',
+found:'NEW SPECIES DISCOVERED',by:'Found by: ',byYou:'Found by: you',allFound:'Congratulations! All 27 species in the aquarium are discovered!',sonar:'Sonar pulse',sonarCd:'Sonar recharging…',food:'Food dropped — fish incoming!',foodCd:'Preparing food…',lightOn:'Lights on',lightOff:'Lights off',chatPh:'Type a message · ENTER send · ESC close',map:'AQUARIUM MAP',mapClose:'Close with M or ESC',you:'you',start:'Expedition started! Click the game to look around with the mouse.',sonarBy:' sent a sonar pulse',foodBy:' dropped food',leave:'Returning to the menu closes the expedition connection. Sure?',
 hull:'HULL',w1:'TORPEDO',w2:'SALVO',w3:'MINE',w4:'EMP',w5:'SHIELD',w6:'REPAIR',w7:'SHOCK',swvOn:'SHOCKWAVE!',swvCd:'Shockwave recharging…',shieldOn:'Shield up!',shieldCd:'Shield recharging…',shieldDown:'Shield broken!',repairStart:'Repairing…',repairFull:'Hull is already full',noKit:'Out of repair kits — building a new one…',repairDone:'Repair complete',kitGain:'+1 repair kit',rotHint:'Hold your phone in landscape for a better view',noMine:'Out of mines — building a new one…',mineDrop:'Mine dropped',empCd:'EMP recharging…',lowBat:'Not enough battery for EMP',stunned:'Systems disabled!',salvoNeed:'Salvo needs at least 3 torpedoes',slain:' destroyed!',youSunk:'YOUR SUBMARINE SANK',respawnIn:'Respawning:',
 sunk:(v,k)=>v+' was sunk by '+k,
 install:'📲 INSTALL THE APP',iosHint:'iPhone/iPad: Share → Add to Home Screen',surfaced:'Surfaced — the night sky and the stars!',noSurfFire:'Cannot fire torpedoes at the surface — dive a little',surface:'SURFACE',
@@ -417,7 +436,7 @@ tut:[
 ['Special abilities','🛡 shield · 🔧 repair · 📡 sonar (scans around) · 💥 shockwave · 🕸 net (ready it, then FIRE to throw; hauls in fish, snares enemies) · ⚔ melee. The number under each is its cooldown; ✓ means ready.'],
 ['Top buttons','📖 species catalog · 👥 room (online) · 🗺 map · 💬 chat · 💡 light · 🍤 food (attracts fish) · 🎯 quests · 👁 camera view · 🏪 shipyard · ❓ this tutorial.'],
 ['Gauges','BATTERY drains when boosting and refills when you stop. HULL is your health: at zero you sink but respawn shortly. TORPEDO is your ammo. The radar shows nearby creatures and enemies.'],
-['Your goal','Find and discover all 16 species in the aquarium. Finish quests, earn gold and buy stronger submarines and upgrades at the 🏪 shipyard. Happy sailing!']
+['Your goal','Find and discover all 27 species in the aquarium. Finish quests, earn gold and buy stronger submarines and upgrades at the 🏪 shipyard. Happy sailing!']
 ],
 inH:'INSTALL THE APP',inWhy:'Add it to your home screen: the game opens full screen with no address bar and even works offline.',inDone:'App is already installed ✓',inDoneToast:'App installed! Open it from your home screen.',
 inIosT:'iPhone / iPad',inIosS:['In Safari, tap the <b>Share</b> button at the bottom (top on iPad)','Scroll the list and tap <b>Add to Home Screen</b>','Tap <b>Add</b> at the top right — the game is on your home screen!'],inIosN:'If you do not see the Share button, open this page in <b>Safari</b> and repeat the steps.',
@@ -443,7 +462,18 @@ const SPECIES=[
 {id:'angler',col:'#9dffd0',tr:'Fener Balığı',en:'Anglerfish',ftr:'Karanlık Uçurum\'da başının önündeki ışıklı oltayla avını kandırır.',fen:'In the Dark Abyss it lures prey with a glowing rod dangling in front of its head.'},
 {id:'narwhal',col:'#c9d4de',tr:'Narval',en:'Narwhal',ftr:'Başındaki spiral dişi aslında uzamış bir köpek dişidir. Buzul Kutbu\'nun sakinleridir.',fen:'Its spiral tusk is really an overgrown tooth. A resident of the Polar Ice.'},
 {id:'oarfish',col:'#e0e6ec',tr:'Kürek Balığı',en:'Oarfish',ftr:'Dünyanın en uzun kemikli balığı; gümüş kurdele gibi gövdesi ve kırmızı sırt yelesiyle derinlerde süzülür.',fen:'The longest bony fish in the world; it glides deep with a silver ribbon body and a red crest.'},
-{id:'nautilus',col:'#e08a3a',tr:'Nautilus',en:'Nautilus',ftr:'500 milyon yıldır neredeyse hiç değişmemiş "yaşayan fosil"; spiral kabuğunda gaz odacıkları vardır.',fen:'A "living fossil" nearly unchanged for 500 million years; its spiral shell holds gas chambers.'}
+{id:'nautilus',col:'#e08a3a',tr:'Nautilus',en:'Nautilus',ftr:'500 milyon yıldır neredeyse hiç değişmemiş "yaşayan fosil"; spiral kabuğunda gaz odacıkları vardır.',fen:'A "living fossil" nearly unchanged for 500 million years; its spiral shell holds gas chambers.'},
+{id:'sardine',col:'#cfe0ea',tr:'Sardalya',en:'Sardine',ftr:'Binlercesi bir araya gelip tek bir gümüş akıntı gibi dönen dev sürüler kurar; yırtıcılar karşısındaki en iyi savunmaları kalabalıktır.',fen:'Thousands gather into a single swirling silver current; safety in numbers is their best defence against predators.'},
+{id:'butterfly',col:'#ffe46a',tr:'Kelebek Balığı',en:'Butterflyfish',ftr:'Sarı-beyaz diskiyle mercan kayalıklarında çiftler halinde gezer; gözünü kapatan siyah şerit avcıyı şaşırtır.',fen:'Pairs of these yellow-white discs patrol coral reefs; a black stripe across the eye confuses predators.'},
+{id:'barracuda',col:'#aab8c0',tr:'Barakuda',en:'Barracuda',ftr:'Torpido gibi ince gövdesi ve dişli çenesiyle saatte 40 km hıza çıkabilen pusu avcısı.',fen:'An ambush hunter with a torpedo body and toothy jaws that can burst to 40 km/h.'},
+{id:'dolphin',col:'#7f98ac',tr:'Yunus',en:'Dolphin',ftr:'Sürüler halinde yaşayan zeki memeliler; sonarla avlanır ve birbirlerine ıslıkla seslenirler.',fen:'Intelligent mammals living in pods; they hunt with sonar and call to each other with whistles.'},
+{id:'hammerhead',col:'#7a8892',tr:'Çekiç Başlı Köpekbalığı',en:'Hammerhead Shark',ftr:'Geniş çekiç biçimli başı 360 dereceye yakın görüş sağlar; kumun altındaki vatozları bile bulur.',fen:'Its wide hammer-shaped head gives near 360° vision; it can even find stingrays buried in sand.'},
+{id:'swordfish',col:'#4a6a8c',tr:'Kılıç Balığı',en:'Swordfish',ftr:'Kılıç gibi uzun çenesiyle sürüleri yararak avlanır; okyanusun en hızlı yüzücülerinden biridir.',fen:'It slashes through schools with its long bill and is one of the fastest swimmers in the ocean.'},
+{id:'moray',col:'#b8a040',tr:'Murana',en:'Moray Eel',ftr:'Kaya yarıklarına saklanıp ağzını açıp kapayarak nefes alan, geceleri avlanan yılan balığı.',fen:'It hides in rock crevices, opening and closing its mouth to breathe, and hunts at night.'},
+{id:'octopus',col:'#d0644a',tr:'Ahtapot',en:'Octopus',ftr:'Üç kalbi ve mavi kanı vardır; rengini ve doku desenini saniyeler içinde değiştirip kayaların arasında kaybolur.',fen:'It has three hearts and blue blood, and changes colour and texture in seconds to vanish among rocks.'},
+{id:'cuttle',col:'#c8a478',tr:'Mürekkep Balığı',en:'Cuttlefish',ftr:'Dalgalanan yan yüzgeçleriyle süzülür; derisinde renk dalgaları dolaştırarak hem saklanır hem iletişim kurar.',fen:'It glides on rippling side fins and sends waves of colour across its skin to hide and to communicate.'},
+{id:'seadragon',col:'#c8a84a',tr:'Yaprak Deniz Ejderi',en:'Leafy Sea Dragon',ftr:'Yosun gibi yaprak şeklinde uzantıları sayesinde yosun ormanlarında neredeyse görünmez olur.',fen:'Its leaf-shaped appendages make it almost invisible among drifting seaweed.'},
+{id:'blobfish',col:'#eab0a8',tr:'Blob Balığı',en:'Blobfish',ftr:'Derin sulardaki baskıya göre şekillenmiş jelatinimsi gövdesiyle dipte süzülen tuhaf bir balık.',fen:'A strange fish whose gelatinous body is shaped for deep-water pressure, drifting just above the bottom.'}
 ];
 const SP_IDX=Object.fromEntries(SPECIES.map((s,i)=>[s.id,i]));
 const COLORS=['#ffcf3f','#ff6b5a','#4fd1ff','#7ef0b9','#c792ff','#ff8fd0','#ffffff','#ff9f3f'];
@@ -470,7 +500,7 @@ function applyLang(){
   T=TEXT[lang];document.documentElement.lang=lang;
   document.querySelectorAll('[data-i]').forEach(el=>{const v=T[el.dataset.i];if(typeof v==='string')el.textContent=v;});
   $('codeIn').placeholder=T.codePh;$('chatIn').placeholder=T.chatPh;$('langBtn').textContent=lang==='tr'?'EN':'TR';
-  renderCatalog();renderPlayers();renderWpn();renderQuests();drawSign();if(garageOpen())renderGarage();qLabel();
+  renderCatalog();renderPlayers();renderWpn();renderQuests();drawSign();if(garageOpen())renderGarage();qLabel();try{if(running)layoutCockpit();}catch{}
 }
 
 /* ================= Sabitler ve yardımcılar ================= */
@@ -497,6 +527,8 @@ function floorH(x,z){
   h+=12*zbox(-295,295,-305,-175,40,x,z)+(vnoise(x*.15,z*.15)-.5)*1.3*zbox(-295,295,-305,-175,40,x,z);                       // lagün sığlığı
   h+=Math.max(0,Math.sin(z*.07+x*.012))*4.4*zbox(-545,-300,-170,170,22,x,z);                                                // kanyon basamakları
   h-=3*gauss(x,z,430,0,90,80);                                                                                              // mavi okyanus çukuru
+  h+=(vnoise(x*.016+40,z*.016-20)-.5)*7+(vnoise(x*.05-3,z*.05+8)-.5)*2.2;                                                  // geniş kum tepeleri ve çanaklar
+  h+=(Math.sin(x*.21+vnoise(x*.035,z*.035)*11)*.5+.5)*.38*(.4+vnoise(x*.02+9,z*.02));                                      // kum dalgacıkları
   const ex=Math.max(0,Math.abs(x)-HX+20)/20,ez=Math.max(0,Math.abs(z)-HZ+16)/16;h+=(ex*ex+ez*ez)*3.2;
   return Math.max(h,TANK_BOTTOM+2.6);
 }
@@ -607,11 +639,15 @@ let signCv=null,signTex=null;
 {
   const ZT=[{b:[300,545,-305,-175],c:[.86,.93,.98],k:.8},{b:[-545,-300,-305,-175],c:[.03,.025,.025],k:.97},{b:[-545,-300,175,305],c:[.2,.25,.32],k:.7},{b:[300,545,175,305],c:[.38,.27,.6],k:.6},{b:[-295,295,-305,-175],c:[.98,.96,.88],k:.55},{b:[-295,295,175,305],c:[.58,.55,.5],k:.5},{b:[300,545,-170,170],c:[.7,.82,.9],k:.45},{b:[-545,-300,-170,170],c:[.8,.4,.24],k:.8}],_zc=new THREE.Color();
   const g=new THREE.PlaneGeometry(TW,TD,isTouch?QC.seg[0]:560,isTouch?QC.seg[1]:320);g.rotateX(-Math.PI/2);
+  const _gz=new THREE.Color(),_alg=new THREE.Color(.21,.4,.17),_alg2=new THREE.Color(.12,.3,.22),_grv=new THREE.Color(.44,.43,.4),_shl=new THREE.Color(.96,.93,.86);
   const p=g.attributes.position,col=new Float32Array(p.count*3),c=new THREE.Color();
   for(let i=0;i<p.count;i++){
     const x=p.getX(i),z=p.getZ(i),h=floorH(x,z);p.setY(i,h);
     const n=vnoise(x*.2,z*.2);c.setRGB(.86+n*.08,.79+n*.08,.6+n*.06);
-    if(inZone('grass',x,z))c.lerp(new THREE.Color(.52,.62,.42),.35);
+    if(inZone('grass',x,z))c.lerp(_gz.setRGB(.52,.62,.42),.35);
+    {const al=vnoise(x*.04+11,z*.04-5)*.65+vnoise(x*.13,z*.13+2)*.35;if(al>.55)c.lerp(vnoise(x*.2,z*.2)>.5?_alg:_alg2,clamp((al-.55)*4.5,0,.78));
+     const gv=vnoise(x*.06-9,z*.06+4);if(gv>.66)c.lerp(_grv,clamp((gv-.66)*6,0,.7));
+     if(hash2(x*3.1,z*3.7)>.985)c.lerp(_shl,.5);}
     if(h<BASE-3)c.lerp(new THREE.Color(.45,.47,.44),clamp((BASE-3-h)/4,0,.6));
     if(Math.abs(x)>262||Math.abs(z)>150)for(const q of ZT){const w=zbox(q.b[0],q.b[1],q.b[2],q.b[3],10,x,z)*q.k;if(w>.01){c.lerp(_zc.setRGB(q.c[0]*(.9+n*.2),q.c[1]*(.9+n*.2),q.c[2]*(.9+n*.2)),w);}}
     if(h>BASE+11&&x<-380&&x>-480&&z<-190&&z>-300)c.lerp(_zc.setRGB(.08,.06,.06),clamp((h-BASE-11)/8,0,.8));
@@ -785,7 +821,7 @@ const anemones=[];
 }
 
 /* ================= Batık gemiler, sandık, harabeler ================= */
-const chestPos=new THREE.Vector3();
+const chestPos=new THREE.Vector3();let chestGroup=null;
 {
   const wood=stdMat({color:0x5a3d28,roughness:.9},'wood',{caus:.8}),dark=stdMat({color:0x3a2a1e,roughness:.95},'wood2',{caus:.6});
   const buildShip=(sx,sz,rotY,scale,tilt)=>{
@@ -812,7 +848,7 @@ const chestPos=new THREE.Vector3();
   const chest=new THREE.Group();const cb=new THREE.Mesh(new THREE.BoxGeometry(3,1.8,2),wood);chest.add(cb);
   const lid=new THREE.Mesh(new THREE.CylinderGeometry(1,1,3,12,1,false,0,Math.PI),wood);lid.rotation.z=Math.PI/2;lid.position.set(0,1.1,-.9);lid.rotation.x=-.9;chest.add(lid);
   const gold=new THREE.Mesh(new THREE.SphereGeometry(1.2,16,8),new THREE.MeshStandardMaterial({color:0xffc83d,emissive:0xb07a10,emissiveIntensity:.9,metalness:.9,roughness:.3}));gold.scale.set(1.1,.35,.7);gold.position.y=.85;chest.add(gold);
-  chest.position.set(cx,cy,cz);chest.rotation.y=-.4;scene.add(chest);
+  chest.position.set(cx,cy,cz);chest.rotation.y=-.4;scene.add(chest);chestGroup=chest;
   // harabe sütunlar ve lento
   const stone=stdMat({color:0xc9c2b0,roughness:.9},'stone',{caus:1});const colGeo=new THREE.CylinderGeometry(1.2,1.4,12,14);
   const PL=[];
@@ -833,6 +869,155 @@ const chestPos=new THREE.Vector3();
   // kayıp tapınak
   for(let j=0;j<2;j++)for(let i=0;i<7;i++)pillar(-250+i*16,-110+j*26,(i===0||i===6)?[1,.6,0][(i+j)%3]:1);
   for(let j=0;j<2;j++){lintel(-234,-110+j*26,40);lintel(-186,-110+j*26,40);}
+}
+
+/* ================= Zenginleştirme: yosun çayırları, deniz yaşamı, antik harabeler ================= */
+const R2=mulberry32(918273),r2=(a,b)=>a+R2()*(b-a),pk2=a=>a[(R2()*a.length)|0];
+const lush=(x,z)=>{const zn=zoneAt(x,z);return zn!=='ice'&&zn!=='volcano'&&zn!=='abyss'&&zn!=='crystal'&&zn!=='canyon';};
+const meadowF=(x,z)=>vnoise(x*.04+11,z*.04-5)*.65+vnoise(x*.13,z*.13+2)*.35;
+const TSPOTS=[];   // hazine yerleşimleri: {type,x,y,z,ry,id}
+/* Antik harabeler: ring = sütun halkası, rows = sütun sırası, wall = duvar parçası, st = heykel, gate = kapı, steps = tiyatro basamağı */
+const RUINS=[
+  {id:'agora',x:-190,z:12,rot:.3,rows:2,ring:0,wall:0,st:3,gate:2,steps:0,w:46,d:26,bonus:80,tr:'Antik Agora',en:'Ancient Agora',tint:0,t:[['chest',-8,4],['amph',10,-6],['amph',-14,10],['idol',0,0],['supply',16,12]]},
+  {id:'liman',x:255,z:8,rot:-.4,rows:1,ring:0,wall:6,st:1,gate:1,steps:0,w:50,d:16,bonus:80,tr:'Batık Liman',en:'Sunken Harbor',tint:0,t:[['chest',-6,2],['chest',14,-4],['amph',0,8],['amph',-18,-6],['supply',20,8]]},
+  {id:'saray',x:-185,z:240,rot:.1,rows:2,ring:8,wall:4,st:4,gate:2,steps:0,w:48,d:34,bonus:140,tr:'Kayıp Saray',en:'Lost Palace',tint:0,t:[['crown',0,0],['gold',10,6],['chest',-12,-8],['amph',14,-12],['amph',-16,10],['tablet',4,-14]]},
+  {id:'tiyatro',x:60,z:250,rot:0,rows:0,ring:0,wall:2,st:2,gate:1,steps:7,w:44,d:32,bonus:110,tr:'Antik Tiyatro',en:'Ancient Theater',tint:0,t:[['idol',0,6],['chest',-10,-4],['amph',12,-8],['amph',-6,12],['pearl',16,10]]},
+  {id:'hazine',x:205,z:228,rot:.6,rows:1,ring:6,wall:5,st:2,gate:1,steps:0,w:40,d:30,bonus:150,tr:'Hazine Odası',en:'Treasure Vault',tint:1,t:[['gold',0,0],['gold',-9,7],['chest',9,-7],['crown',14,8],['tech',0,-14],['amph',-14,-6]]},
+  {id:'mercan',x:-150,z:-240,rot:-.2,rows:1,ring:10,wall:3,st:2,gate:1,steps:0,w:42,d:36,bonus:100,tr:'Mercan Kalesi',en:'Coral Citadel',tint:2,t:[['chest',0,0],['pearl',8,8],['pearl',-10,-6],['amph',12,-10],['supply',-14,10],['idol',-4,12]]},
+  {id:'kule',x:122,z:-250,rot:.9,rows:0,ring:6,wall:7,st:1,gate:2,steps:0,w:34,d:34,bonus:100,tr:'Turkuaz Kule',en:'Turquoise Tower',tint:2,t:[['chest',0,2],['tablet',8,-8],['amph',-10,6],['gem',12,10],['supply',-14,-8]]},
+  {id:'kirmizi',x:-430,z:20,rot:.5,rows:2,ring:0,wall:6,st:2,gate:2,steps:0,w:44,d:30,bonus:130,tr:'Kızıl Kale',en:'Crimson Fort',tint:3,t:[['tech',0,-4],['gold',-8,8],['chest',10,-6],['amph',-14,-10],['amph',14,12],['tablet',2,12]]},
+  {id:'sunak',x:430,z:112,rot:-.7,rows:0,ring:8,wall:0,st:3,gate:1,steps:0,w:38,d:38,bonus:120,tr:'Mavi Delik Sunağı',en:'Blue Hole Altar',tint:4,t:[['idol',0,0],['pearl',9,-9],['tech',-12,8],['chest',12,10],['amph',-8,-12]]},
+  {id:'kervan',x:420,z:-240,rot:.3,rows:1,ring:0,wall:5,st:2,gate:1,steps:0,w:40,d:26,bonus:120,tr:'Donmuş Kervan',en:'Frozen Caravan',tint:5,t:[['tech',0,0],['chest',-9,5],['gold',10,-6],['gem',-14,-8],['amph',6,10]]},
+  {id:'kristal',x:420,z:238,rot:-.3,rows:0,ring:7,wall:2,st:2,gate:1,steps:0,w:34,d:34,bonus:140,tr:'Kristal Hazine',en:'Crystal Vault',tint:6,t:[['gem',0,0],['gem',8,6],['gem',-8,-6],['gold',0,12],['tech',-12,10],['gem',12,-10]]},
+  {id:'kul',x:-480,z:-250,rot:.2,rows:1,ring:6,wall:4,st:2,gate:1,steps:0,w:38,d:30,bonus:140,tr:'Küllü Tapınak',en:'Ashen Temple',tint:7,t:[['tech',0,0],['gem',10,6],['gem',-10,-8],['gold',-8,10],['idol',12,-10]]},
+  {id:'karanlik',x:-430,z:250,rot:-.5,rows:0,ring:8,wall:3,st:3,gate:1,steps:0,w:36,d:36,bonus:160,tr:'Karanlık Sunak',en:'Dark Altar',tint:8,t:[['tech',0,0],['crown',8,8],['gem',-10,4],['tablet',4,-12],['amph',-12,-10]]},
+  {id:'zindan',x:-110,z:-120,rot:.4,rows:1,ring:4,wall:5,st:1,gate:1,steps:0,w:36,d:28,bonus:90,tr:'Gizli Zindan',en:'Hidden Dungeon',tint:0,t:[['tech',0,0],['chest',8,6],['tablet',-9,-6],['amph',12,-8],['supply',-12,10]]},
+  {id:'kervansaray',x:300,z:-80,rot:-.8,rows:1,ring:0,wall:6,st:1,gate:2,steps:0,w:42,d:24,bonus:90,tr:'Kayıp Kervansaray',en:'Lost Caravanserai',tint:0,t:[['chest',0,0],['gold',10,6],['amph',-12,-6],['tech',-4,12],['supply',14,-10]]}
+];
+const TINTS=[null,'#a89c80','#b5d8c8','#c88a6a','#8fb4d8','#cfe6f4','#c8a8ec','#4a3c3a','#5a6270'];
+{
+  /* ---------- geometri ---------- */
+  const mkTuft=()=>{const a=[];for(let k=0;k<7;k++){const g=new THREE.PlaneGeometry(.14,1,1,6);g.translate(0,.5,0);const p=g.attributes.position,bend=r2(-.3,.3),h=.55+.45*((k*37)%7)/7;
+      for(let i=0;i<p.count;i++){const y=p.getY(i);p.setX(i,p.getX(i)*(1-y*.7));p.setZ(i,y*y*bend);p.setY(i,y*h);}
+      g.rotateY(k*2.4);g.translate(Math.cos(k*2.1)*.22,0,Math.sin(k*2.1)*.22);a.push(g);}return merge(a);};
+  const mkRibbon=()=>{const a=[];for(let k=0;k<4;k++){const g=new THREE.PlaneGeometry(.2,1,1,10);g.translate(0,.5,0);const p=g.attributes.position;
+      for(let i=0;i<p.count;i++){const y=p.getY(i);p.setX(i,p.getX(i)*(1-y*.5)+Math.sin(y*5+k)*.1);p.setZ(i,Math.sin(y*3+k*2)*.08);}
+      g.rotateY(k*1.57+.4);g.translate(Math.cos(k*1.9)*.15,0,Math.sin(k*1.9)*.15);a.push(g);}return merge(a);};
+  const mkBush=()=>{const a=[];for(let k=0;k<10;k++){const g=new THREE.PlaneGeometry(.45,1.1,1,5);g.translate(0,.55,0);const p=g.attributes.position;
+      for(let i=0;i<p.count;i++){const y=p.getY(i)/1.1;p.setX(i,p.getX(i)*(1-Math.abs(y-.4)*.9));p.setZ(i,y*y*.9);}
+      g.rotateX(-.2-(k%3)*.3);g.rotateY(k*2.4);a.push(g);}return merge(a);};
+  const mkFrond=()=>{const a=[],st=new THREE.CylinderGeometry(.04,.07,1,5);st.translate(0,.5,0);a.push(st);
+      for(let k=0;k<9;k++){const y=.18+k*.095,g=new THREE.PlaneGeometry(.34,.22,1,1);g.translate(.17,0,0);g.rotateZ(.4+k*.04);g.rotateY(k*2.2);g.translate(0,y,0);a.push(g);
+        const b=new THREE.SphereGeometry(.035,5,4);b.translate(Math.cos(k*2.2)*.12,y+.05,-Math.sin(k*2.2)*.12);a.push(b);}return merge(a);};
+  const mkSponge=()=>{const a=[];[[0,0,1,.5],[.55,.3,.7,.38],[-.45,.4,.55,.3]].forEach(([x,z,h,r])=>{const pts=[[.05,0],[r*.9,.12*h],[r,.55*h],[r*.82,h],[r*.6,h],[r*.66,.62*h],[r*.5,.18*h],[.04,.04]].map(q=>new THREE.Vector2(q[0],q[1]));
+      const g=new THREE.LatheGeometry(pts,9);g.translate(x,0,z);a.push(g);});return merge(a);};
+  const mkUrchin=()=>{const a=[new THREE.IcosahedronGeometry(.3,0)];for(let i=0;i<30;i++){const u=R2()*2-1,th=R2()*6.28,d=new THREE.Vector3(Math.sqrt(1-u*u)*Math.cos(th),Math.abs(u)*.8+.2,Math.sqrt(1-u*u)*Math.sin(th)).normalize();
+      const g=new THREE.ConeGeometry(.03,.42,4);g.translate(0,.21,0);g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d));g.translate(d.x*.22,d.y*.22+.2,d.z*.22);a.push(g);}
+    a[0].translate(0,.2,0);return merge(a);};
+  const mkStar=()=>{const a=[(()=>{const g=new THREE.SphereGeometry(.2,8,5);g.scale(1,.4,1);return g;})()];for(let k=0;k<5;k++){const g=new THREE.ConeGeometry(.13,.62,5);g.rotateZ(-Math.PI/2);g.scale(1,.35,1);g.translate(.3,0,0);g.rotateY(k*Math.PI*2/5);a.push(g);}
+    const m=merge(a);m.translate(0,.06,0);return m;};
+  const mkScallop=()=>{const g=new THREE.SphereGeometry(.5,10,6,0,Math.PI*2,0,Math.PI*.5);g.scale(1,.38,.9);g.translate(0,.05,0);return g;};
+  const mkAmphora=()=>{const pts=[[.02,0],[.26,.04],[.4,.35],[.42,.6],[.3,.92],[.16,1.08],[.2,1.2],[.2,1.28]].map(q=>new THREE.Vector2(q[0],q[1]));return new THREE.LatheGeometry(pts,10);};
+  const mkStatue=()=>merge([P(new THREE.BoxGeometry(1.9,.9,1.9),'#9a9682',[0,.45,0]),P(new THREE.CylinderGeometry(.5,.8,1.9,8),'#b4b09a',[0,1.85,0]),P(new THREE.SphereGeometry(.5,10,8),'#c0bba6',[0,3.15,0]),P(new THREE.CylinderGeometry(.16,.2,1.2,6),'#b4b09a',[.62,2.55,0],[0,0,-.75]),P(new THREE.CylinderGeometry(.16,.2,1.1,6),'#b4b09a',[-.62,2.25,0],[0,0,.45])]);
+  const colG=new THREE.CylinderGeometry(1,1.12,1,10);colG.translate(0,.5,0);
+  const blkG=new THREE.BoxGeometry(1,1,1);blkG.translate(0,.5,0);
+
+  /* ---------- bitki / yaşam dağılımı ---------- */
+  const scatter=(n,tries,test,out)=>{let c=0;for(let t=0;t<tries&&c<n;t++){const x=r2(-HX+8,HX-8),z=r2(-HZ+8,HZ-8);if(test(x,z)){out(x,z);c++;}}};
+  const G=['#3f8f3a','#4c9a3c','#6aa23a','#2f7a45','#5fa05a','#8aa83a','#3b8a4a','#4f9f6a'];
+  const swayS='float up=position.y*position.y;transformed.x+=sin(uT*1.2+ip.x*.4+ip.z*.3)*.5*up;transformed.z+=cos(uT*1.0+ip.z*.35+ip.x*.1)*.35*up;';
+  const dbl=(k,v,caus)=>stdMat({roughness:.85,side:THREE.DoubleSide},k,{v,caus:caus||.6});
+  // çayır tutamları (kum üzerindeki yeşil öbekler)
+  {const L=[];scatter(3200,90000,(x,z)=>lush(x,z)&&meadowF(x,z)>.5+R2()*.1,(x,z)=>{for(let i=0;i<3;i++){const px=x+r2(-1.8,1.8),pz=z+r2(-1.8,1.8);L.push({x:px,y:floorH(px,pz)-.05,z:pz,ry:r2(0,6),sx:r2(.9,1.7),sy:r2(.9,2.4),sz:r2(.9,1.7),c:pk2(G)});}});
+   regFlora(inst(mkTuft(),dbl('tuft2',swayS,.6),L,true),L,3);}
+  // uzun şerit otlar (zostera)
+  {const L=[];scatter(2200,90000,(x,z)=>lush(x,z)&&meadowF(x,z)>.58,(x,z)=>L.push({x,y:floorH(x,z)-.05,z,ry:r2(0,6),sx:r2(.9,1.6),sy:r2(2.4,6.5),sz:r2(.9,1.6),c:pk2(['#5fb05a','#4fa06a','#7ab84a','#3f9a5a'])}));
+   regFlora(inst(mkRibbon(),dbl('ribbon',swayS.replace('.5*up','.9*up'),.6),L,true),L,3);}
+  // geniş yapraklı yosun çalıları
+  {const L=[];scatter(1700,90000,(x,z)=>lush(x,z)&&meadowF(x,z)>.46,(x,z)=>L.push({x,y:floorH(x,z)-.05,z,ry:r2(0,6),sx:r2(.9,2),sy:r2(.9,2.2),sz:r2(.9,2),c:pk2(['#4a8f2a','#6a9a2a','#2f7a45','#8a7a2a','#5a8f4a','#9a8f30'])}));
+   regFlora(inst(mkBush(),dbl('bush',swayS.replace('.5*up','.7*up'),.5),L,true),L,3.2);}
+  // sargassum dalları ve yüzdürücü keseler
+  {const L=[];scatter(1300,90000,(x,z)=>lush(x,z)&&meadowF(x,z)>.4,(x,z)=>{const h=r2(2,6.5);L.push({x,y:floorH(x,z)-.05,z,ry:r2(0,6),sx:r2(.8,1.5),sy:h,sz:r2(.8,1.5),c:pk2(['#9a7a2a','#b08a30','#7a6a20','#8a9a30','#a98a3a'])});});
+   regFlora(inst(mkFrond(),dbl('frond',swayS.replace('.5*up','1.1*up'),.5),L,true),L,3);}
+  // dev yosun ormanları (kum alanlarında kümeler)
+  {const kp=[];for(let k=0;k<3;k++){const g=new THREE.PlaneGeometry(.9,1,1,18);g.translate(0,.5,0);const p=g.attributes.position;for(let i=0;i<p.count;i++){const y=p.getY(i);p.setX(i,p.getX(i)*(1-y*.35)+Math.sin(y*14+k)*.18);}g.rotateY(k*Math.PI/3);kp.push(g);}
+   const kg=merge(kp);kg.computeVertexNormals();
+   const L=[];for(let c=0;c<110;c++){let cx,cz,tr=0;do{cx=r2(-HX+20,HX-20);cz=r2(-HZ+20,HZ-20);tr++;}while((!lush(cx,cz)||meadowF(cx,cz)<.5)&&tr<60);
+     const n=12+((R2()*14)|0);for(let i=0;i<n;i++){const x=cx+r2(-9,9),z=cz+r2(-9,9),y=floorH(x,z),h=Math.min(r2(14,44),SURF-3-y);L.push({x,y,z,ry:r2(0,6),sx:r2(.8,1.5),sy:h,sz:1,c:pk2(['#3f8f3a','#5f8f2a','#2f7a45','#7a8f2a','#4a9a50'])});}}
+   const sw='float sw=sin(uT*.9+ip.x*.21+ip.z*.17+position.y*2.2)*2.2+sin(uT*1.7+ip.z*.3)*.5;transformed.x+=sw*position.y*position.y;transformed.z+=cos(uT*.7+ip.x*.13+position.y*1.8)*1.3*position.y*position.y;';
+   regFlora(inst(kg,stdMat({roughness:.8,side:THREE.DoubleSide},'kelp2',{v:sw,caus:.6}),L,true),L,4.5);}
+  // süngerler, deniz kestanesi, deniz yıldızı, tarak kabuğu
+  {const L=[];scatter(900,60000,(x,z)=>lush(x,z),(x,z)=>L.push({x,y:floorH(x,z)-.05,z,ry:r2(0,6),sx:r2(.8,2.2),sy:r2(.8,2.4),sz:r2(.8,2.2),c:pk2(['#e0a030','#b04a8a','#d06a3a','#e0709a','#8a5ac0','#d8c050','#4a9ac8'])}));
+   regFlora(inst(mkSponge(),dbl('sponge','',.7),L,true),L,2.5);}
+  {const L=[];scatter(1100,60000,(x,z)=>lush(x,z)||zoneAt(x,z)==='canyon',(x,z)=>L.push({x,y:floorH(x,z)-.03,z,ry:r2(0,6),s:r2(.6,1.5),c:pk2(['#2a1a3a','#4a2a5a','#7a2a2a','#1a1a24','#5a3a6a'])}));
+   regFlora(inst(mkUrchin(),stdMat({roughness:.8,flatShading:true},'urchin',{caus:.6}),L,true),L,1.6);}
+  {const L=[];scatter(900,60000,(x,z)=>lush(x,z),(x,z)=>L.push({x,y:floorH(x,z)+.04,z,ry:r2(0,6),s:r2(.8,2),c:pk2(['#e8742a','#d0402a','#e8a050','#c0507a','#e8d070'])}));
+   regFlora(inst(mkStar(),stdMat({roughness:.8,flatShading:true},'star',{caus:.7}),L,true),L,1.6);}
+  {const L=[];scatter(700,60000,(x,z)=>lush(x,z),(x,z)=>L.push({x,y:floorH(x,z)+.03,z,ry:r2(0,6),rx:r2(-.2,.2),s:r2(.7,1.6),c:pk2(['#f0d8c8','#e8b0a0','#f2e8d0','#d89080','#e8c8e0'])}));
+   regFlora(inst(mkScallop(),stdMat({roughness:.55,flatShading:true},'scallop',{caus:.7}),L,true),L,1.5);}
+  // amfora kalıntıları (kum üzerinde yarı gömülü)
+  {const L=[];scatter(420,60000,(x,z)=>lush(x,z),(x,z)=>L.push({x,y:floorH(x,z)+.1,z,ry:r2(0,6),rx:pk2([0,0,1.2,1.5,-1.3]),rz:r2(-.3,.3),s:r2(.8,1.6),c:pk2(['#b5683a','#a05a30','#c07a48','#8a5a40'])}));
+   regFlora(inst(mkAmphora(),stdMat({roughness:.8,side:THREE.DoubleSide},'amph',{caus:.7}),L,true),L,1.6);}
+  // kum üzerindeki kaya-mercan bahçeleri (düz kum alanlarını kırar)
+  {const rg=rockGeo(41.3),L=[];for(let c=0;c<130;c++){let cx,cz,tr=0;do{cx=r2(-HX+20,HX-20);cz=r2(-HZ+20,HZ-20);tr++;}while(!lush(cx,cz)&&tr<40);
+     const n=4+((R2()*6)|0);for(let i=0;i<n;i++){const x=cx+r2(-7,7),z=cz+r2(-7,7),sc=r2(.7,3.4);L.push({x,y:floorH(x,z)+sc*.25,z,rx:r2(0,6),ry:r2(0,6),rz:r2(0,6),sx:sc*r2(1,1.5),sy:sc*r2(.6,1),sz:sc*r2(.9,1.3),c:pk2(['#5d6a6c','#6c665c','#4f5c63','#7a7466','#58625a','#4c6a4c'])});}}
+   const m=inst(rg,stdMat({roughness:.95,flatShading:true},'rock2',{caus:.9}),L,true);L.forEach((o,j)=>{const r=Math.max(o.sx,o.sz);if(r>2.4){const st=regStruct({kind:'rock',x:o.x,y:o.y,z:o.z,r:r*1.0,hp:2,cols:[addCol(o.x,o.y,o.z,r*1.0)],o,color:o.c});st.mesh=m;st.idx=j;}else flora.push({mesh:m,idx:j,x:o.x,y:o.y,z:o.z,rad:2.2,alive:true});});}
+
+  /* ---------- antik harabeler ---------- */
+  const stoneC=['#b8b19c','#9e9886','#c9c2b0','#8c8a7c','#a8b0a0','#9aa89a'];
+  const Cl=[],Bk=[],St=[],Gt=[],Am=[];
+  const reg=(list,geo,mat,withSt)=>{if(!list.length)return;const m=inst(geo,mat,list,true);list.forEach((o,j)=>{if(o.r){const st=regStruct({kind:'rock',x:o.x,y:o.y+(o.cy||0),z:o.z,r:o.r,hp:o.hp||3,cols:o.cols||[addCol(o.x,o.y+(o.cy||0),o.z,o.r)],o,color:o.c});st.mesh=m;st.idx=j;o.st=st;}else if(o.rad!==0)flora.push({mesh:m,idx:j,x:o.x,y:o.y,z:o.z,rad:o.rad||2.5,alive:true});});};
+  for(const s of RUINS){
+    const ca=Math.cos(s.rot),sa=Math.sin(s.rot),W=(lx,lz)=>[s.x+lx*ca-lz*sa,s.z+lx*sa+lz*ca],RY=-s.rot;
+    let gyc=-1e9;for(const [a,b] of [[0,0],[1,1],[1,-1],[-1,1],[-1,-1]]){const [px,pz]=W(a*s.w*.45,b*s.d*.45);gyc=Math.max(gyc,floorH(px,pz));}
+    gyc=Math.min(gyc,floorH(s.x,s.z)+5);
+    const tint=TINTS[s.tint]||null,sc=()=>tint?tint:pk2(stoneC);
+    // taban platformu (stylobate)
+    {const [px,pz]=W(0,0);Bk.push({x:px,y:gyc-1.8,z:pz,ry:RY,sx:s.w,sy:2.6,sz:s.d,c:tint||'#9a9684',rad:0});
+     Bk.push({x:px,y:gyc+.8,z:pz,ry:RY,sx:s.w-5,sy:.4,sz:s.d-5,c:tint||'#aaa592',rad:0});}
+    const col=(lx,lz,h)=>{const [x,z]=W(lx,lz),gy=gyc+1.2,broken=R2()<.3,hh=broken?h*r2(.35,.6):h,fallen=!broken&&R2()<.12;
+      if(fallen){Cl.push({x,y:gy+1.25,z,rx:0,ry:r2(0,6),rz:Math.PI/2,sx:1.25,sy:h*.7,sz:1.25,c:sc(),r:2.2,hp:3,cy:0,dc:sc()});return null;}
+      const o={x,y:gy,z,ry:r2(0,6),sx:1.25,sy:hh,sz:1.25,c:sc(),r:2.4,hp:3,dc:sc(),cols:[addCol(x,gy+hh*.3,z,2.4),addCol(x,gy+hh*.75,z,2.2)]};Cl.push(o);return {o,hh,gy,x,z};};
+    // sütun sıraları
+    for(let r=0;r<s.rows;r++){const lz=(r-(s.rows-1)/2)*(s.d-8);for(let lx=-s.w/2+4;lx<=s.w/2-3;lx+=9)col(lx+r2(-.6,.6),lz+r2(-.6,.6),r2(7,13));}
+    // sütun halkası (tholos)
+    if(s.ring){const rr0=Math.min(s.w,s.d)*.34;for(let i=0;i<s.ring;i++){const a=i/s.ring*6.283;col(Math.cos(a)*rr0,Math.sin(a)*rr0,r2(8,14));}
+      const [dx,dz]=W(0,0);Bk.push({x:dx,y:gyc+1.2,z:dz,ry:RY,sx:4,sy:2.2,sz:4,c:tint||'#b4af9a',r:3,hp:3,dc:'#b4af9a'});}
+    // kapı: iki sütun + lento
+    for(let g=0;g<s.gate;g++){const lx=(g-(s.gate-1)/2)*(s.w*.5),lz=s.d/2-2,ca2=col(lx-6,lz,12),cb2=col(lx+6,lz,12);
+      if(ca2&&cb2&&ca2.hh>9&&cb2.hh>9){const [mx,mz]=W(lx,lz),y=Math.min(ca2.gy,cb2.gy)+Math.min(ca2.hh,cb2.hh)+.9;
+        const lo={x:mx,y,z:mz,ry:RY,sx:16,sy:1.6,sz:3.4,c:sc(),r:7.5,hp:3,dc:'#c9c2b0',cols:[addCol(mx-4,y,mz,2.2),addCol(mx+4,y,mz,2.2)],sup:{type:'span',lx:mx,half:8,ids:[]}};
+        lo.pend=[ca2.o,cb2.o];Gt.push(lo);}}
+    // duvar parçaları
+    for(let i=0;i<s.wall;i++){const lx=r2(-s.w/2,s.w/2),lz=pk2([-1,1])*(s.d/2+r2(0,3)),[x,z]=W(lx,lz),gy=floorH(x,z),h=r2(2,7),w=r2(6,14);
+      Bk.push({x,y:gy-.4,z,ry:RY+pk2([0,Math.PI/2]),sx:w,sy:h,sz:r2(1.4,2.2),c:sc(),r:w*.38,hp:3,cy:h*.5,dc:'#a8a290',cols:[addCol(x,gy+h*.5,z,Math.max(h*.5,2.6))]});}
+    // tiyatro basamakları (yarım daire)
+    for(let k=0;k<s.steps;k++){const rr0=8+k*3.6;for(let a=-1.25;a<=1.25;a+=.34){const [x,z]=W(Math.sin(a)*rr0,-Math.cos(a)*rr0+s.d*.3),gy=floorH(x,z);
+        Bk.push({x,y:gy+k*.5-.2,z,ry:RY-a,sx:rr0*.36,sy:1.6+k*.5,sz:2.6,c:sc(),r:0,rad:0});}}
+    // heykeller
+    for(let i=0;i<s.st;i++){const [x,z]=W(r2(-s.w/2+4,s.w/2-4),r2(-s.d/2+4,s.d/2-4)),gy=gyc+1.2,k=r2(1.1,1.7);
+      St.push({x,y:gy,z,ry:r2(0,6),rx:R2()<.2?r2(.2,.5):0,s:k,c:tint?tint:'#ffffff',r:2.4*k,hp:3,cy:2*k,dc:'#b4b09a'});}
+    // amfora ve kırık bloklar
+    for(let i=0;i<8;i++){const [x,z]=W(r2(-s.w/2+2,s.w/2-2),r2(-s.d/2+2,s.d/2-2)),gy=gyc+1.2,b=r2(1.2,3);
+      Bk.push({x,y:gy-.4,z,rx:r2(-.3,.3),ry:r2(0,6),rz:r2(-.3,.3),sx:b*r2(1,1.8),sy:b*.8,sz:b*r2(.8,1.4),c:sc(),r:b>1.8?b:0,hp:2,cy:b*.4,rad:2,dc:'#a8a290'});}
+    for(let i=0;i<5;i++){const [x,z]=W(r2(-s.w/2+2,s.w/2-2),r2(-s.d/2+2,s.d/2-2)),gy=gyc+1.2;Am.push({x,y:gy,z,ry:r2(0,6),rx:pk2([0,0,1.3,-1.4]),rz:r2(-.2,.2),s:r2(1,1.8),c:pk2(['#b5683a','#a05a30','#c07a48']),rad:2});}
+    // yosun örtüsü (harabeyi yeşilleştirir) — bush & kelp noktaları sonradan çayırlarla birleşir
+    // hazineler
+    for(const [type,lx,lz] of s.t){const [x,z]=W(lx,lz);TSPOTS.push({type,x,y:gyc+1.2,z,ry:r2(0,6),id:TSPOTS.length,site:s.id});}
+  }
+  const sm0=m=>stdMat({roughness:.9,flatShading:true,vertexColors:true},m,{caus:.9});
+  // sütunlar
+  reg(Cl,colG,stdMat({roughness:.9,flatShading:true},'ruinCol',{caus:.9}));
+  // bloklar & platform
+  reg(Bk,blkG,stdMat({roughness:.92,flatShading:true},'ruinBlk',{caus:.9}));
+  // heykeller (köşe renkli)
+  reg(St,mkStatue(),sm0('ruinStat'));
+  // kapı lentoları (iki sütunun düşmesiyle çöker): sütun id'lerini kaydet
+  {const m=inst(blkG,stdMat({roughness:.9,flatShading:true},'ruinLin',{caus:.9}),Gt,true);Gt.forEach((o,j)=>{const st=regStruct({kind:'lintel',x:o.x,y:o.y,z:o.z,r:o.r,hp:3,cols:o.cols,o,color:o.c});st.mesh=m;st.idx=j;o.sup.ids=o.pend.map(q=>q.st?q.st.id:-1).filter(i=>i>=0);st.sup=o.sup;});}
+  regFlora(inst(mkAmphora(),stdMat({roughness:.8,side:THREE.DoubleSide},'ruinAmph',{caus:.7}),Am,true),Am,2);
+  // harabelerin etrafına yosun lekeleri
+  {const L=[],K=[];for(const s of RUINS)for(let i=0;i<46;i++){const a=r2(0,6.28),d=r2(s.w*.2,s.w*.75),x=s.x+Math.cos(a)*d,z=s.z+Math.sin(a)*d*(s.d/s.w);if(!lush(x,z)&&R2()<.7)continue;L.push({x,y:floorH(x,z)-.05,z,ry:r2(0,6),sx:r2(.9,1.8),sy:r2(.9,2),sz:r2(.9,1.8),c:pk2(G)});}
+   if(L.length)regFlora(inst(mkBush(),dbl('bush3',swayS.replace('.5*up','.7*up'),.5),L,true),L,3);}
 }
 
 /* ================= Işık huzmeleri ve partiküller ================= */
@@ -945,6 +1130,44 @@ const GEO={
     for(let i=0;i<16;i++){const ang=i/16*6.28,c=new THREE.CatmullRomCurve3([0,1,2,3].map(k=>new THREE.Vector3(Math.cos(ang)*.42*(1-k*.1)+Math.sin(k*1.6+i)*.06,Math.sin(ang)*.36*(1-k*.1)-.05,.55+k*.42)));a.push(colorize(new THREE.TubeGeometry(c,10,.03,5,false),i%2?'#ecd2ac':'#d9a97a'));}
     a.push(P(new THREE.SphereGeometry(.16,8,6),'#ffffff',[.32,.1,.45]),P(new THREE.SphereGeometry(.16,8,6),'#ffffff',[-.32,.1,.45]),P(new THREE.SphereGeometry(.08,8,6),'#081018',[.38,.1,.58]),P(new THREE.SphereGeometry(.08,8,6),'#081018',[-.38,.1,.58]));
     return merge(a);},
+  sardine:()=>{const a=fishBase('#cfdde6','#9fb4c2','#8aa0ae',.8);a[0]=P(new THREE.SphereGeometry(1,14,10),'#cfdde6',[0,0,0],[0,0,0],[.3,.55,1.25]);return merge([...a,P(new THREE.SphereGeometry(1,12,8),'#3d6a8a',[0,.28,-.05],[0,0,0],[.28,.2,1.1])]);},
+  butterfly:()=>{const a=fishBase('#fff2a0','#fff2a0','#ffd23a');a[0]=P(new THREE.SphereGeometry(1,16,12),'#fff4b0',[0,0,0],[0,0,0],[.3,.82,.95]);return merge([...a,band(.55,'#16181c',.1,.31,.8),P(new THREE.SphereGeometry(1,10,8),'#ffd23a',[0,.1,-.5],[0,0,0],[.31,.5,.35]),P(new THREE.ConeGeometry(.12,.7,5),'#ffd23a',[0,0,.95],[Math.PI/2,0,0])]);},
+  barracuda:()=>merge([P(new THREE.SphereGeometry(1,18,12),'#aab8c0',[0,0,0],[0,0,0],[.26,.3,2.0]),P(new THREE.SphereGeometry(1,14,10),'#e8eef0',[0,-.1,.1],[0,0,0],[.22,.2,1.8]),P(new THREE.ConeGeometry(.2,1.0,8),'#8c9aa2',[0,-.03,2.2],[Math.PI/2,0,0],[1,1,.8]),P(new THREE.ConeGeometry(.5,.9,4),'#6c7a82',[0,0,-2.2],[Math.PI/2,0,0],[.12,1,1.2]),P(new THREE.ConeGeometry(.2,.6,4),'#6c7a82',[0,.35,-.6],[-.3,0,0],[.1,1,1]),P(new THREE.ConeGeometry(.15,.5,4),'#6c7a82',[0,.3,.9],[-.3,0,0],[.1,1,1]),P(new THREE.SphereGeometry(.1,8,6),'#ffffff',[.2,.12,1.6]),P(new THREE.SphereGeometry(.1,8,6),'#ffffff',[-.2,.12,1.6]),P(new THREE.SphereGeometry(.055,8,6),'#081018',[.25,.12,1.68]),P(new THREE.SphereGeometry(.055,8,6),'#081018',[-.25,.12,1.68])]),
+  dolphin:()=>merge([P(new THREE.SphereGeometry(1,22,14),'#6a8296',[0,0,0],[0,0,0],[.5,.52,1.7]),P(new THREE.SphereGeometry(1,18,12),'#d8e2e8',[0,-.2,.15],[0,0,0],[.42,.36,1.55]),P(new THREE.SphereGeometry(1,14,10),'#6a8296',[0,.02,1.6],[0,0,0],[.4,.38,.55]),P(new THREE.CylinderGeometry(.08,.14,.75,8),'#7d93a6',[0,-.06,2.25],[Math.PI/2,0,0]),
+    P(new THREE.ConeGeometry(.3,.9,4),'#5a7288',[0,.62,-.2],[-.5,0,0],[.12,1,1.2]),P(new THREE.ConeGeometry(.28,.8,4),'#5a7288',[.55,-.35,.6],[0,0,-1.1],[.12,1,1]),P(new THREE.ConeGeometry(.28,.8,4),'#5a7288',[-.55,-.35,.6],[0,0,1.1],[.12,1,1]),
+    P(new THREE.ConeGeometry(.5,.8,6),'#6a8296',[0,0,-1.85],[Math.PI/2,0,0],[.7,1,.9]),P(new THREE.ConeGeometry(.9,.9,4),'#5a7288',[0,0,-2.35],[Math.PI/2,0,0],[1,1,.14]),
+    P(new THREE.SphereGeometry(.07,8,6),'#081018',[.36,.14,1.85]),P(new THREE.SphereGeometry(.07,8,6),'#081018',[-.36,.14,1.85])]),
+  hammerhead:()=>merge([P(new THREE.SphereGeometry(1,22,14),'#7a8892',[0,0,0],[0,0,0],[.7,.65,2.6]),P(new THREE.SphereGeometry(1,18,12),'#e4eaee',[0,-.28,.1],[0,0,0],[.6,.4,2.4]),P(new THREE.SphereGeometry(1,16,10),'#7a8892',[0,0,2.55],[0,0,0],[1.5,.15,.42]),
+    P(new THREE.SphereGeometry(.1,8,6),'#081018',[1.4,.03,2.7]),P(new THREE.SphereGeometry(.1,8,6),'#081018',[-1.4,.03,2.7]),
+    P(new THREE.ConeGeometry(.6,1.8,4),'#6a7882',[0,1.0,.2],[-.3,0,0],[.1,1,1.3]),P(new THREE.ConeGeometry(.7,3.0,4),'#6a7882',[0,.6,-3.4],[-Math.PI/2+.45,0,0],[.1,1,1]),P(new THREE.ConeGeometry(.45,2.0,4),'#6a7882',[0,-.45,-3.2],[-Math.PI/2-.5,0,0],[.1,1,1]),
+    P(new THREE.ConeGeometry(.6,2.0,4),'#5a6872',[1.2,-.55,1.0],[.4,0,-1.7],[.1,1,1.4]),P(new THREE.ConeGeometry(.6,2.0,4),'#5a6872',[-1.2,-.55,1.0],[.4,0,1.7],[.1,1,1.4])]),
+  swordfish:()=>merge([P(new THREE.SphereGeometry(1,20,12),'#4a6a8c',[0,0,0],[0,0,0],[.38,.42,1.6]),P(new THREE.SphereGeometry(1,16,10),'#d8e4ec',[0,-.14,.1],[0,0,0],[.33,.28,1.45]),P(new THREE.CylinderGeometry(.012,.07,2.4,6),'#3a4a5a',[0,.02,2.85],[Math.PI/2,0,0]),
+    P(new THREE.ConeGeometry(.45,1.5,4),'#2f4a6e',[0,.62,.2],[-.15,0,0],[.06,1,1.4]),P(new THREE.ConeGeometry(.5,.9,4),'#2f4a6e',[0,.5,-1.35],[Math.PI/2+.5,0,0],[.08,1,1.3]),P(new THREE.ConeGeometry(.5,.9,4),'#2f4a6e',[0,-.5,-1.35],[Math.PI/2-.5,0,0],[.08,1,1.3]),
+    P(new THREE.ConeGeometry(.3,.9,4),'#2f4a6e',[.4,-.3,.5],[0,0,-1.3],[.1,1,1]),P(new THREE.ConeGeometry(.3,.9,4),'#2f4a6e',[-.4,-.3,.5],[0,0,1.3],[.1,1,1]),
+    P(new THREE.SphereGeometry(.12,8,6),'#ffffff',[.3,.14,1.25]),P(new THREE.SphereGeometry(.12,8,6),'#ffffff',[-.3,.14,1.25]),P(new THREE.SphereGeometry(.065,8,6),'#081018',[.36,.14,1.33]),P(new THREE.SphereGeometry(.065,8,6),'#081018',[-.36,.14,1.33])]),
+  moray:()=>{const c=new THREE.CatmullRomCurve3([[0,0,2.6],[0,.06,1.4],[0,-.05,0],[0,.05,-1.4],[0,0,-2.6],[0,-.04,-3.4]].map(a=>new THREE.Vector3(...a)));
+    const a=[colorize(new THREE.TubeGeometry(c,28,.26,8,false),'#8a7a34'),P(new THREE.SphereGeometry(1,14,10),'#a0903c',[0,.04,2.75],[0,0,0],[.3,.26,.55]),P(new THREE.ConeGeometry(.2,.55,6),'#c8a84a',[0,-.03,3.2],[Math.PI/2,0,0],[1,1,.7]),P(new THREE.BoxGeometry(.04,.26,5.8),'#7a6a2a',[0,.28,-.2]),
+      P(new THREE.SphereGeometry(.07,8,6),'#ffe08a',[.2,.14,2.95]),P(new THREE.SphereGeometry(.07,8,6),'#ffe08a',[-.2,.14,2.95]),P(new THREE.SphereGeometry(.035,6,5),'#081018',[.23,.14,3.0]),P(new THREE.SphereGeometry(.035,6,5),'#081018',[-.23,.14,3.0])];
+    for(let i=0;i<14;i++){const z=2.2-i*.42;a.push(P(new THREE.SphereGeometry(1,6,5),'#3a2e12',[((i*37)%5-2)*.07,.2,z],[0,0,0],[.11,.08,.13]));}
+    return merge(a);},
+  octopus:()=>{const a=[P(new THREE.SphereGeometry(1,18,14),'#c4543a',[0,.7,-.2],[0,0,0],[.85,1.05,.9]),P(new THREE.SphereGeometry(1,12,10),'#d0644a',[0,.2,.45],[0,0,0],[.7,.55,.7]),
+      P(new THREE.SphereGeometry(.2,8,6),'#fff1c0',[.4,.42,.82]),P(new THREE.SphereGeometry(.2,8,6),'#fff1c0',[-.4,.42,.82]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[.46,.42,.97]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[-.46,.42,.97])];
+    for(let i=0;i<8;i++){const ang=i/8*Math.PI*2,c=new THREE.CatmullRomCurve3([0,1,2,3,4].map(k=>new THREE.Vector3(Math.cos(ang)*(.4+k*.38),.25-k*.2+Math.max(0,k-2)*.12,Math.sin(ang)*(.4+k*.38)-k*.5)));
+      a.push(colorize(new THREE.TubeGeometry(c,14,.11,6,false),i%2?'#c4543a':'#b8482e'));}
+    return merge(a);},
+  cuttle:()=>{const a=[P(new THREE.SphereGeometry(1,18,12),'#b8946a',[0,0,0],[0,0,0],[.7,.4,1.4]),P(new THREE.SphereGeometry(1,14,8),'#d6b88f',[.62,0,-.1],[0,0,0],[.3,.06,1.3]),P(new THREE.SphereGeometry(1,14,8),'#d6b88f',[-.62,0,-.1],[0,0,0],[.3,.06,1.3]),
+      P(new THREE.SphereGeometry(1,10,8),'#7a5a3a',[0,.3,-.2],[0,0,0],[.45,.1,1.0]),P(new THREE.SphereGeometry(.2,8,6),'#fff1c0',[.45,.12,1.25]),P(new THREE.SphereGeometry(.2,8,6),'#fff1c0',[-.45,.12,1.25]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[.5,.12,1.4]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[-.5,.12,1.4])];
+    for(let i=0;i<8;i++){const x=(i-3.5)*.14,c=new THREE.CatmullRomCurve3([[x,-.1,1.3],[x*1.2,-.12,1.75],[x*1.5,-.1,2.15]].map(p=>new THREE.Vector3(...p)));a.push(colorize(new THREE.TubeGeometry(c,8,.05,5,false),'#b8946a'));}
+    return merge(a);},
+  seadragon:()=>{const c=new THREE.CatmullRomCurve3([[0,0,1.3],[0,.1,.5],[0,0,-.4],[0,-.15,-1.3],[0,-.3,-2.0]].map(a=>new THREE.Vector3(...a)));
+    const a=[colorize(new THREE.TubeGeometry(c,20,.14,7,false),'#c8a24a'),P(new THREE.SphereGeometry(1,12,10),'#d0aa50',[0,.12,1.45],[0,0,0],[.2,.22,.32]),P(new THREE.CylinderGeometry(.045,.06,.55,7),'#d0aa50',[0,.08,1.95],[Math.PI/2,0,0]),
+      P(new THREE.SphereGeometry(.05,6,5),'#081018',[.15,.2,1.55]),P(new THREE.SphereGeometry(.05,6,5),'#081018',[-.15,.2,1.55])];
+    for(let i=0;i<12;i++){const t=i/11,z=1.2-t*3.0,y=Math.sin(t*3)*.12+(t>.5?-.12*(t-.5)*2:0),sd=i%2?1:-1;a.push(P(new THREE.SphereGeometry(1,6,5),i%3?'#7ab04a':'#a8c850',[sd*.15,y+(i%3)*.05+.1,z],[0,0,sd*.6],[.025,.34,.2]));}
+    a.push(P(new THREE.SphereGeometry(1,6,5),'#7ab04a',[0,.38,1.2],[0,0,0],[.02,.28,.18]));
+    return merge(a);},
+  blobfish:()=>merge([P(new THREE.SphereGeometry(1,18,14),'#e8a8a0',[0,0,0],[0,0,0],[.9,.8,1.0]),P(new THREE.SphereGeometry(1,12,10),'#d88a88',[0,-.08,.88],[0,0,0],[.3,.28,.32]),P(new THREE.SphereGeometry(1,10,8),'#c47a7a',[0,-.38,.75],[0,0,0],[.5,.14,.28]),
+    P(new THREE.ConeGeometry(.3,.8,5),'#d89890',[0,.05,-1.15],[Math.PI/2,0,0],[.2,1,1]),P(new THREE.SphereGeometry(.09,8,6),'#2a1a20',[.4,.22,.78]),P(new THREE.SphereGeometry(.09,8,6),'#2a1a20',[-.4,.22,.78]),
+    P(new THREE.ConeGeometry(.2,.5,4),'#d89890',[.8,-.15,.2],[0,0,-1.3],[.1,1,1]),P(new THREE.ConeGeometry(.2,.5,4),'#d89890',[-.8,-.15,.2],[0,0,1.3],[.1,1,1])]),
   turtle:()=>merge([P(new THREE.SphereGeometry(1,22,12,0,Math.PI*2,0,Math.PI*.55),'#5b7a3a',[0,0,0],[0,0,0],[1.2,.62,1.5]),P(new THREE.SphereGeometry(1,20,10),'#d9c98a',[0,-.02,0],[0,0,0],[1.12,.2,1.38]),
     P(new THREE.SphereGeometry(1,14,10),'#8aa36a',[0,.08,1.75],[0,0,0],[.38,.34,.5]),P(new THREE.SphereGeometry(1,14,8),'#7f9a5e',[1.45,0,.7],[0,.5,.1],[1.1,.08,.36]),P(new THREE.SphereGeometry(1,14,8),'#7f9a5e',[-1.45,0,.7],[0,-.5,-.1],[1.1,.08,.36]),
     P(new THREE.SphereGeometry(1,12,8),'#7f9a5e',[.9,0,-1.3],[0,-.6,0],[.55,.07,.28]),P(new THREE.SphereGeometry(1,12,8),'#7f9a5e',[-.9,0,-1.3],[0,.6,0],[.55,.07,.28]),P(new THREE.ConeGeometry(.15,.5,6),'#7f9a5e',[0,0,-1.65],[-Math.PI/2,0,0]),
@@ -960,8 +1183,11 @@ const ANIM={
   nautilus:'float tn=smoothstep(.3,1.8,position.z);transformed.x+=sin(uT*3.+ph+position.z*4.)*.1*tn;transformed.y+=cos(uT*2.4+ph+position.z*3.)*.08*tn+sin(uT*1.2+ph)*.05;',
   turtle:'float fx=smoothstep(.8,1.5,abs(position.x));transformed.y+=sin(uT*1.8+ph)*.4*fx*abs(position.x)*.6;transformed.z+=cos(uT*1.8+ph)*.18*fx;'
 };
+ANIM.octo='float tn=smoothstep(.5,-.15,position.y);transformed.x+=sin(uT*2.6+ph+position.z*3.+position.x*2.)*.2*tn;transformed.y+=cos(uT*2.+ph+position.x*3.)*.1*tn;transformed.y*=1.+sin(uT*2.+ph)*.03*(1.-tn);';
+ANIM.cuttle='float ax=abs(position.x);transformed.y+=sin(uT*5.+ph-position.z*3.)*.07*smoothstep(.4,.8,ax);transformed.x+=sin(uT*3.+ph+position.z*4.)*.05*step(1.1,position.z);';
+ANIM.seadragon='transformed.y+=sin(uT*1.5+ph+position.z*2.)*.08;transformed.x+=sin(uT*3.+ph+position.z*3.)*.04*smoothstep(0.,-2.,position.z)+sin(uT*6.+ph+position.y*8.)*.02;';
 ANIM.eel='float kk=smoothstep(2.6,-3.3,position.z);transformed.x+=sin(uT*4.+ph-position.z*1.6)*.5*kk;transformed.y+=cos(uT*3.1+ph-position.z*1.2)*.12*kk;';
-const SPEC_CFG={manta:{s:2.1,a:'ray'},whaleshark:{s:2.3,a:'whale'},mola:{s:1.5,a:'slow'},lion:{s:.95,a:'slow'},angler:{s:1.25,a:'slow',fx:1},narwhal:{s:1.8,a:'whale'},oarfish:{s:1.2,a:'eel'},nautilus:{s:.9,a:'nautilus'},clown:{s:.55,a:'fish'},tang:{s:.8,a:'fish'},angel:{s:.85,a:'fish'},puffer:{s:.72,a:'slow'},seahorse:{s:.62,a:'seahorse'},ray:{s:1.3,a:'ray'},jelly:{s:1.15,a:'jelly'},turtle:{s:1.55,a:'turtle'}};
+const SPEC_CFG={manta:{s:2.1,a:'ray'},whaleshark:{s:2.3,a:'whale'},mola:{s:1.5,a:'slow'},lion:{s:.95,a:'slow'},angler:{s:1.25,a:'slow',fx:1},narwhal:{s:1.8,a:'whale'},oarfish:{s:1.2,a:'eel'},nautilus:{s:.9,a:'nautilus'},sardine:{s:.42,a:'fish'},butterfly:{s:.6,a:'fish'},barracuda:{s:1.25,a:'slow'},dolphin:{s:1.45,a:'whale'},hammerhead:{s:1.9,a:'whale'},swordfish:{s:1.4,a:'slow'},moray:{s:.85,a:'eel'},octopus:{s:.95,a:'octo'},cuttle:{s:.85,a:'cuttle'},seadragon:{s:.8,a:'seadragon'},blobfish:{s:.8,a:'slow'},clown:{s:.55,a:'fish'},tang:{s:.8,a:'fish'},angel:{s:.85,a:'fish'},puffer:{s:.72,a:'slow'},seahorse:{s:.62,a:'seahorse'},ray:{s:1.3,a:'ray'},jelly:{s:1.15,a:'jelly'},turtle:{s:1.55,a:'turtle'}};
 const schools=[],creatures=[];
 function addSchool(sp,n,ax,ay,az,amp,fr,spread,minAlt,opt={}){
   amp=[Math.min(amp[0],HX-6-Math.abs(ax)),Math.min(amp[1],SURF-3-ay),Math.min(amp[2],HZ-6-Math.abs(az))].map(v=>Math.max(v,.5));
@@ -992,7 +1218,19 @@ function addSchool(sp,n,ax,ay,az,amp,fr,spread,minAlt,opt={}){
   for(let i=0;i<16;i++){const [x,z]=zp('abyss');addSchool('angler',1,x,floorH(x,z)+rr(5,13),z,[26,3,20],[rr(.025,.05),rr(.05,.08),rr(.025,.05)],0,3,{foodie:false});}
   for(let i=0;i<6;i++){const [x,z]=zp('ice');addSchool('narwhal',3,x,rr(-6,10),z,[90,5,40],[rr(.012,.02),rr(.03,.05),rr(.012,.02)],4.5,5);}
   for(let i=0;i<8;i++){const [x,z]=zp(i<4?'abyss':i<6?'crystal':'bluehole');addSchool('oarfish',1,x,rr(-12,6),z,[50,6,30],[rr(.012,.02),rr(.04,.06),rr(.015,.025)],0,5,{foodie:false});}
-  for(let i=0;i<14;i++){const [x,z]=zp(i<9?'sunken':i<12?'lagoon':'volcano');addSchool('nautilus',1,x,floorH(x,z)+rr(4,12),z,[20,3,16],[rr(.03,.05),rr(.06,.09),rr(.03,.05)],0,3);}
+  for(let i=0;i<14;i++){const [x,z]=zp(i<9?'sunken':i<12?'lagoon':'volcano');addSchool('nautilus',1,x,floorH(x,z)+rr(4,12),z,[20,3,16],[rr(.03,.05),rr(.06,.09),rr(.03,.05)],0,3);}  // ---- yeni türler (2. dalga) ----
+  for(let i=0;i<9;i++)addSchool('sardine',34,rr(-440,440),rr(-12,20),rr(-240,240),[170,9,95],[rr(.03,.05),rr(.07,.1),rr(.035,.06)],5.5,3,{wm:1.4});
+  for(let i=0;i<16;i++){const [x,z]=zp(i<6?'coral':i<10?'lagoon':i<13?'sunken':'arch');addSchool('butterfly',4,x,floorH(x,z)+rr(4,8),z,[16,3,12],[rr(.05,.08),rr(.09,.12),rr(.06,.09)],2.2,2);}
+  for(let i=0;i<6;i++){const [x,z]=zp(i<3?'bluehole':i<5?'lagoon':'canyon');addSchool('barracuda',7,x,rr(-6,12),z,[130,5,75],[rr(.025,.04),rr(.06,.09),rr(.03,.045)],3.2,4);}
+  for(let i=0;i<7;i++){const [x,z]=zp(i<3?'bluehole':i<5?'lagoon':'sunken');addSchool('dolphin',4,x,rr(6,24),z,[190,7,105],[rr(.02,.03),rr(.07,.1),rr(.022,.034)],5,6,{wm:.5});}
+  for(let i=0;i<7;i++){const [x,z]=zp(i<3?'bluehole':i<5?'canyon':i<6?'trench':'lagoon');addSchool('hammerhead',1,x,rr(-12,8),z,[120,6,70],[rr(.014,.022),rr(.04,.06),rr(.016,.026)],0,5);}
+  for(let i=0;i<9;i++){const [x,z]=zp(i<4?'bluehole':i<7?'canyon':'lagoon');addSchool('swordfish',1,x,rr(-8,14),z,[210,7,115],[rr(.03,.05),rr(.06,.09),rr(.03,.05)],0,5);}
+  for(let i=0;i<26;i++){const [x,z]=zp(['coral','lagoon','sunken','temple','wreck','arch','graveyard'][i%7]);addSchool('moray',1,x,floorH(x,z)+1.4,z,[3.5,.5,3.5],[rr(.12,.2),rr(.1,.16),rr(.12,.2)],0,1,{foodie:false});}
+  for(const r of RUINS){addSchool('moray',1,r.x+rr(-9,9),floorH(r.x,r.z)+2.6,r.z+rr(-9,9),[5,.5,5],[rr(.12,.2),rr(.1,.16),rr(.12,.2)],0,1,{foodie:false});addSchool('octopus',1,r.x+rr(-12,12),floorH(r.x,r.z)+2.8,r.z+rr(-9,9),[8,.6,7],[rr(.05,.09),rr(.08,.12),rr(.05,.09)],0,1,{foodie:false});}
+  for(let i=0;i<14;i++){const [x,z]=zp(['coral','lagoon','sunken','dunes','arch','grass','kelp'][i%7]);addSchool('octopus',1,x,floorH(x,z)+1.8,z,[9,.6,8],[rr(.05,.09),rr(.08,.12),rr(.05,.09)],0,1,{foodie:false});}
+  for(let i=0;i<13;i++){const [x,z]=zp(['lagoon','coral','grass','sunken'][i%4]);addSchool('cuttle',1,x,floorH(x,z)+rr(4,7),z,[22,2,15],[rr(.03,.05),rr(.07,.1),rr(.03,.05)],0,2.5);}
+  for(let i=0;i<26;i++){const [x,z]=zp(['kelp','grass','lagoon','kelp','jelly'][i%5]);addSchool('seadragon',1,x,floorH(x,z)+rr(3,7),z,[3,1,3],[rr(.12,.22),rr(.15,.25),rr(.12,.22)],0,2,{foodie:false});}
+  for(let i=0;i<10;i++){const [x,z]=zp('abyss');addSchool('blobfish',1,x,floorH(x,z)+1.5,z,[12,.4,9],[rr(.04,.07),rr(.08,.12),rr(.04,.07)],0,1,{foodie:false});}
 }
 creatures.forEach((c,i)=>{c.deadUntil=-1e9;c.ry=0;c.sc=1;c.k=i;c.cap1=-1;c.capN=null;});
 const specMesh={};
@@ -1250,7 +1488,7 @@ function netCageGeo(w){
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.rotateX(Math.PI/2);g.userData.shared=true;return g;
 }
 function setFPVisible(){
-  const vis=!fp;
+  const vis=!fp;document.body.classList.toggle('fp',fp);
   local.g.traverse(o=>{if(o.isMesh&&o!==local.beam&&o!==local.shield&&!o.userData.keep)o.visible=vis;});
 }
 const me={name:'Kaptan',color:COLORS[0]};
@@ -1276,7 +1514,7 @@ const players=new Map();// uzaktaki oyuncular
 const net={mode:'solo',peer:null,conns:new Map(),host:null,myId:'me',code:null,offset:0,bestRtt:1e9};
 const worldTime=()=>(performance.now()+net.offset)/1000;
 let sonarReveal={until:0,x:0,z:0};
-let HULL_MAX=250,TORP_MAX=6,MINE_MAX=3,TORP_RELOAD=4.5,spdMul=1,subSc=1,drainMul=1,regenMul=1,fp=store.get('aqua-fp')==='1',frameN=0,curMine=false;
+let HULL_MAX=250,TORP_MAX=6,MINE_MAX=3,TORP_RELOAD=4.5,spdMul=1,subSc=1,drainMul=1,regenMul=1,fp=store.get('aqua-fp')!=='0',frameN=0,curMine=false;
 let hull=HULL_MAX,swvCd=0,dead=false,deadT=0,invuln=0,hurtT=0,inkT=0,stunT=0,lastHit={by:null,t:-1e9},shieldT=0,shieldHp=0,shieldCd=0,shieldFlash=0,repairT=0,kits=3,kitReload=0,weapon=0,mineAmmo=3,mineReload=0,mineSeq=0,empCd=0,netEnT=0;
 const kills=new Map(),blastLog=[];
 const sonarFx=[];
@@ -1292,15 +1530,16 @@ const SUBS=[
 ];
 const UPG_MAX=5,UPG={ammo:{base:150},reload:{base:200},armor:{base:250},motor:{base:250},battery:{base:180}};
 const upCost=(k,l)=>Math.round(UPG[k].base*Math.pow(l+1,1.5)/10)*10;
-const QKINDS=['en','fish','sp','disc','str','net','mel','surf','zone','pk'];
+const QKINDS=['en','fish','sp','disc','str','net','mel','surf','zone','pk','trs'];
 function validQuest(q){return !!q&&typeof q==='object'&&QKINDS.includes(q.k)&&Number.isFinite(q.n)&&q.n>0&&Number.isFinite(q.p)&&Number.isFinite(q.r)&&(q.a===undefined||typeof q.a==='string');}
 const SAVE_KEY='aqua-save2';
-let save={gold:0,owned:[0],tier:0,up:{ammo:0,reload:0,armor:0,motor:0,battery:0},quests:[]};
+let save={gold:0,owned:[0],tier:0,up:{ammo:0,reload:0,armor:0,motor:0,battery:0},quests:[],relics:[],tech:[],ruins:[],loot:0};
 try{const o=JSON.parse(store.get(SAVE_KEY)||'null');if(o&&typeof o==='object'){
   save.gold=Math.max(0,Math.floor(num(o.gold)));
   save.owned=Array.isArray(o.owned)?[...new Set(o.owned.filter(i=>Number.isInteger(i)&&i>=0&&i<SUBS.length).concat(0))]:[0];
   save.tier=save.owned.includes(o.tier)?o.tier:0;
   for(const k in save.up)save.up[k]=clamp(Math.floor(num(o.up&&o.up[k])),0,UPG_MAX);
+  save.relics=Array.isArray(o.relics)?o.relics.filter(x=>typeof x==='string').slice(0,20):[];save.tech=Array.isArray(o.tech)?o.tech.filter(Number.isInteger).slice(0,60):[];save.ruins=Array.isArray(o.ruins)?o.ruins.filter(x=>typeof x==='string').slice(0,40):[];save.loot=Math.max(0,Math.floor(num(o.loot)));
   save.quests=Array.isArray(o.quests)?o.quests.filter(validQuest).slice(0,3).map(q=>({k:q.k,a:q.a,n:q.n,p:Math.min(q.p,q.n),r:q.r})):[];}}catch{}
 const persist=()=>store.set(SAVE_KEY,JSON.stringify(save));
 const refreshGold=()=>document.querySelectorAll('.goldV').forEach(e=>{e.textContent=save.gold;});
@@ -1315,11 +1554,11 @@ function applyLoadout(fresh){
 }
 
 /* ---- Skor ve avcı raporu ---- */
-const SC={fish:5,shark:60,eel:40,squid:50,swarm:30,struct:8,disc:100,pk:150,caught:3,quest:50};
+const SC={fish:5,shark:60,eel:40,squid:50,swarm:30,struct:8,disc:100,pk:150,caught:3,quest:50,treasure:40};
 const stats={ms:0,fish:{},fishN:0,en:{},enN:0,str:0,disc:0,pk:0,caught:0,mel:0,score:0};
 const addScore=n=>{stats.score+=n;};
 function statFish(sp){stats.fish[sp]=(stats.fish[sp]||0)+1;stats.fishN++;addScore(SC.fish);qEvent('fish',sp);qEvent('sp',sp);}
-function statEnemy(type){stats.en[type]=(stats.en[type]||0)+1;stats.enN++;addScore(SC[type]||30);qEvent('en',type);}
+function statEnemy(type){stats.en[type]=(stats.en[type]||0)+1;stats.enN++;addScore(SC[type]||30);const g=({shark:30,eel:20,squid:25,swarm:15})[type]||15;save.gold+=g;persist();refreshGold();qEvent('en',type);return g;}
 function drawSign(){
   if(!signCv)return;const g=signCv.getContext('2d'),W=1024,H=396,tr=lang==='tr';
   const m=Math.floor(stats.ms/60000),sc=Math.floor(stats.ms/1000)%60,timeS=m+':'+String(sc).padStart(2,'0');
@@ -1356,6 +1595,7 @@ function newQuest(){
     else if(roll<.78){const n=ri(8,20);q={k:'net',n,p:0,r:n*9};}
     else if(roll<.86){const n=ri(5,10);q={k:'mel',n,p:0,r:n*16};}
     else if(roll<.92){const n=ri(2,4);q={k:'surf',n,p:0,r:n*45};}
+    else if(roll<.96){const n=ri(2,5);q={k:'trs',n,p:0,r:n*45};}
     else{q={k:'zone',a:ZONE_IDS[ri(0,ZONE_IDS.length-1)],n:1,p:0,r:140};}
     if(save.quests.some(o=>o.k===q.k&&o.a===q.a))continue;
     return q;
@@ -1376,6 +1616,7 @@ function questText(q){
     case 'surf':return tr?q.n+' kez yüzeye çık':'Surface '+q.n+' times';
     case 'zone':return tr?T.zones[q.a]+' bölgesine git':'Travel to '+T.zones[q.a];
     case 'pk':return tr?q.n+' oyuncuyu batır':'Sink '+q.n+' players';
+    case 'trs':return tr?q.n+' hazine topla':'Collect '+q.n+' treasures';
   }
   return '?';
 }
@@ -1401,6 +1642,8 @@ function renderGarage(){
     const act=sel?`<button class="btn" disabled>${esc(T.equipped)}</button>`:own?`<button class="btn primary" data-a="eq" data-s="${i}">${esc(T.equip)}</button>`:`<button class="btn gold" data-a="buy" data-s="${i}"${save.gold<s.price?' style="opacity:.55"':''}>${esc(T.buy)} · ${s.price} 🪙</button>`;
     return `<div class="subC ${sel?'on':''}"><b>${esc(s[lang])}</b>${esc(T.hullL)} ${s.hull} · ${esc(T.torpL)} ${s.torp} · ${esc(T.mineL)} ${s.mine}<br>${esc(T.spdL)} ×${s.spd.toFixed(2)} · ⌀ ×${s.sc.toFixed(2)}${act}</div>`;
   }).join('');
+  $('museumH').textContent=tl('MÜZE & KEŞİFLER','MUSEUM & DISCOVERIES');
+  $('museum').innerHTML=RELICS.map(k=>{const f=save.relics.includes(k),d=TTYPE[k];return `<div class="chip ${f?'found':''}"><i style="background:${f?'#ffd56c':'#2a4450'}"></i>${f?d.ic+' '+esc(tl(d.tr,d.en)):'???'}</div>`;}).join('')+`<div class="mus">${esc(tl('Toplanan hazine','Treasures found'))}: <b>${save.loot}</b> · ${esc(tl('Harabe','Ruins'))}: <b>${save.ruins.length}/${RUINS.length}</b> · ${esc(tl('Teknoloji sandığı','Tech crates'))}: <b>${save.tech.length}/${TREAS.filter(t=>t.once).length}</b> · ${esc(tl('Sonar: hazineleri gösterir (SPACE)','Sonar reveals treasure (SPACE)'))}</div>`;
   $('upList').innerHTML=Object.keys(UPG).map(k=>{
     const l=save.up[k],pips=Array.from({length:UPG_MAX},(_,j)=>`<i class="${j<l?'f':''}"></i>`).join('');
     const btn=l>=UPG_MAX?`<button class="btn" disabled>${esc(T.maxed)}</button>`:`<button class="btn gold" data-a="up" data-k="${k}"${save.gold<upCost(k,l)?' style="opacity:.55"':''}>${esc(T.upgrade)} · ${upCost(k,l)} 🪙</button>`;
@@ -1474,7 +1717,7 @@ function playerMsg(name,color,m){chatLine(`<b style="color:${color}">${esc(name)
 function applyDisc(sp,id,name){
   if(!(sp in SP_IDX)||teamDisc.has(sp))return;
   const d={id,name:cleanName(name)};teamDisc.set(sp,d);pendingDisc.delete(sp);
-  if(id===net.myId){stats.disc++;addScore(SC.disc);qEvent('disc',sp);}
+  if(id===net.myId){stats.disc++;addScore(SC.disc);save.gold+=35;persist();refreshGold();setTimeout(()=>toast('+35 🪙 · '+tl('yeni tür keşfi','new species')),900);qEvent('disc',sp);}
   if(net.mode==='host')broadcast({t:'disc',sp,id,n:d.name});
   renderCatalog();renderPlayers();showDiscCard(sp,d);sfx.disc();
   if(teamDisc.size===SPECIES.length)setTimeout(()=>{toast(T.allFound);sysMsg(T.allFound);[523,659,784,1046].forEach((f,i)=>tone(f,f,.5,'triangle',.18,i*.15));},1500);
@@ -1498,7 +1741,7 @@ function sonarEffect(x,y,z,color){const m=new THREE.Mesh(sonarGeo,sonarMat.clone
 function doSonar(){
   if(!running)return;if(sonarCd>0){toast(T.sonarCd);return;}
   sonarCd=4;const p=sub.position;sonarEffect(p.x,p.y,p.z,me.color);sfx.sonar();toast(T.sonar);
-  sonarReveal={until:performance.now()+7000,x:p.x,z:p.z};checkDiscover(30);
+  sonarReveal={until:performance.now()+7000,x:p.x,z:p.z};checkDiscover(30);{const n=revealTreasures(p,170);if(n)setTimeout(()=>toast('📡 '+tl(n+' hazine işareti sonarda!',n+' treasure signals on sonar!')),700);}
   sendNet({t:'sonar',p:[+p.x.toFixed(2),+p.y.toFixed(2),+p.z.toFixed(2)]});
 }
 function doFood(){
@@ -1645,6 +1888,197 @@ const biomeGlows=[];
   }
 }
 function updateBiomes(t){for(let i=0;i<biomeGlows.length;i++){const g=biomeGlows[i];g.sp.material.opacity=g.b+.2*Math.sin(t*1.6+g.p);}}
+
+/* ================= Hazineler: sandıklar, antik eserler, inciler, teknoloji sandıkları ================= */
+const tl=(a,b)=>lang==='tr'?a:b;
+const RELICS=['amph','idol','tablet','crown','pearl'];
+const TTYPE={
+  chest:{tr:'Hazine Sandığı',en:'Treasure Chest',g:[90,260],ic:'🧰',col:0xffd56c,respawn:300},
+  gold:{tr:'Altın Sandık',en:'Golden Chest',g:[420,900],ic:'👑',col:0xffe08a,respawn:540},
+  amph:{tr:'Antik Amfora',en:'Ancient Amphora',g:[70,170],ic:'🏺',col:0xffc88a,relic:1,respawn:420},
+  idol:{tr:'Altın Heykelcik',en:'Golden Idol',g:[260,520],ic:'🗿',col:0xffd56c,relic:1,respawn:540},
+  tablet:{tr:'Antik Tablet',en:'Ancient Tablet',g:[160,360],ic:'📜',col:0x7fffe0,relic:1,respawn:480},
+  crown:{tr:'Batık Taç',en:'Sunken Crown',g:[650,1200],ic:'👑',col:0xffe08a,relic:1,respawn:720},
+  pearl:{tr:'Dev İnci',en:'Giant Pearl',g:[220,700],ic:'🦪',col:0xffffff,relic:1,respawn:420},
+  gem:{tr:'Mücevher',en:'Gemstone',g:[180,460],ic:'💎',col:0xb36bff,respawn:480},
+  tech:{tr:'Teknoloji Sandığı',en:'Tech Crate',ic:'⚙️',col:0x4ff0ff,once:1},
+  supply:{tr:'İkmal Sandığı',en:'Supply Crate',ic:'📦',col:0x9dffb0,respawn:240}
+};
+const TREAS=[];let treasN=0;
+{
+  /* rastgele gizli hazine noktaları (harabelere ek) */
+  const add=(type,x,z,dy=1.1)=>TSPOTS.push({type,x,y:floorH(x,z)+dy,z,ry:r2(0,6),id:TSPOTS.length,site:null});
+  [[-4,-30],[175,75],[215,115],[248,62],[190,138],[150,100],[235,90]].forEach(([x,z])=>add('chest',x+r2(-6,6),z+r2(-6,6)));
+  TSPOTS.push({type:'gold',x:chestPos.x,y:chestPos.y-.6,z:chestPos.z,ry:0,id:TSPOTS.length,site:null,existing:true});
+  for(let i=0;i<16;i++){const [x,z]=zp(['coral','lagoon','sunken','dunes','arch','grass','kelp','temple'][i%8]);add('pearl',x,z,.5);}
+  for(let i=0;i<20;i++){let x,z,t=0;do{x=r2(-HX+20,HX-20);z=r2(-HZ+20,HZ-20);t++;}while(!lush(x,z)&&t<40);add(i%3===0?'amph':'chest',x,z);}
+  for(const [id,n,ty] of [['crystal',9,'gem'],['volcano',7,'gem'],['abyss',5,'gem'],['temple',3,'tablet'],['trench',3,'tablet'],['graveyard',2,'gold'],['temple',2,'gold'],['bluehole',2,'gold'],['trench',2,'gold'],['dunes',3,'amph']])for(let i=0;i<n;i++){const [x,z]=zp(id);add(ty,x,z);}
+  for(let i=0;i<14;i++){const [x,z]=zp(['coral','kelp','grass','arch','jelly','dunes','lagoon'][i%7]);add('supply',x,z);}
+  for(let i=0;i<5;i++){const [x,z]=zp(['trench','temple','graveyard','bluehole','canyon'][i]);add('tech',x,z,1.8);}
+  /* ortak geometri/malzeme */
+  const M={
+    wood:stdMat({color:0x6a4528,roughness:.85},'trWood',{caus:.7}),
+    dwood:stdMat({color:0x44301f,roughness:.9},'trWood2',{caus:.6}),
+    clay:stdMat({color:0xb5683a,roughness:.8,side:THREE.DoubleSide},'trClay',{caus:.7}),
+    stone:stdMat({color:0x8d8b7c,roughness:.9,flatShading:true},'trStone',{caus:.8}),
+    gold:new THREE.MeshStandardMaterial({color:0xffc83d,emissive:0xb07a10,emissiveIntensity:.9,metalness:.9,roughness:.3}),
+    iron:new THREE.MeshStandardMaterial({color:0x40484c,roughness:.5,metalness:.8}),
+    tech:new THREE.MeshStandardMaterial({color:0x26343d,emissive:0x00a8d8,emissiveIntensity:.45,metalness:.75,roughness:.35}),
+    glow:new THREE.MeshBasicMaterial({color:0x4ff0ff}),
+    pearl:new THREE.MeshStandardMaterial({color:0xfff6ee,emissive:0xfff0e0,emissiveIntensity:.5,roughness:.12,metalness:.1}),
+    clam:stdMat({color:0xc6b49c,roughness:.7,flatShading:true},'trClam',{caus:.7}),
+    supply:new THREE.MeshStandardMaterial({color:0xe08a1a,roughness:.6,metalness:.3,emissive:0x3a2000,emissiveIntensity:.4}),
+    white:new THREE.MeshStandardMaterial({color:0xf4f4ee,roughness:.5}),
+    cushion:new THREE.MeshStandardMaterial({color:0x8a1f2a,roughness:.9})
+  };
+  const gm={
+    box:new THREE.BoxGeometry(1,1,1),
+    cyl:new THREE.CylinderGeometry(1,1,1,14),
+    sph:new THREE.SphereGeometry(1,16,10),
+    cone:new THREE.ConeGeometry(1,1,6),
+    oct:new THREE.OctahedronGeometry(1,0),
+    torus:new THREE.TorusGeometry(1,.14,8,24),
+    amph:(()=>{const pts=[[.02,0],[.26,.04],[.4,.35],[.42,.6],[.3,.92],[.16,1.08],[.2,1.2],[.2,1.28]].map(q=>new THREE.Vector2(q[0],q[1]));return new THREE.LatheGeometry(pts,12);})(),
+    domeTop:new THREE.SphereGeometry(1,14,8,0,Math.PI*2,0,Math.PI/2),
+    domeBot:new THREE.SphereGeometry(1,14,8,0,Math.PI*2,Math.PI/2,Math.PI/2)
+  };
+  const mesh=(g,m,p=[0,0,0],s=[1,1,1],r=[0,0,0])=>{const o=new THREE.Mesh(g,m);o.position.set(...p);o.scale.set(...s);o.rotation.set(...r);return o;};
+  const build=(sp)=>{
+    const g=new THREE.Group(),ud={};
+    const t=sp.type;
+    if(t==='chest'||t==='gold'){
+      const big=t==='gold',k=big?1.45:1.05,bodyM=big?M.dwood:M.wood;
+      g.add(mesh(gm.box,bodyM,[0,.8,0],[3,1.6,2]));
+      g.add(mesh(gm.box,big?M.gold:M.iron,[0,.8,0],[3.08,.25,2.08]));
+      g.add(mesh(gm.box,big?M.gold:M.iron,[-1.1,.8,0],[.22,1.62,2.08]));g.add(mesh(gm.box,big?M.gold:M.iron,[1.1,.8,0],[.22,1.62,2.08]));
+      const lid=new THREE.Group();lid.position.set(0,1.6,-1);lid.add(mesh(gm.box,bodyM,[0,.2,1],[3,.4,2.05]));lid.add(mesh(gm.box,big?M.gold:M.iron,[0,.2,1],[3.08,.46,.3]));lid.add(mesh(gm.box,M.gold,[0,.05,2.0],[.36,.5,.12]));lid.rotation.x=-.55;g.add(lid);
+      const pile=mesh(gm.sph,M.gold,[0,1.55,0],[1.3,.38,.8]);g.add(pile);ud.lid=lid;ud.pile=pile;
+      for(let i=0;i<7;i++)g.add(mesh(gm.cyl,M.gold,[r2(-1.1,1.1),1.7+r2(0,.15),r2(-.6,.6)],[.2,.04,.2],[r2(-.3,.3),0,r2(-.3,.3)]));
+      g.scale.setScalar(k);
+    }else if(t==='amph'){
+      const a=mesh(gm.amph,M.clay,[0,0,0],[1.6,1.6,1.6]);g.add(a);
+      for(const sd of [-1,1]){const h=mesh(gm.torus,M.clay,[sd*.55*1.6,.9*1.6,0],[.32*1.6,.4*1.6,.32*1.6],[0,Math.PI/2,0]);g.add(h);}
+      g.add(mesh(gm.torus,M.gold,[0,.58*1.6,0],[.42*1.6,.42*1.6,.42*1.6],[Math.PI/2,0,0]));
+      if(R2()<.55){g.rotation.z=pk2([1.25,-1.3]);g.position.y-=.2;}
+    }else if(t==='idol'){
+      g.add(mesh(gm.box,M.stone,[0,.3,0],[1.8,.6,1.8]));g.add(mesh(gm.cyl,M.gold,[0,1.5,0],[.55,1.8,.55]));g.add(mesh(gm.sph,M.gold,[0,2.65,0],[.55,.55,.55]));
+      g.add(mesh(gm.cone,M.gold,[0,3.25,0],[.4,.6,.4]));g.add(mesh(gm.cyl,M.gold,[.7,1.9,0],[.14,1.1,.14],[0,0,-.6]));g.add(mesh(gm.cyl,M.gold,[-.7,1.9,0],[.14,1.1,.14],[0,0,.6]));
+      g.add(mesh(gm.sph,M.glow,[.2,2.7,.46],[.09,.09,.09]));g.add(mesh(gm.sph,M.glow,[-.2,2.7,.46],[.09,.09,.09]));
+    }else if(t==='tablet'){
+      g.add(mesh(gm.box,M.stone,[0,1.5,0],[2.1,3,.45],[.08,0,.1]));
+      for(let i=0;i<5;i++)g.add(mesh(gm.box,M.glow,[((i%2)?-.35:.2),.7+i*.46,.25],[(.7+(i*37%5)*.12),.09,.04],[.08,0,.1]));
+      g.add(mesh(gm.box,M.stone,[0,.2,0],[2.6,.4,1.1]));
+    }else if(t==='crown'){
+      g.add(mesh(gm.cyl,M.cushion,[0,.35,0],[1.5,.7,1.5]));
+      g.add(mesh(gm.torus,M.gold,[0,1.0,0],[.95,.95,.95],[Math.PI/2,0,0]));
+      for(let i=0;i<7;i++){const a=i/7*Math.PI*2;g.add(mesh(gm.cone,M.gold,[Math.cos(a)*.95,1.45,Math.sin(a)*.95],[.16,.7,.16]));}
+      [0xff3a4a,0x3a8aff,0x3aff8a].forEach((c,i)=>{const a=i*2.1;g.add(mesh(gm.sph,new THREE.MeshBasicMaterial({color:c}),[Math.cos(a)*.95,1.05,Math.sin(a)*.95],[.15,.15,.15]));});
+      g.scale.setScalar(1.35);
+    }else if(t==='pearl'){
+      g.add(mesh(gm.domeBot,M.clam,[0,.45,0],[1.7,.8,1.4]));
+      const top=new THREE.Group();top.position.set(0,.5,-1.2);top.add(mesh(gm.domeTop,M.clam,[0,0,1.2],[1.7,.8,1.4]));top.rotation.x=-.55;g.add(top);
+      g.add(mesh(gm.sph,M.pearl,[0,.78,0],[.42,.42,.42]));ud.lid=top;
+    }else if(t==='gem'){
+      const col=pk2([0xb36bff,0x5ad8ff,0xff5a8a,0x5aff9a,0xffd23a]),mat=new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:.9,roughness:.15,metalness:.2,flatShading:true});sp.col=col;
+      g.add(mesh(gm.oct,mat,[0,1.0,0],[.7,1.1,.7],[0,.5,.15]));g.add(mesh(gm.oct,mat,[.7,.5,.3],[.4,.65,.4],[0,1,.4]));g.add(mesh(gm.oct,mat,[-.6,.45,-.35],[.34,.55,.34],[.2,0,-.3]));
+      g.add(mesh(gm.box,M.stone,[0,.1,0],[1.9,.3,1.5]));
+    }else if(t==='tech'){
+      g.add(mesh(gm.box,M.tech,[0,1.2,0],[2.4,2,2.4]));
+      for(const [x,z] of [[1.22,0],[-1.22,0],[0,1.22],[0,-1.22]])g.add(mesh(gm.box,M.glow,[x,1.2,z],[x?.08:1.6,1.5,z?.08:1.6]));
+      g.add(mesh(gm.cyl,M.iron,[0,2.7,0],[.07,1.3,.07]));g.add(mesh(gm.sph,M.glow,[0,3.4,0],[.2,.2,.2]));
+      const ring=mesh(gm.torus,M.glow,[0,1.2,0],[1.9,1.9,1.9],[Math.PI/2,0,0]);ring.scale.z=.3;g.add(ring);ud.ring=ring;
+    }else if(t==='supply'){
+      g.add(mesh(gm.box,M.supply,[0,.8,0],[2.4,1.6,1.8]));g.add(mesh(gm.box,M.white,[0,.8,.92],[1.1,.34,.06]));g.add(mesh(gm.box,M.white,[0,.8,.92],[.34,1.1,.06]));
+      g.add(mesh(gm.box,M.iron,[0,1.62,0],[2.5,.12,1.9]));
+    }
+    g.position.set(sp.x,sp.y,sp.z);g.rotation.y=sp.ry;
+    return {g,ud};
+  };
+  const glowMats=[];
+  for(const sp of TSPOTS){
+    const d=TTYPE[sp.type];
+    let g,ud={};
+    if(sp.existing&&chestGroup){g=chestGroup;}
+    else{const b=build(sp);g=b.g;ud=b.ud;scene.add(g);}
+    const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:sp.col||d.col,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.0,fog:false}));
+    spr.renderOrder=6;spr.position.set(sp.x,sp.y+1.8,sp.z);spr.scale.setScalar(10);scene.add(spr);
+    TREAS.push({id:sp.id,type:sp.type,d,x:sp.x,y:sp.y,z:sp.z,g,ud,spr,alive:true,respawn:0,seen:0,mapSeen:false,once:!!d.once,rad:sp.type==='tech'?3.6:3,ph:r2(0,6),by:g.position.y,lidA:ud.lid?ud.lid.rotation.x:0,opening:0,bs:g.scale.x});
+  }
+  treasN=TREAS.length;
+}
+const RUINS_BY_ID=Object.fromEntries(RUINS.map(r=>[r.id,r]));
+function hideTreasure(t){t.g.visible=false;t.spr.visible=false;if(t.id!==undefined&&t.g===chestGroup)t.g.visible=false;}
+function initTreasures(){
+  for(const t of TREAS)if(t.once&&save.tech.includes(t.id)){t.alive=false;t.respawn=Infinity;hideTreasure(t);}
+}
+function revealTreasures(p,range){
+  const now=performance.now();let n=0;
+  for(const t of TREAS){if(!t.alive)continue;const dx=t.x-p.x,dz=t.z-p.z;if(dx*dx+dz*dz<range*range){t.seen=now+10000;if(!t.mapSeen){t.mapSeen=true;}n++;}}
+  return n;
+}
+function collectTreasure(t,now){
+  const d=t.d;t.alive=false;t.opening=.01;
+  t.respawn=d.once?Infinity:now+(d.respawn*(.8+Math.random()*.5))*1000;
+  let gold=0,extra='';
+  if(d.g)gold=Math.round(rr(d.g[0],d.g[1])/5)*5;
+  if(t.type==='tech'){
+    const ks=Object.keys(UPG).filter(k=>save.up[k]<UPG_MAX);
+    if(ks.length){const k=pk2local(ks);save.up[k]++;applyLoadout(false);extra=' · ⚙ '+T['u_'+k]+' +1';}
+    else{gold=800;}
+    save.tech.push(t.id);
+  }else if(t.type==='supply'){
+    hull=HULL_MAX;torpAmmo=TORP_MAX;mineAmmo=MINE_MAX;battery=100;gold=rr(30,70)|0;extra=' · '+tl('Tam ikmal!','Fully resupplied!');
+  }
+  if(d.relic){
+    if(!save.relics.includes(t.type)){
+      save.relics.push(t.type);const bonus=150;gold+=bonus;extra+=' · '+tl('MÜZEYE EKLENDİ +','ADDED TO MUSEUM +')+bonus;
+      if(RELICS.every(r=>save.relics.includes(r))){gold+=2000;setTimeout(()=>{toast(tl('🏛 Müze koleksiyonu tamamlandı! +2000 🪙','🏛 Museum collection complete! +2000 🪙'));sfx.disc();},2200);}
+    }
+  }
+  save.gold+=gold;save.loot++;persist();refreshGold();renderQuests();if(garageOpen())renderGarage();
+  addScore(SC.treasure);qEvent('trs','');
+  toast(d.ic+' '+tl(d.tr,d.en)+(gold?' +'+gold+' 🪙':'')+extra);
+  sfx.disc();sfx.repair&&t.type==='supply'&&sfx.repair();
+  for(let i=0;i<22;i++)addPuff(t.x+rr(-1.4,1.4),t.y+rr(.6,2.2),t.z+rr(-1.4,1.4),0xffd56c,rr(-1.6,1.6),rr(.8,3.2),rr(-1.6,1.6),.35,rr(.9,1.8),.9,rr(1.2,2.2));
+  for(let i=0;i<30;i++)spawnBubble(t.x+rr(-1.5,1.5),t.y+rr(.5,2),t.z+rr(-1.5,1.5),.05+Math.random()*.15,rr(-1.5,1.5),rr(1,4),rr(-1.5,1.5));
+}
+const pk2local=a=>a[(Math.random()*a.length)|0];
+let trsT=0;
+function updateTreasures(dt,now,t){
+  const p=sub.position;trsT+=dt;
+  const sRad=2.2*subSc;
+  for(const tr of TREAS){
+    const dx=tr.x-p.x,dy=tr.y-p.y,dz=tr.z-p.z,d2=dx*dx+dy*dy+dz*dz;
+    if(!tr.alive){
+      if(tr.opening>0){ // açılış animasyonu: kapak açılır, sonra kaybolur
+        tr.opening+=dt;const k=tr.opening;
+        if(tr.ud.lid)tr.ud.lid.rotation.x=tr.lidA+(-1.3-tr.lidA)*Math.min(1,k*3);
+        tr.g.position.y=tr.by+Math.min(1,k)*.3;
+        tr.g.scale.setScalar(tr.bs*(k<1.2?1:Math.max(.001,1-(k-1.2)*1.6)));
+        tr.spr.material.opacity=Math.max(0,.9-k*.5);
+        if(k>2){tr.opening=0;tr.g.visible=false;tr.spr.visible=false;}
+      }
+      if(now>tr.respawn){tr.alive=true;tr.g.visible=true;tr.spr.visible=true;tr.g.scale.setScalar(tr.bs);tr.g.position.y=tr.by;if(tr.ud.lid)tr.ud.lid.rotation.x=tr.lidA;}
+      continue;
+    }
+    if(d2<60*60)tr.mapSeen=true;
+    const far=d2>300*300;
+    if(far){if(tr.g.visible){tr.g.visible=false;tr.spr.visible=false;}continue;}
+    if(!tr.g.visible){tr.g.visible=true;tr.spr.visible=true;}
+    if(d2<130*130){
+      const dist=Math.sqrt(d2),seen=tr.seen>now;
+      const base=seen?.95:clamp(1-(dist-18)/70,0,.55);
+      tr.spr.material.opacity=base*(.7+.3*Math.sin(t*2.4+tr.ph));
+      tr.spr.scale.setScalar(seen?20+4*Math.sin(t*3+tr.ph):9+2*Math.sin(t*2+tr.ph));
+      if(tr.type==='tech'){tr.g.position.y=tr.by+Math.sin(t*1.3+tr.ph)*.35;tr.g.rotation.y+=dt*.5;if(tr.ud.ring)tr.ud.ring.rotation.z+=dt*1.5;tr.spr.position.y=tr.g.position.y+2.4;}
+      if(tr.type==='pearl'&&tr.ud.lid){tr.ud.lid.rotation.x=-.2-.55*(.5+.5*Math.sin(t*.8+tr.ph));}
+      if(tr.type==='gem')tr.g.rotation.y+=dt*.4;
+    }else tr.spr.material.opacity=tr.seen>now?.8:0;
+    if(running&&!dead){const rr2=tr.rad+sRad;if(d2<rr2*rr2*1.3)collectTreasure(tr,now);}
+  }
+  // harabe keşfi
+  if(trsT>.5){trsT=0;if(running&&!dead)for(const r of RUINS){if(save.ruins.includes(r.id))continue;const dx=r.x-p.x,dz=r.z-p.z;if(dx*dx+dz*dz<(r.w*.62)**2&&Math.abs(p.y-floorQ(r.x,r.z))<45){save.ruins.push(r.id);save.gold+=r.bonus;persist();refreshGold();renderQuests();if(garageOpen())renderGarage();addScore(SC.disc);toast('🏛 '+tl('Harabe keşfedildi: ','Ruin discovered: ')+tl(r.tr,r.en)+' +'+r.bonus+' 🪙');sfx.disc();}}}
+}
 
 const TG={body:new THREE.CylinderGeometry(.21,.21,2.3,18).rotateX(Math.PI/2),nose:new THREE.SphereGeometry(.21,16,10,0,Math.PI*2,0,Math.PI/2).rotateX(Math.PI/2),
   band:new THREE.CylinderGeometry(.216,.216,.2,18,1,true).rotateX(Math.PI/2),tail:new THREE.ConeGeometry(.21,.6,18,1,true).rotateX(-Math.PI/2),
@@ -2212,7 +2646,7 @@ function killEnemyFx(e,by){
   const center=new THREE.Vector3(e.x,e.y,e.z),q=new THREE.Quaternion().setFromEuler(new THREE.Euler(e.pitch,e.yaw,0,'YXZ'));
   shatter(e.type,center,q,e.cfg.sc,center,e.cfg.col,null);
   for(let i=0;i<40;i++)spawnBubble(e.x+rr(-2,2),e.y+rr(-1,1),e.z+rr(-2,2),.06+Math.random()*.2,rr(-4,4),rr(0,4),rr(-4,4));
-  if(by===net.myId){statEnemy(e.type);toast(ETYPE[e.type][lang]+T.slain);if(kits<3){kits++;setTimeout(()=>toast(T.kitGain),1700);}}
+  if(by===net.myId){const gg=statEnemy(e.type);toast(ETYPE[e.type][lang]+T.slain+' +'+gg+' 🪙');if(kits<3){kits++;setTimeout(()=>toast(T.kitGain),1700);}}
   sfx.boom(clamp(1-Math.hypot(e.x-camera.position.x,e.y-camera.position.y,e.z-camera.position.z)/140,.05,.6));
 }
 
@@ -2853,10 +3287,15 @@ function updateRemotes(dt,now){
 }
 function updateCamera(dt){
   const t=sub.position,cp=Math.cos(camPitch);
+  {const tf=fp?76:66;if(Math.abs(camera.fov-tf)>.05){camera.fov+=(tf-camera.fov)*(1-Math.exp(-6*dt));camera.updateProjectionMatrix();}}
   if(fp){
     camera.position.set(clamp(t.x+Math.sin(subYaw)*.9*subSc,-HX+.8,HX-.8),t.y+.75*subSc,clamp(t.z+Math.cos(subYaw)*.9*subSc,-HZ+.8,HZ-.8));
     const lp=-camPitch,cl=Math.cos(lp);
+    const tt=performance.now()*.001,vsp=subVel.length();
+    camera.position.y+=Math.sin(tt*1.3)*.05+Math.sin(tt*.71)*.035+Math.sin(tt*23)*.004*Math.min(vsp,12);
+    camera.position.x+=Math.sin(tt*31)*.003*Math.min(vsp,12);
     camera.lookAt(camera.position.x+Math.sin(camYaw)*cl,camera.position.y+Math.sin(lp),camera.position.z+Math.cos(camYaw)*cl);
+    camera.rotateZ(subRoll*.55+Math.sin(tt*.9)*.007);
   }else{
     const cd=camDist*Math.max(1,subSc*.85);
     const want=_tmp.set(t.x-Math.sin(camYaw)*cp*cd,t.y+1.4*subSc+Math.sin(camPitch)*cd,t.z-Math.cos(camYaw)*cp*cd);
@@ -2876,6 +3315,97 @@ function updateHUD(spd){
   $('torp').textContent=torpAmmo+'/'+TORP_MAX;$('torpBar').style.width=(torpAmmo>=TORP_MAX?100:torpReload/TORP_RELOAD*100)+'%';
 }
 
+
+/* ================= Kokpit: içeriden bakış (çelik gövde, cam, gösterge paneli) ================= */
+const CKP=24,ck={W:0,H:0,n:{},bubs:false,g:[],dx:0,dy:0,lastLang:''};
+function layoutCockpit(){
+  const W=innerWidth,H=innerHeight,tc=isTouch,P=CKP;
+  if(!W||!H)return;ck.W=W;ck.H=H;
+  const sd=Math.round(Math.max(12,W*(tc?.026:.04))),tp=Math.round(Math.max(14,H*(tc?.055:.07))),bt=Math.round(tc?Math.max(30,H*.1):Math.max(64,H*.25));
+  const TW2=W+2*P,TH2=H+2*P,x0=P+sd,y0=P+tp,x1=P+W-sd,y1=P+H-bt,r=Math.min(W,H)*.1,r2=Math.min(r*.55,bt*.4);
+  const inner=`M${x0+r},${y0}H${x1-r}Q${x1},${y0} ${x1},${y0+r}V${y1-r2}Q${x1},${y1} ${x1-r2},${y1}H${x0+r2}Q${x0},${y1} ${x0},${y1-r2}V${y0+r}Q${x0},${y0} ${x0+r},${y0}Z`;
+  const acc=me.color||'#6fe0ff';
+  let f=`<defs><linearGradient id="ckGS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34454d"/><stop offset=".35" stop-color="#1c2a31"/><stop offset="1" stop-color="#0c1418"/></linearGradient>
+  <linearGradient id="ckGR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9fb6c0"/><stop offset=".45" stop-color="#4c616b"/><stop offset="1" stop-color="#1d2b32"/></linearGradient>
+  <radialGradient id="ckGB" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#b9cdd6"/><stop offset="1" stop-color="#3b4a52"/></radialGradient></defs>`;
+  f+=`<path d="M0,0H${TW2}V${TH2}H0Z${inner}" fill="url(#ckGS)" fill-rule="evenodd"/>`;
+  // plaka dikişleri
+  f+=`<g stroke="#0a1115" stroke-width="2" opacity=".85"><path d="M0,${P+tp*.55}H${P+sd*.6}M${TW2},${P+tp*.55}H${TW2-P-sd*.6}M${P+W*.22},0V${P+tp*.55}M${P+W*.78},0V${P+tp*.55}M${P+sd*.5},${P}V${y1}M${TW2-P-sd*.5},${P}V${y1}"/></g>`;
+  f+=`<g stroke="#4a606a" stroke-width="1" opacity=".5"><path d="M0,${P+tp*.55+2}H${P+sd*.6}M${TW2},${P+tp*.55+2}H${TW2-P-sd*.6}M${P+W*.22+2},0V${P+tp*.55}M${P+W*.78+2},0V${P+tp*.55}"/></g>`;
+  // pencere kasası
+  f+=`<path d="${inner}" fill="none" stroke="#070d10" stroke-width="18" stroke-linejoin="round"/><path d="${inner}" fill="none" stroke="url(#ckGR)" stroke-width="11" stroke-linejoin="round"/><path d="${inner}" fill="none" stroke="rgba(190,235,255,.38)" stroke-width="1.5"/>`;
+  // perçinler
+  let rv='';const rvp=(x,y)=>{rv+=`<circle cx="${x}" cy="${y}" r="2.7" fill="url(#ckGB)" stroke="#0a1115" stroke-width=".8"/>`;};
+  for(let x=x0+r;x<=x1-r;x+=34)rvp(x,y0-16);
+  for(let y=y0+r;y<=y1-r2;y+=34){rvp(x0-16,y);rvp(x1+16,y);}
+  for(const [cx,cy] of [[x0-9,y0-9],[x1+9,y0-9]]){rv+=`<circle cx="${cx}" cy="${cy}" r="7" fill="url(#ckGB)" stroke="#0a1115" stroke-width="1.5"/><path d="M${cx-4},${cy}H${cx+4}" stroke="#1d2b32" stroke-width="2"/>`;}
+  f+=rv;
+  // üst kasa yazısı + durum ışıkları
+  f+=`<text x="${TW2/2}" y="${P+tp*.62}" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="${Math.max(8,Math.min(11,tp*.4))}" letter-spacing="4" fill="#7c97a3">AKVARYUM · DEEP EXPLORER</text>`;
+  f+=`<rect x="${P+W*.22+10}" y="${P+tp*.25}" width="${Math.min(70,W*.08)}" height="${Math.max(3,tp*.14)}" rx="2" fill="${acc}" opacity=".75"/><rect x="${P+W*.78-10-Math.min(70,W*.08)}" y="${P+tp*.25}" width="${Math.min(70,W*.08)}" height="${Math.max(3,tp*.14)}" rx="2" fill="${acc}" opacity=".75"/>`;
+  // alt konsol gövdesi (cam altı kaput)
+  const cy0=y1+4;
+  f+=`<path d="M${P},${cy0+bt*.12}Q${TW2/2},${cy0-bt*.12} ${TW2-P},${cy0+bt*.12}V${TH2}H${P}Z" fill="#101b21" stroke="#2a3d46" stroke-width="2"/>`;
+  f+=`<path d="M${P},${cy0+bt*.12}Q${TW2/2},${cy0-bt*.12} ${TW2-P},${cy0+bt*.12}" fill="none" stroke="${acc}" stroke-width="2" opacity=".55"/>`;
+  for(let i=0;i<8;i++){f+=`<rect x="${P+10+i*7}" y="${TH2-P-bt*.32}" width="4" height="${bt*.22}" rx="1" fill="#06100f" opacity=".8"/><rect x="${TW2-P-10-i*7-4}" y="${TH2-P-bt*.32}" width="4" height="${bt*.22}" rx="1" fill="#06100f" opacity=".8"/>`;}
+  $('ckFrame').setAttribute('viewBox',`0 0 ${TW2} ${TH2}`);$('ckFrame').setAttribute('width',TW2);$('ckFrame').setAttribute('height',TH2);$('ckFrame').innerHTML=f;
+  const gl=$('ckGlass');gl.style.left=x0+'px';gl.style.top=y0+'px';gl.style.width=(x1-x0)+'px';gl.style.height=(y1-y0)+'px';gl.style.borderRadius=r+'px '+r+'px '+r2+'px '+r2+'px';
+  if(!ck.bubs){ck.bubs=true;let h='';for(let i=0;i<9;i++)h+=`<i style="left:${(i*11+5+(i%3)*2)%92}%;animation-duration:${6+((i*7)%6)}s;animation-delay:${-i*1.7}s"></i>`;gl.innerHTML=h;}
+  // gösterge paneli (dinamik)
+  if(tc){ck.n={};$('ckDash').innerHTML='';return;}
+  const top=y1-18,Dh=TH2-top,vis=Dh-P,g=clamp(Math.min((vis-30)*.4,W*.07),22,66),cx=TW2/2,gy=18+(vis-18)*.5+2;
+  const ids=[];let d='';
+  const gauge=(gx,id,lab,max,major,fmt)=>{
+    let t=`<circle cx="${gx}" cy="${gy}" r="${g}" fill="#06131a" stroke="#3c525d" stroke-width="3"/><circle cx="${gx}" cy="${gy}" r="${g*.93}" fill="none" stroke="rgba(120,220,255,.25)" stroke-width="1"/>`;
+    for(let i=0;i<=major*2;i++){const a=(-135+270*i/(major*2))*Math.PI/180,mj=i%2===0,r1=g*.9,r0=g*(mj?.74:.82);t+=`<line x1="${gx+Math.sin(a)*r0}" y1="${gy-Math.cos(a)*r0}" x2="${gx+Math.sin(a)*r1}" y2="${gy-Math.cos(a)*r1}" stroke="${mj?'#cfeaf3':'#6f8f9c'}" stroke-width="${mj?2:1}"/>`;
+      if(mj&&g>30&&i>0&&i<major*2){const rl=g*.58;t+=`<text x="${gx+Math.sin(a)*rl}" y="${gy-Math.cos(a)*rl+g*.07}" text-anchor="middle" font-size="${g*.17}" font-family="system-ui" font-weight="700" fill="#9fc3d0">${fmt(max*i/(major*2))}</text>`;}}
+    t+=`<text x="${gx}" y="${gy+g*.46}" text-anchor="middle" font-size="${g*.14}" font-family="system-ui" font-weight="800" letter-spacing="1" fill="${acc}" id="${id}L">${lab}</text><text x="${gx}" y="${gy+g*.76}" text-anchor="middle" font-size="${g*.2}" font-family="ui-monospace,monospace" font-weight="800" fill="#ffd56c" id="${id}T">0</text>`;
+    t+=`<g id="${id}N"><line x1="0" y1="${g*.14}" x2="0" y2="${-g*.8}" stroke="#ff6a4a" stroke-width="${Math.max(2,g*.045)}" stroke-linecap="round"/><circle r="${g*.08}" fill="#dfeef3"/></g>`;
+    ids.push([id,gx]);return t;};
+  d+=gauge(cx-g*2.25,'ckD',T.depth,72,6,v=>Math.round(v));
+  d+=gauge(cx+g*2.25,'ckS',T.speed,60,6,v=>Math.round(v));
+  // pusula
+  {const gx=cx;let t=`<circle cx="${gx}" cy="${gy}" r="${g}" fill="#06131a" stroke="#3c525d" stroke-width="3"/><g id="ckC" transform="translate(${gx} ${gy})">`;
+    for(let i=0;i<36;i++){const a=i*10*Math.PI/180,mj=i%9===0,r0=g*(mj?.7:i%3===0?.8:.86);t+=`<line x1="${Math.sin(a)*r0}" y1="${-Math.cos(a)*r0}" x2="${Math.sin(a)*g*.92}" y2="${-Math.cos(a)*g*.92}" stroke="${mj?'#ffd56c':'#8fb2bf'}" stroke-width="${mj?2.2:1}"/>`;}
+    [['N',0],['E',90],['S',180],['W',270]].forEach(([l,a])=>{const rr2=g*.52,ar=a*Math.PI/180;t+=`<text x="${Math.sin(ar)*rr2}" y="${-Math.cos(ar)*rr2+g*.07}" text-anchor="middle" font-size="${g*.2}" font-family="system-ui" font-weight="900" fill="${l==='N'?'#ff6a4a':'#cfeaf3'}" transform="rotate(${a} ${Math.sin(ar)*rr2} ${-Math.cos(ar)*rr2+g*.07})">${l}</text>`;});
+    t+=`</g><path d="M${gx},${gy-g*.98}l${g*.08},${g*.2}h${-g*.16}Z" fill="#ffd56c"/><text x="${gx}" y="${gy+g*.2}" text-anchor="middle" font-size="${g*.2}" font-family="ui-monospace,monospace" font-weight="800" fill="#7ef0b9" id="ckCT">0°</text>`;d+=t;}
+  // sol: gövde + batarya çubukları, sağ: lambalar
+  const bw=Math.max(8,g*.22),bh=g*1.45,bx0=cx-g*2.25-g*1.0-bw*6;
+  const hasSide=bx0>x0+8&&cx+g*2.25+g*1.0+bw*5.2<x1-8;
+  if(hasSide){
+    const bar=(bx,id,lab,col)=>`<rect x="${bx}" y="${gy-bh/2}" width="${bw}" height="${bh}" rx="3" fill="#06131a" stroke="#3c525d" stroke-width="2"/><rect id="${id}" x="${bx+1.5}" y="${gy-bh/2+1.5}" width="${bw-3}" height="${bh-3}" rx="2" fill="${col}"/><text x="${bx+bw/2}" y="${gy+bh/2+g*.2}" text-anchor="middle" font-size="${Math.max(7,g*.14)}" font-family="system-ui" font-weight="800" fill="#9fc3d0" id="${id}L">${lab}</text>`;
+    d+=bar(bx0,'ckH',T.hull,'#7ef0b9')+bar(bx0+bw*4.2,'ckB',T.battery,'#6fe0ff');
+    const lx=cx+g*2.25+g*1.25,lamp=(i,id,col)=>`<circle id="${id}" cx="${lx+i*bw*1.9}" cy="${gy-bh*.28}" r="${bw*.55}" fill="${col}" opacity=".18" stroke="#0a1115" stroke-width="1.5"/>`;
+    d+=lamp(0,'ckL1','#ff4a3a')+lamp(1,'ckL2','#ffb347')+lamp(2,'ckL3','#7ef0b9')+lamp(3,'ckL4','#6fe0ff');
+    d+=`<text x="${lx}" y="${gy+bh*.12}" font-size="${Math.max(7,g*.14)}" font-family="system-ui" font-weight="800" fill="#9fc3d0" id="ckLL">HULL · PWR · SONAR · LIGHT</text><text x="${lx}" y="${gy+bh*.5}" font-size="${g*.22}" font-family="ui-monospace,monospace" font-weight="800" fill="#ffd56c" id="ckTT">0/0</text>`;
+  }
+  const ds=$('ckDash');ds.style.top=top+'px';ds.setAttribute('viewBox',`0 0 ${TW2} ${Dh}`);ds.setAttribute('width',TW2);ds.setAttribute('height',Dh);ds.innerHTML=d;
+  ck.n={};for(const k of ['ckDN','ckDT','ckSN','ckST','ckC','ckCT','ckH','ckB','ckL1','ckL2','ckL3','ckL4','ckTT'])ck.n[k]=document.getElementById(k);
+  ck.g=ids.map(([id,gx])=>[id,gx]);ck.gy=gy;ck.gg=g;ck.bh=bh;ck.by=gy-bh/2+1.5;ck.cx=cx;
+}
+let ckLastT=0;
+function updateCockpit(now,spd){
+  if(!fp||!running||!ck.n.ckDN)return;
+  const n=ck.n,dep=sub.position.y>SURF-1.4?0:Math.max(0,SURF-sub.position.y),kn=spd*1.94;
+  const rot=(el,gx,v,max)=>el.setAttribute('transform',`translate(${gx} ${ck.gy}) rotate(${-135+270*clamp(v/max,0,1)})`);
+  rot(n.ckDN,ck.cx-ck.gg*2.25,dep,72);rot(n.ckSN,ck.cx+ck.gg*2.25,kn,60);
+  const hd=((180-subYaw*180/Math.PI)%360+360)%360;n.ckC.setAttribute('transform',`translate(${ck.cx} ${ck.gy}) rotate(${-hd})`);
+  if(now-ckLastT>140){ckLastT=now;
+    n.ckDT.textContent=Math.round(dep)+' m';n.ckST.textContent=kn.toFixed(0);n.ckCT.textContent=Math.round(hd)+'°';
+    if(n.ckH){const hp=clamp(hull/HULL_MAX,0,1),bp=clamp(battery/100,0,1),hh=ck.bh-3;
+      n.ckH.setAttribute('y',ck.by+hh*(1-hp));n.ckH.setAttribute('height',Math.max(0,hh*hp));n.ckH.setAttribute('fill',hp<.3?'#ff5a4a':hp<.6?'#ffd56c':'#7ef0b9');
+      n.ckB.setAttribute('y',ck.by+hh*(1-bp));n.ckB.setAttribute('height',Math.max(0,hh*bp));n.ckB.setAttribute('fill',bp<.2?'#ffb347':'#6fe0ff');
+      const bl=Math.sin(now*.012)>0;
+      n.ckL1.setAttribute('opacity',hull<HULL_MAX*.3?(bl?1:.35):.18);n.ckL2.setAttribute('opacity',battery<20?(bl?1:.35):.18);
+      n.ckL3.setAttribute('opacity',sonarCd<=0?1:.18);n.ckL4.setAttribute('opacity',lightOn?1:.18);
+      n.ckTT.textContent='🚀 '+torpAmmo+'/'+TORP_MAX;}
+  }
+  // başın hareketine göre kokpit hafif kayar (paralaks)
+  const dy2=angLerp(0,camYaw-subYaw,1),tx=clamp(dy2*-26,-18,18),ty=clamp(camPitch*18,-12,12);
+  ck.dx+=(tx-ck.dx)*.2;ck.dy+=(ty-ck.dy)*.2;
+  $('ckInner').style.transform=`translate(${ck.dx.toFixed(1)}px,${ck.dy.toFixed(1)}px)`;
+}
+addEventListener('resize',layoutCockpit);
 /* Radar */
 const rc=$('radar').getContext('2d');
 function drawRadar(now){
@@ -2899,23 +3429,64 @@ function drawRadar(now){
     const [x,y]=tr2(e.x,e.z);ctx.fillStyle=e.cfg.col;ctx.strokeStyle='#021820';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-9);ctx.lineTo(x+8,y+7);ctx.lineTo(x-8,y+7);ctx.closePath();ctx.fill();ctx.stroke();}
   for(const m of mines){const [x,y]=tr2(m.pos.x,m.pos.z);ctx.fillStyle=m.own?'#ff6a4a':'#c9a227';ctx.fillRect(x-3,y-3,6,6);}
   for(const f of foods){const [x,y]=tr2(f.x,f.z);ctx.fillStyle='#ffd56c';ctx.fillRect(x-4,y-4,8,8);}
+  for(const t of TREAS){if(!t.alive)continue;const dx=t.x-p.x,dz=t.z-p.z,d2=dx*dx+dz*dz;if(d2>range*range*1.1)continue;const seen=t.seen>now;if(!seen&&d2>38*38)continue;const [x,y]=tr2(t.x,t.z),s2=seen?7:5;ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/4);ctx.fillStyle=t.type==='tech'?'#4ff0ff':'#ffd56c';ctx.strokeStyle='#021820';ctx.lineWidth=2;ctx.fillRect(-s2,-s2,s2*2,s2*2);ctx.strokeRect(-s2,-s2,s2*2,s2*2);ctx.restore();}
   for(const o of players.values()){let [x,y]=tr2(o.sub.g.position.x,o.sub.g.position.z);const dx=x-Rr,dy=y-Rr,l=Math.hypot(dx,dy);if(l>Rr-12){x=Rr+dx/l*(Rr-12);y=Rr+dy/l*(Rr-12);}ctx.fillStyle=o.color;ctx.strokeStyle='#021820';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.fill();ctx.stroke();}
   // kendi denizaltın
   const rel=subYaw-camYaw;ctx.save();ctx.translate(Rr,Rr);ctx.rotate(-rel);ctx.fillStyle=me.color;ctx.beginPath();ctx.moveTo(0,-14);ctx.lineTo(9,10);ctx.lineTo(0,5);ctx.lineTo(-9,10);ctx.closePath();ctx.fill();ctx.restore();
   ctx.restore();ctx.strokeStyle='rgba(111,224,255,.5)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(Rr,Rr,Rr-2,0,Math.PI*2);ctx.stroke();
 }
-/* Harita */
+/* Harita: derinlik haritası (gölgelendirilmiş batimetri), ızgara, bölgeler, harabeler, hazine işaretleri */
 const mc=$('mapC').getContext('2d');
+let mapBg=null;
+function buildMapBg(Wc,Hc,pad){
+  const cv=document.createElement('canvas');cv.width=Wc;cv.height=Hc;const c=cv.getContext('2d');
+  const sw=Math.round((Wc-pad*2)/4),sh=Math.round((Hc-pad*2)/4),im=c.createImageData(sw,sh),d=im.data;
+  const ramp=[[-40,[4,28,52]],[-34,[8,60,92]],[-28,[12,104,132]],[-20,[40,150,150]],[-10,[170,190,130]],[0,[222,205,150]],[20,[120,90,70]]];
+  for(let j=0;j<sh;j++)for(let i=0;i<sw;i++){
+    const x=-HX+(i+.5)/sw*TW,z=-HZ+(j+.5)/sh*TD,h=floorQ(x,z);
+    let k=0;while(k<ramp.length-2&&h>ramp[k+1][0])k++;
+    const a=ramp[k],b=ramp[k+1],u=clamp((h-a[0])/(b[0]-a[0]),0,1);
+    const sd=(floorQ(x+3,z+3)-floorQ(x-3,z-3))*.22,lt=clamp(1-sd*.5,.7,1.3);
+    const o=(j*sw+i)*4;d[o]=clamp((a[1][0]+(b[1][0]-a[1][0])*u)*lt,0,255);d[o+1]=clamp((a[1][1]+(b[1][1]-a[1][1])*u)*lt,0,255);d[o+2]=clamp((a[1][2]+(b[1][2]-a[1][2])*u)*lt,0,255);d[o+3]=255;
+  }
+  const tmp=document.createElement('canvas');tmp.width=sw;tmp.height=sh;tmp.getContext('2d').putImageData(im,0,0);
+  c.fillStyle='#04141e';c.fillRect(0,0,Wc,Hc);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(tmp,pad,pad,Wc-pad*2,Hc-pad*2);
+  return cv;
+}
 function drawMap(){
-  const Wc=1400,Hc=820,pad=30,sx=(Wc-pad*2)/TW,sz=(Hc-pad*2)/TD,m=(x,z)=>[pad+(x+HX)*sx,pad+(z+HZ)*sz];
-  mc.fillStyle='#0a3c52';mc.fillRect(0,0,Wc,Hc);
+  const Wc=1400,Hc=820,pad=40,sx=(Wc-pad*2)/TW,sz=(Hc-pad*2)/TD,m=(x,z)=>[pad+(x+HX)*sx,pad+(z+HZ)*sz];
+  if(!mapBg)mapBg=buildMapBg(Wc,Hc,pad);
+  mc.drawImage(mapBg,0,0);
+  // ızgara (100 m)
+  mc.lineWidth=1;mc.strokeStyle='rgba(200,240,255,.14)';mc.fillStyle='rgba(200,240,255,.55)';mc.font='600 14px system-ui';
+  for(let x=-500;x<=500;x+=100){const [a]=m(x,0);mc.beginPath();mc.moveTo(a,pad);mc.lineTo(a,Hc-pad);mc.stroke();mc.fillText(x,a-12,pad-12);}
+  for(let z=-300;z<=300;z+=100){const [,b]=m(0,z);mc.beginPath();mc.moveTo(pad,b);mc.lineTo(Wc-pad,b);mc.stroke();mc.fillText(z,6,b+5);}
   const zc={ice:'#bfeaff',volcano:'#ff6a3a',abyss:'#3a5aff',crystal:'#c07aff',lagoon:'#3ae0d0',sunken:'#9ab0a0',bluehole:'#3a8aff',canyon:'#d0703a',coral:'#ff7a8a',kelp:'#5fbf5a',grass:'#a8c860',wreck:'#b08050',arch:'#9aa4a8',jelly:'#9fe8ff',trench:'#9a7cff',temple:'#e0c060',graveyard:'#c08a5a',dunes:'#e8d8a0'};
-  for(const q of ZONES){const [x0,y0]=m(q.x[0],q.z[0]),[x1,y1]=m(q.x[1],q.z[1]);mc.fillStyle=zc[q.id]+'33';mc.strokeStyle=zc[q.id]+'aa';mc.lineWidth=2;mc.fillRect(x0,y0,x1-x0,y1-y0);mc.strokeRect(x0,y0,x1-x0,y1-y0);mc.fillStyle='#fff';mc.font='800 26px system-ui';mc.fillText(T.zones[q.id],x0+12,y0+34);}
+  mc.textBaseline='alphabetic';
+  for(const q of ZONES){const [x0,y0]=m(q.x[0],q.z[0]),[x1,y1]=m(q.x[1],q.z[1]);mc.fillStyle=zc[q.id]+'1f';mc.strokeStyle=zc[q.id]+'cc';mc.lineWidth=2;mc.setLineDash([8,5]);mc.fillRect(x0,y0,x1-x0,y1-y0);mc.strokeRect(x0,y0,x1-x0,y1-y0);mc.setLineDash([]);
+    const big=(x1-x0)>150,fs=big?22:15,txt=T.zones[q.id];mc.font='800 '+fs+'px system-ui';const tw=mc.measureText(txt).width;
+    mc.fillStyle='rgba(2,16,26,.72)';mc.fillRect(x0+8,y0+8,tw+14,fs+10);mc.fillStyle=zc[q.id];mc.fillRect(x0+8,y0+8,3,fs+10);mc.fillStyle='#fff';mc.fillText(txt,x0+17,y0+8+fs);}
+  // harabeler
+  for(const r of RUINS){const [a,b]=m(r.x,r.z),got=save.ruins.includes(r.id);
+    mc.save();mc.translate(a,b);mc.fillStyle=got?'#ffd56c':'rgba(255,255,255,.75)';mc.strokeStyle='#021820';mc.lineWidth=3;
+    mc.beginPath();mc.moveTo(-11,7);mc.lineTo(-11,-1);mc.lineTo(0,-10);mc.lineTo(11,-1);mc.lineTo(11,7);mc.closePath();mc.stroke();mc.fill();
+    mc.fillStyle='#021820';for(const dx of [-6,-1,4])mc.fillRect(dx,-1,2.5,7);mc.restore();
+    mc.font='700 14px system-ui';const nm=tl(r.tr,r.en);const tw=mc.measureText(nm).width;mc.fillStyle='rgba(2,16,26,.7)';mc.fillRect(a-tw/2-4,b+11,tw+8,18);mc.fillStyle=got?'#ffd56c':'#dfeff5';mc.fillText(nm,a-tw/2,b+25);}
+  // hazine işaretleri (sonarla ya da yakından görülenler)
+  for(const t of TREAS){if(!t.alive||!t.mapSeen)continue;const [a,b]=m(t.x,t.z);mc.save();mc.translate(a,b);mc.rotate(Math.PI/4);mc.fillStyle=t.type==='tech'?'#4ff0ff':'#ffd56c';mc.strokeStyle='#021820';mc.lineWidth=2.5;mc.fillRect(-6,-6,12,12);mc.strokeRect(-6,-6,12,12);mc.restore();}
   mc.strokeStyle='#cfefff';mc.lineWidth=5;mc.strokeRect(pad,pad,Wc-pad*2,Hc-pad*2);
   for(const f of foods){const [x,y]=m(f.x,f.z);mc.fillStyle='#ffd56c';mc.fillRect(x-6,y-6,12,12);}
-  const dot=(x,z,color,name,yaw)=>{const [a,b]=m(x,z);mc.save();mc.translate(a,b);mc.rotate(-yaw+Math.PI);mc.fillStyle=color;mc.beginPath();mc.moveTo(0,16);mc.lineTo(11,-10);mc.lineTo(0,-4);mc.lineTo(-11,-10);mc.closePath();mc.fill();mc.restore();mc.fillStyle=color;mc.font='800 22px system-ui';mc.fillText(name,a+14,b-12);};
+  const dot=(x,z,color,name,yaw)=>{const [a,b]=m(x,z);mc.save();mc.translate(a,b);mc.rotate(-yaw+Math.PI);mc.fillStyle=color;mc.strokeStyle='#021820';mc.lineWidth=3;mc.beginPath();mc.moveTo(0,16);mc.lineTo(11,-10);mc.lineTo(0,-4);mc.lineTo(-11,-10);mc.closePath();mc.stroke();mc.fill();mc.restore();mc.fillStyle='#021820';mc.font='800 22px system-ui';mc.fillText(name,a+15,b-11);mc.fillStyle=color;mc.fillText(name,a+14,b-12);};
   for(const o of players.values())dot(o.sub.g.position.x,o.sub.g.position.z,o.color,o.name,o.yaw);
   dot(sub.position.x,sub.position.z,me.color,me.name+' ('+T.you+')',subYaw);
+  // pusula gülü ve ölçek çubuğu
+  {const cx=Wc-pad-54,cy=Hc-pad-54;mc.save();mc.translate(cx,cy);mc.strokeStyle='rgba(255,255,255,.8)';mc.fillStyle='rgba(2,16,26,.7)';mc.lineWidth=2;mc.beginPath();mc.arc(0,0,34,0,Math.PI*2);mc.fill();mc.stroke();
+   mc.fillStyle='#ff6a4a';mc.beginPath();mc.moveTo(0,-30);mc.lineTo(7,0);mc.lineTo(-7,0);mc.closePath();mc.fill();mc.fillStyle='#dfeff5';mc.beginPath();mc.moveTo(0,30);mc.lineTo(7,0);mc.lineTo(-7,0);mc.closePath();mc.fill();
+   mc.font='800 14px system-ui';mc.textAlign='center';mc.fillStyle='#fff';mc.fillText('N',0,-38);mc.restore();mc.textAlign='left';
+   const bx=pad+16,by=Hc-pad-18,len=100*sx;mc.fillStyle='rgba(2,16,26,.7)';mc.fillRect(bx-8,by-24,len+16+56,34);mc.strokeStyle='#fff';mc.lineWidth=3;mc.beginPath();mc.moveTo(bx,by);mc.lineTo(bx+len,by);mc.moveTo(bx,by-6);mc.lineTo(bx,by+6);mc.moveTo(bx+len,by-6);mc.lineTo(bx+len,by+6);mc.stroke();mc.fillStyle='#fff';mc.font='700 14px system-ui';mc.fillText('100 m',bx+len+8,by+5);}
+  // derinlik ve simge açıklaması
+  {const lx=pad+16,ly=pad+16;mc.fillStyle='rgba(2,16,26,.72)';const ox=Wc-pad-310,oy=Hc-pad-86;mc.fillRect(ox,oy,226,76);mc.font='700 13px system-ui';mc.fillStyle='#dfeff5';mc.fillText('◆ '+tl('Hazine (sonarla bul)','Treasure (find by sonar)'),ox+10,oy+22);mc.fillStyle='#ffd56c';mc.fillText('◆',ox+10,oy+22);
+   mc.fillStyle='#dfeff5';mc.fillText('⌂ '+tl('Antik harabe','Ancient ruin')+'  '+save.ruins.length+'/'+RUINS.length,ox+10,oy+42);mc.fillText('🏺 '+tl('Müze','Museum')+'  '+save.relics.length+'/'+RELICS.length,ox+10,oy+62);}
 }
 
 let govAcc=0,govN=0,govUp=0,aimT=0,signT=0;
@@ -2965,6 +3536,8 @@ function loop(){
     hudT+=dt;if(hudT>.1){hudT=0;updateHUD(spd);}
     if(!isTouch||frameN%3===0)drawRadar(now);if($('mapM').style.display==='grid')drawMap();
   }
+  if(running)updateTreasures(dt,now,t);
+  if(running)updateCockpit(now,spd);
   renderer.render(scene,camera);
   requestAnimationFrame(loop);
 }
@@ -2973,7 +3546,7 @@ function loop(){
 function enterGame(){
   applyLoadout(true);if(fp)camPitch=0;
   if(net.mode==='solo'&&save.quests.some(q=>q.k==='pk')){save.quests=save.quests.map(q=>q.k==='pk'?newQuest():q);persist();}
-  running=true;audioInit();sub.rotation.set(0,subYaw,0,'YXZ');hull=HULL_MAX;dead=false;renderWpn();
+  running=true;document.body.classList.add('run');layoutCockpit();audioInit();sub.rotation.set(0,subYaw,0,'YXZ');hull=HULL_MAX;dead=false;renderWpn();
   $('lobby').style.display='none';$('cross').style.display='block';
   ['catalogP','radarP','zoneTag','questP'].forEach(id=>$(id).style.display='');renderQuests();
   $('hint').style.display=isTouch?'none':'';setTimeout(()=>$('hint').style.opacity='0',14000);
@@ -3130,7 +3703,7 @@ addEventListener('resize',()=>{if(tutOn)tutShow(tutI);});
 addEventListener('orientationchange',()=>setTimeout(()=>{if(tutOn)tutShow(tutI);},300));
 if(qs.get('ogretici')==='1'&&isTouch)setTimeout(()=>{if(!running)startTutorial();},400);
 if(store.get('aqua-lang')==='en')lang='en';
-fillQuests();persist();applyLoadout(true);if(fp)camPitch=0;
+fillQuests();persist();applyLoadout(true);initTreasures();if(fp)camPitch=0;
 $('garBtn').onclick=$('garBtn2').onclick=()=>toggleGarage();$('garClose').onclick=()=>toggleGarage(false);
 $('catBtn').onclick=toggleCatalog;$('viewBtn').onclick=toggleView;
 $('updBtn').onclick=()=>{if(window.__applyUpdate)window.__applyUpdate();};

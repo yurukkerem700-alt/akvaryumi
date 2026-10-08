@@ -1,7 +1,7 @@
 {
   "name": "Akvaryum Seferi",
   "short_name": "Akvaryum",
-  "description": "Online 3D denizaltı oyunu: 16 canlı türü, 12 biyom, yüzeyde yıldızlı gökyüzü.",
+  "description": "Online 3D denizaltı oyunu: 27 canlı türü, 12 biyom, denizaltının içinde kaptan olarak dolaş.",
   "id": "/",
   "start_url": "/",
   "scope": "/",

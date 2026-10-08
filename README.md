@@ -44,6 +44,14 @@ Online co-op / PvP 3D denizaltı oyunu (Three.js, tek dosya, sunucusuz — oyunc
 - **Yeni para kazanma yolları**: ~180 hazine — hazine/altın sandıklar, antik amfora/heykelcik/tablet/taç, dev inciler, mücevherler; **teknoloji sandıkları kalıcı yükseltme verir** (bir kez), **ikmal sandıkları** cephane/gövde/bataryayı doldurur. Harabe keşfi bonusu, yeni tür keşfi (+35), düşman avı (+15–30) ve "hazine topla" görevi altın kazandırır. **SPACE sonar** yakındaki hazineleri işaretler (radar + harita). Antik eserler **Müze** koleksiyonunda (🏪 Tersane) toplanır; ilk bulunuşta bonus, hepsi tamamlanınca +2000 🪙.
 - **Profesyonel harita (M)**: gölgelendirilmiş derinlik haritası, 100 m ızgara, bölge etiketleri, harabe simgeleri, hazine işaretleri, ölçek çubuğu, pusula gülü ve simge açıklaması.
 
+### v3.1: denizaltının içi, renkli denizaltılar, yeni ikon
+- **Denizaltının içinde yürü** (`I` / 🚶): koltuktan kalkıp kaptan olarak denizaltının içinde dolaşırsın. 4 oda var: **Kontrol Odası** (ön camdan dışarısı gerçek zamanlı görünür, sonar/derinlik ekranları, periskop, harita masası), **Yaşam Mahalli** (ranzalar, yemek masası, mutfak, gerçek saati gösteren duvar saati), **Torpido Odası** (raflardaki torpidolar cephanene göre azalır) ve **Makine Dairesi** (hızla dönen volan, batarya seviyesini gösteren panel, basınç göstergeleri). Su geçirmez kapılar yaklaşınca açılır, odadan odaya geçince oda adı görünür.
+- **Şoför koltuğu**: koltuğa yaklaşıp `E` (telefonda 🪑) ile oturursun; karakter koltuğa oturur ve dümene geçersin. `I` ile tekrar kalkarsın. İçerideyken denizaltı yerinde süzülür; gövde hasar alırsa ışıklar titrer, gövde %30'un altına inince kırmızı alarm ışığı yanar.
+- **Doğal karakter**: kas hatlı uzuvlar, yürürken kalça salınımı, karşı kol sallanması, diz bükülmesi, koşarken öne eğilme; dururken nefes alma, ağırlık aktarma, göz kırpma ve etrafa bakınma; baş kameranın baktığı yöne döner; metal zeminde ayak sesleri. Kontroller: `WASD` yürü, `SHIFT` koş, fare bak, tekerlek yakınlaştır, `B` birinci/üçüncü şahıs. Telefonda çubukla yürü, 🏃 koş, 💺 koltuğa dön.
+- **Renkli denizaltılar**: her modelin kendi paleti var — gövde, alt gövde, kule, kanatlar, süsleme ve pervane farklı renklerde (Çaylak sarı/lacivert/turuncu, Mercan Avcısı mavi/mercan, Kalamar Kıran yeşil/bronz, Çukur Akıncısı haki, Derin Gölge mor, Leviathan siyah/kızıl). Oyuncu rengi şeritlerde kalır.
+- **Daha az hazine**: ~180 yerine ~70 hazine (teknoloji sandıklarının hepsi ve her hazine türünden en az biri korunur) — bulmak artık daha değerli.
+- **Yeni ikon**: çok renkli denizaltı, lombozda kaptan silueti, ışık huzmeleri ve mercanlar.
+
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 

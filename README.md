@@ -2,7 +2,7 @@
 
 Online co-op / PvP 3D denizaltı oyunu: bosslar, dünya olayları, günlük görevler, başarımlar ve 7 oyun modu (Three.js, tek dosya, sunucusuz — oyuncular PeerJS ile tarayıcıdan tarayıcıya bağlanır).
 
-- 2240×1280 birimlik dev akvaryum (v4.2'de her yönde 2 kat büyüdü: 4 kat alan)
+- Bilgisayarda 2240×1280 birimlik dev akvaryum, telefonda hafif cihazları zorlamayan küçük akvaryum (v5.0)
 - 27 canlı türü, 12 biyom (Mercan Bahçesi, Yosun Ormanı, Buzul Kutbu, Yanardağ Bacaları, Kristal Mağaraları, Karanlık Uçurum, Batık Şehir, Turkuaz Lagün, Mavi Okyanus, Kızıl Kanyon …)
 - Su yüzeyine çıkılabilir: yüzeyde yıldızlı gece gökyüzü, ay, kayan yıldızlar ve aurora
 - PWA: masaüstüne / ana ekrana yüklenebilir (Chrome/Edge: adres çubuğundaki yükle simgesi veya oyun içi "Uygulamayı yükle" düğmesi; iOS: Paylaş → Ana Ekrana Ekle)
@@ -89,6 +89,28 @@ Online co-op / PvP 3D denizaltı oyunu: bosslar, dünya olayları, günlük gör
 - Yoğunluk korunsun diye bitki, kaya, mercan, canlı sürüsü ve biyom süsleri alanla birlikte çoğaltıldı (telefonda biraz daha az); düşmanlar 2 kat, hazineler ~3 kat. 24 yeni kaya kemeri, 6 yeni batık gemi, yeni palyaço yuvaları ve melek balığı sürüleri eklendi.
 - **Performans**: canlılar artık yalnızca yakındakiler GPU'ya gönderilerek çiziliyor; kabarcık kaynakları sadece yakındayken çalışıyor; düşman eşitlemesi uzak ve sakin düşmanları 2 sn'de bir gönderiyor. Çizilen üçgen sayısı eski küçük tankla neredeyse aynı.
 - Denizaltılar %25 daha hızlı (uzun mesafeler için). Harita ızgarası 200 m.
+
+### v5.0: mobilde küçük akvaryum, 6 yeni denizaltı, özel silahlar, işlevli iç mekân
+**Akvaryum boyutu**
+- **Telefon / hafif cihaz**: küçük akvaryum (1120×640, içerik yoğunluğu eski boyutta) açılır; cihazı yormaz. **Bilgisayar**: dev akvaryum (2240×1280), sınırlama yok.
+- Lobide **🌊 AKVARYUM** düğmesi (bilgisayarda) dev/küçük arasında geçiş yapar (`?dunya=buyuk|kucuk` ile de zorlanır).
+- Online odalarda herkes aynı boyutu kullanır: **oda kodu harfle başlıyorsa dev, rakamla başlıyorsa küçük** akvaryum. Bilgisayardan küçük bir odaya katılırken sayfa otomatik küçük akvaryuma geçer; telefon dev odaya katılamaz (uyarı çıkar), telefon sahibi küçük oda kurabilir.
+
+**6 yeni denizaltı** (Tersane'de fiyata göre sıralı; her biri farklı boyut, biçim ve renkte)
+| Denizaltı | Boyut | Pasif (otomatik) yetenek | Özel silah (`0` / `J`, telefonda ⭐) |
+|---|---|---|---|
+| 🐟 Pırana | ×0,82 minik | **Kan Kokusu**: her avdan sonra 4 sn %30 hız | **Pırana Sürüsü**: sırt kovanından 8 hedef arayan mini füze |
+| ⚡ Volt Vatoz | ×1,65 manta | **Statik Alan**: 16 m içindeki düşmanlara otomatik yıldırım | **Zincir Yıldırımı**: kanat bobinlerinden 6 hedefe sıçrar, sersemletir |
+| ❄ Kutup Kırıcı | ×2,05 buz kıran | **Buz Zırhı**: %18 az hasar, vurulunca düşmanları dondurabilir (Buz Kırıcı modülü dahili) | **Dondurucu Dalga**: pruvadaki kriyo topundan koni biçiminde don |
+| 🌋 Lav Yakıcı | ×2,3 | **Isı Aurası**: 11 m içindeki düşmanlar yanar (Isı Kalkanı dahili) | **Magma Bombası**: harçtan kavisli lav bombası, yanan lav gölü |
+| 🐙 Kraken Pençe | ×2,7 mekanik ahtapot | **Onarıcı Dokunaçlar**: 3 sn hasar almazsan saniyede 3 onarım | **Dokunaç Kapanı**: 6 mekanik dokunaç ezer, sersemletir ve çeker |
+| 🌈 Prizma | ×1,9 kristal | **Prizma Kalkanı**: kalkan %60 uzun ve dayanıklı (Kristal Rezonatör dahili) | **Prizma Işını**: hattaki her şeyi delen gökkuşağı ışını |
+
+Eski denizaltılar da pasif yetenek kazandı: Çaylak **Son Şans** (%20 canda bedava kalkan), Mercan Avcısı **Mercan Radarı** (30 sn'de bir otomatik sonar), Kalamar Kıran **Mürekkep Zırhı** (körleşmez), Çukur Akıncısı **Zırh Plakaları** (%12 az hasar), Derin Gölge **Hayalet Koşusu** (hızlanmıyorsan düşmanlar geç fark eder), Leviathan **Ezici Pruva** (hızla çarpınca otomatik hasar).
+
+**Her saldırının görünür donanımı**: tüm denizaltıların gövdesinde artık silahların aygıtı var ve atışta hareket eder — EMP çanağı (kıç üstte, EMP'de hızla döner), mayın kapağı (karında, mayın bırakırken açılır), şok plakası ve halkası (karın altı), ağ mortarı (üstte, tamburlu), mafsallı yakın dövüş pençeleri (pruvada, saldırıda öne uzanır), onarım kolu (tamirde kaynak yapar), sonar kubbesi ve kalkan düğümleri. Torpido çıkış noktası ve mayın kapağı her denizaltının kendi gövdesine göre.
+
+**Denizaltının içi artık işlevli** (yaklaşınca E, telefonda 🪑 dokunuşu; panelde yeşil/kırmızı lamba hazır/beklemede): Sonar Konsolu, Harita Masası, Telsiz (müzik / online sohbet), Silah Konsolu (tüm beklemeleri yarıya indirir), Ranza (dinlen: batarya dolar, gövde +%15), Kahve Makinesi (batarya +25, 45 sn hız bonusu), Revir Dolabı (gövde +%35), Torpido Rafı (+3 torpido), Mayın Kovanı (+2 mayın), Özel Modül Reaktörü (özel silahı anında şarj eder), Jeneratör (aşırı yük: 20 sn 3 kat şarj) ve Hasar Kontrol (acil onarım, sersemlik/mürekkep temizler).
 
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.

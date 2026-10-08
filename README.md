@@ -2,7 +2,7 @@
 
 Online co-op / PvP 3D denizaltı oyunu: bosslar, dünya olayları, günlük görevler, başarımlar ve 7 oyun modu (Three.js, tek dosya, sunucusuz — oyuncular PeerJS ile tarayıcıdan tarayıcıya bağlanır).
 
-- 1120×640 birimlik dev akvaryum (önceki sürümün 4 katı alan)
+- 2240×1280 birimlik dev akvaryum (v4.2'de her yönde 2 kat büyüdü: 4 kat alan)
 - 27 canlı türü, 12 biyom (Mercan Bahçesi, Yosun Ormanı, Buzul Kutbu, Yanardağ Bacaları, Kristal Mağaraları, Karanlık Uçurum, Batık Şehir, Turkuaz Lagün, Mavi Okyanus, Kızıl Kanyon …)
 - Su yüzeyine çıkılabilir: yüzeyde yıldızlı gece gökyüzü, ay, kayan yıldızlar ve aurora
 - PWA: masaüstüne / ana ekrana yüklenebilir (Chrome/Edge: adres çubuğundaki yükle simgesi veya oyun içi "Uygulamayı yükle" düğmesi; iOS: Paylaş → Ana Ekrana Ekle)
@@ -83,6 +83,12 @@ Online co-op / PvP 3D denizaltı oyunu: bosslar, dünya olayları, günlük gör
 - **Görev yenileme** (↻): günde bir bedava, sonra 60 🪙.
 - **Hızlı sohbet**: sohbet açılınca hazır mesajlar (Selam, Tamam, Yardım, Beni takip et, Boss'a gidelim, İyi oyundu) — telefonda yazmadan konuş.
 - **Dinamik müzik** (🎵): keşifte sakin, düşman yaklaşınca ritim başlar, boss ve Hayatta Kalma dalgalarında hızlanır.
+
+### v4.2: 4 kat büyük akvaryum
+- Tank 1120×640'tan **2240×1280**'e büyüdü (her yönde 2 kat, toplam 4 kat alan). Arazi, 18 bölge/biyom, 15 harabe, gemi mezarlığı, batık şehir ve boss inleri orantılı olarak yayıldı.
+- Yoğunluk korunsun diye bitki, kaya, mercan, canlı sürüsü ve biyom süsleri alanla birlikte çoğaltıldı (telefonda biraz daha az); düşmanlar 2 kat, hazineler ~3 kat. 24 yeni kaya kemeri, 6 yeni batık gemi, yeni palyaço yuvaları ve melek balığı sürüleri eklendi.
+- **Performans**: canlılar artık yalnızca yakındakiler GPU'ya gönderilerek çiziliyor; kabarcık kaynakları sadece yakındayken çalışıyor; düşman eşitlemesi uzak ve sakin düşmanları 2 sn'de bir gönderiyor. Çizilen üçgen sayısı eski küçük tankla neredeyse aynı.
+- Denizaltılar %25 daha hızlı (uzun mesafeler için). Harita ızgarası 200 m.
 
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.

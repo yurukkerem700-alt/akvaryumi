@@ -256,6 +256,12 @@ body.crew #cockpit{display:none!important}
 .touch #specTag{bottom:calc(120px + env(safe-area-inset-bottom))}.touch .msel{grid-template-columns:repeat(4,1fr)}.touch #revTag{bottom:46%}
 @media(max-width:720px){.msel{grid-template-columns:repeat(4,1fr)}}
 #discCard{top:200px}
+#comboV{position:fixed;left:calc(50% + 70px);top:calc(50% - 40px);z-index:8;pointer-events:none;font-size:18px;font-weight:950;color:#ffb347;text-shadow:0 0 12px rgba(255,140,40,.8),0 2px 4px #000;opacity:0;transition:opacity .3s}
+#comboV small{display:block;font-size:11px;color:#ffe08a}#comboV.on{opacity:1}#comboV.pop{animation:cpop .25s ease-out}@keyframes cpop{from{transform:scale(1.5)}to{transform:scale(1)}}
+.cross.hit{border-color:#ffd56c!important;transform:scale(1.25)}.cross.kill{border-color:#ff5a4a!important;transform:scale(1.45);box-shadow:0 0 14px rgba(255,90,74,.8)}
+#qchat{display:none;flex-wrap:wrap;gap:4px;pointer-events:auto}#chat.typing #qchat{display:flex}#qchat button{border:1px solid var(--line);background:rgba(2,14,24,.85);color:#fff;border-radius:999px;padding:5px 9px;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
+.qi .qt{display:flex;justify-content:space-between;gap:6px}.rq{border:0;background:rgba(255,255,255,.1);color:#cfe6ef;border-radius:6px;font-size:11px;cursor:pointer;padding:1px 6px;flex:none}.rq:hover{background:rgba(255,255,255,.22)}
+@media (orientation:portrait){.touch #musicBtn{display:none}}
 </style>
 </head>
 <body>
@@ -275,7 +281,7 @@ body.crew #cockpit{display:none!important}
     <div class="stat glass"><span data-i="torp">TORPİDO</span><b id="torp">6/6</b><div class="meterB"><i id="torpBar"></i></div></div>
   </div>
   <div class="side">
-    <button class="btn" id="catBtn" title="T">📖</button><button class="btn" id="viewBtn" title="B">👁</button><button class="btn" id="inBtn" title="I">🚶</button><button class="btn" id="profBtn" title="K">🏆</button><button class="btn" id="garBtn" title="G">🏪</button><button class="btn" id="soundBtn">🔊</button>
+    <button class="btn" id="catBtn" title="T">📖</button><button class="btn" id="viewBtn" title="B">👁</button><button class="btn" id="inBtn" title="I">🚶</button><button class="btn" id="profBtn" title="K">🏆</button><button class="btn" id="garBtn" title="G">🏪</button><button class="btn" id="soundBtn">🔊</button><button class="btn" id="musicBtn" title="Müzik / Music">🎵</button>
     <button class="btn gold" id="langBtn">EN</button>
     <button class="btn" id="fsBtn">⛶</button><button class="btn" id="menuBtn" data-i="menu">MENÜ</button>
   </div>
@@ -299,11 +305,11 @@ body.crew #cockpit{display:none!important}
 <div class="panel glass" id="radarP" style="display:none"><canvas id="radar" width="352" height="352"></canvas></div>
 <div id="netReady" style="display:none"><b data-i="netReadyH">AĞ ATEŞLEMEYE HAZIR</b><span id="netReadyS"></span></div>
 <div id="zoneTag" class="glass" style="display:none"><span data-i="zone">BÖLGE</span><b id="zone">—</b></div>
-<div id="chat"><div id="chatLog"></div><input id="chatIn" maxlength="120" autocomplete="off"></div>
+<div id="chat"><div id="chatLog"></div><div id="qchat"></div><input id="chatIn" maxlength="120" autocomplete="off"></div>
 <div class="hint glass" id="hint" style="display:none" data-i="hint"></div>
 <div class="glass" id="deadV"><b data-i="youSunk">DENİZALTIN BATTI</b><span><span data-i="respawnIn" style="display:inline">Yeniden doğuyor:</span> <span id="deadT" style="display:inline">4</span></span></div>
 <div class="glass" id="wpn"></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div><div id="comboV"></div>
 <div id="topStack"><div class="glass" id="matchBar"></div><div class="glass" id="evBan"></div><div class="glass" id="bossBar"><b id="bossName"></b><div class="bb"><i id="bossHp"></i></div></div></div>
 <div id="bigBan"><b></b><span></span></div>
 <div id="loreCard" class="glass"><div class="k" id="loreK"></div><h3 id="loreH"></h3><p id="loreP"></p><small id="loreS"></small></div>
@@ -399,7 +405,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.08-4',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.08-5',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -566,7 +572,7 @@ function applyLang(){
   T=TEXT[lang];document.documentElement.lang=lang;
   document.querySelectorAll('[data-i]').forEach(el=>{const v=T[el.dataset.i];if(typeof v==='string')el.textContent=v;});
   $('codeIn').placeholder=T.codePh;$('chatIn').placeholder=T.chatPh;$('langBtn').textContent=lang==='tr'?'EN':'TR';
-  renderCatalog();renderPlayers();renderWpn();renderQuests();drawSign();if(garageOpen())renderGarage();qLabel();renderModeSel();if(profOpen())renderProfile();try{if(running)layoutCockpit();}catch{}
+  renderCatalog();renderPlayers();renderWpn();renderQuests();drawSign();if(garageOpen())renderGarage();qLabel();renderModeSel();renderQChat();if(profOpen())renderProfile();try{if(running)layoutCockpit();}catch{}
 }
 
 /* ================= Sabitler ve yardımcılar ================= */
@@ -1641,8 +1647,8 @@ function applyLoadout(fresh){
 const SC={fish:5,shark:60,eel:40,squid:50,swarm:30,struct:8,disc:100,pk:150,caught:3,quest:50,treasure:40};
 const stats={ms:0,fish:{},fishN:0,en:{},enN:0,str:0,disc:0,pk:0,caught:0,mel:0,score:0};
 const addScore=n=>{stats.score+=n;gainXp(n);};
-function statFish(sp){stats.fish[sp]=(stats.fish[sp]||0)+1;stats.fishN++;addScore(SC.fish);if(MS.mode==='hunt'&&MS.phase==='play')myMS++;qEvent('fish',sp);qEvent('sp',sp);}
-function statEnemy(type){stats.en[type]=(stats.en[type]||0)+1;stats.enN++;addScore(SC[type]||30);let g=gm(({shark:30,eel:20,squid:25,swarm:15})[type]||15);save.gold+=g;if(MS.phase==='play'){if(MS.mode==='hunt')myMS+=3;else if(MS.mode==='survival')myMS++;}persist();refreshGold();qEvent('en',type);return g;}
+function statFish(sp){comboHit(1);stats.fish[sp]=(stats.fish[sp]||0)+1;stats.fishN++;addScore(SC.fish);if(MS.mode==='hunt'&&MS.phase==='play')myMS++;qEvent('fish',sp);qEvent('sp',sp);}
+function statEnemy(type){comboHit(2);hitMark(true);stats.en[type]=(stats.en[type]||0)+1;stats.enN++;addScore(SC[type]||30);let g=gm(({shark:30,eel:20,squid:25,swarm:15})[type]||15);save.gold+=g;if(MS.phase==='play'){if(MS.mode==='hunt')myMS+=3;else if(MS.mode==='survival')myMS++;}persist();refreshGold();qEvent('en',type);return g;}
 function drawSign(){
   if(!signCv)return;const g=signCv.getContext('2d'),W=1024,H=396,tr=lang==='tr';
   const m=Math.floor(stats.ms/60000),sc=Math.floor(stats.ms/1000)%60,timeS=m+':'+String(sc).padStart(2,'0');
@@ -1713,7 +1719,7 @@ function questText(q){
 }
 function renderQuests(){
   refreshGold();const el=$('questList');if(!el)return;
-  el.innerHTML='<div class="xpL" id="xpL"><span></span><span></span></div><div class="xpb"><i id="xpB"></i></div>'+save.quests.map(q=>`<div class="qi"><div class="qt">${esc(questText(q))}</div><div class="qm"><span>${q.p}/${q.n}</span><span class="gold">+${q.r} 🪙</span></div><div class="prog"><i style="width:${q.p/q.n*100}%"></i></div></div>`).join('')+dailyHTML();xpUI();
+  el.innerHTML='<div class="xpL" id="xpL"><span></span><span></span></div><div class="xpb"><i id="xpB"></i></div>'+save.quests.map((q,i)=>`<div class="qi"><div class="qt"><span>${esc(questText(q))}</span><button class="rq" data-rq="${i}" title="${esc(tl('Görevi değiştir (günde 1 bedava, sonra 60 🪙)','Reroll quest (1 free per day, then 60 🪙)'))}">↻</button></div><div class="qm"><span>${q.p}/${q.n}</span><span class="gold">+${q.r} 🪙</span></div><div class="prog"><i style="width:${q.p/q.n*100}%"></i></div></div>`).join('')+dailyHTML();xpUI();
 }
 function qEvent(kind,key,amt=1){
   lifeAdd(kind,amt);dqEvent(kind,key,amt);
@@ -2262,7 +2268,7 @@ function updateTorps(dt,wt){
     let hit=null;const steps=3;
     for(let s=0;s<steps;s++){Q.pos.addScaledVector(Q.vel,dt/steps);hit=torpHit(Q,wt);if(hit)break;}
     if(hit||Q.age>(Q.own?8:9.5)){
-      if(Q.own){const ci=hit==='c'?HI.i:-1,si=hit==='s'?HI.si:-1,ei=hit==='e'?HI.i:-1;
+      if(Q.own){if(hit==='e'||hit==='c'||hit==='p')hitMark(false);const ci=hit==='c'?HI.i:-1,si=hit==='s'?HI.si:-1,ei=hit==='e'?HI.i:-1;
         explode(Q.pos.x,Q.pos.y,Q.pos.z,ci,Q.tid);applyBlast({x:Q.pos.x,y:Q.pos.y,z:Q.pos.z,si,ei,tid:Q.tid,own:true,by:net.myId});
         sendNet({t:'boom',tid:Q.tid,p:r3(Q.pos),ci,si,ei});}
       else explode(Q.pos.x,Q.pos.y,Q.pos.z,-1,Q.tid);
@@ -2961,7 +2967,7 @@ function doMelee(){
   for(const e of enemies){if(!e.dead&&Math.hypot(e.x-center.x,e.y-center.y,e.z-center.z)<Rm+e.r)ei.push(e.i);}
   for(const s of structs){if(!s.alive||s.falling||si.length>=12)continue;for(const k of s.cols){if(Math.hypot(k.x-center.x,k.y-center.y,k.z-center.z)<Rm+k.r*.8){si.push(s.id);break;}}}
   applyMelee({p:center,d:dir,ci,si,ei,by:net.myId,col:me.color,sc});
-  const hits=ci.length+ei.length+si.length;if(hits){stats.mel+=hits;qEvent('mel','',hits);}
+  const hits=ci.length+ei.length+si.length;if(ci.length||ei.length)hitMark(false);if(hits){stats.mel+=hits;qEvent('mel','',hits);}
   sendNet({t:'mel',p:r3(center),d:r3(dir),ci,si,ei,z:+sc.toFixed(2)});
 }
 const _Z=new THREE.Vector3(0,0,1),_Yv=new THREE.Vector3(0,1,0);
@@ -3110,7 +3116,7 @@ function updateAim(){
   const dm=Math.max(0,Math.round(best-camD()));
   let label='';
   if(bk==='c'){const sp=creatures[bi].sp,s=SPECIES[SP_IDX[sp]];label=teamDisc.has(sp)?s[lang]:'???';}
-  else if(bk==='e'){const e=enemies[bi];label=ETYPE[e.type][lang]+' ♥'+e.hp+'/'+e.cfg.hp;}
+  else if(bk==='e'){const e=enemies[bi];label=ETYPE[e.type][lang]+' ♥'+Math.ceil(e.hp)+'/'+(e.hpM||e.cfg.hp);}
   else if(bk==='p')label=players.get(bi).name;
   $('aimInfo').textContent=bk?T.lock+' · '+label+' · '+dm+' m':(envT<219?dm+' m':'');
 }
@@ -4365,10 +4371,10 @@ try{const o=JSON.parse(store.get(SAVE_KEY)||'null');if(o&&typeof o==='object'){
   save.mods=sa(o.mods,m=>typeof m==='string'&&m in MODS,8);save.photos=sa(o.photos,x=>typeof x==='string',80);save.lore=sa(o.lore,Number.isInteger,20);
   save.bosses=sa(o.bosses,x=>typeof x==='string',10);save.seen=sa(o.seen,x=>typeof x==='string'&&x in SP_IDX,40);
   if(o.life&&typeof o.life==='object')for(const k in o.life)if(/^[a-z]{1,8}$/.test(k))save.life[k]=Math.max(0,Math.floor(num(o.life[k])));
-  if(o.best&&typeof o.best==='object')for(const k of ['race','surv','hunt'])if(o.best[k]!=null)save.best[k]=Math.max(0,num(o.best[k]));
+  if(o.best&&typeof o.best==='object')for(const k of ['race','surv','hunt','combo'])if(o.best[k]!=null)save.best[k]=Math.max(0,num(o.best[k]));
   if(o.streak&&typeof o.streak==='object'&&typeof o.streak.d==='string')save.streak={d:o.streak.d.slice(0,10),n:Math.max(0,Math.floor(num(o.streak.n)))};
   const vq=x=>x&&typeof x==='object'&&typeof x.key==='string'&&Array.isArray(x.q)?{key:x.key.slice(0,14),q:x.q.filter(validQuest).slice(0,3).map(q=>({k:q.k,a:q.a,n:q.n,p:Math.min(q.p,q.n),r:q.r})),done:!!x.done}:null;
-  save.daily=vq(o.daily);save.weekly=vq(o.weekly);
+  save.daily=vq(o.daily);save.weekly=vq(o.weekly);save.rrd=typeof o.rrd==='string'?o.rrd.slice(0,10):'';
 }}catch{}
 function lifeAdd(k,n=1){save.life[k]=(save.life[k]||0)+n;v4dirty=true;}
 function addGold(n,silent){n=Math.round(n);if(!n)return 0;save.gold+=n;v4dirty=true;refreshGold();if(garageOpen())renderGarage();if(!silent)toast('+'+n+' 🪙');return n;}
@@ -5003,7 +5009,7 @@ const now4=()=>performance.now();
 let hazT=0,hazMsgT=0;
 function hazardUpdate(dt,now){
   const z=zoneAt(sub.position.x,sub.position.z),m=HAZ[z],bad=m&&!hasMod(m)&&!dead&&!CREW.pilot&&sub.position.y<SURF-1.4&&!IN.on;
-  if(!bad){hazT=Math.max(0,hazT-dt*2);$('hazV').style.opacity=String(clamp(hazT/4,0,.6));return;}
+  if(!bad){if(hazT>0){hazT=Math.max(0,hazT-dt*2);$('hazV').style.opacity=String(clamp(hazT/4,0,.6));}return;}
   hazT+=dt;$('hazV').style.background=m==='cold'?'radial-gradient(circle,rgba(120,200,255,0) 40%,rgba(160,220,255,.75) 100%)':m==='press'?'radial-gradient(circle,rgba(20,20,60,0) 35%,rgba(10,10,40,.85) 100%)':m==='res'?'radial-gradient(circle,rgba(190,120,255,0) 40%,rgba(190,120,255,.7) 100%)':'';
   $('hazV').style.opacity=String(clamp(hazT/4,0,.65)+.1*Math.sin(now*.01));
   if(now-hazMsgT>5000){hazMsgT=now;const d=MODS[m];toast('⚠ '+d.ic+' '+tl(d.tr+' gerekli! Tersaneden al ya da geri dön',d.en+' required! Buy it at the shipyard or turn back'));tone(440,330,.25,'square',.07);}
@@ -5045,7 +5051,7 @@ function v4UI(){
   // boss çubuğu
   const b=running&&!dead?nearBoss():null,bb=$('bossBar');
   if(b&&(b.st!==0||b.hp<(b.hpM||b.cfg.hp))){bb.style.display='block';const t='💀 '+ETYPE[b.type][lang]+(b.hp<(b.hpM||b.cfg.hp)*.4?tl(' · ÖFKELİ',' · ENRAGED'):'');if($('bossName').textContent!==t)$('bossName').textContent=t;$('bossHp').style.width=clamp(b.hp/(b.hpM||b.cfg.hp)*100,0,100)+'%';}else bb.style.display='none';
-  if(isTouch)$('crewB').style.display=net.mode==='solo'?'none':'';
+  if(isTouch){$('crewB').style.display=net.mode==='solo'?'none':'';const r=document.querySelector('.ttop').getBoundingClientRect();if(r.height>0){const t=Math.round(r.bottom+6)+'px';if($('topStack').style.top!==t)$('topStack').style.top=t;}}
   if(dead){const dt2=$('deadT');if(deadT===Infinity&&dt2.textContent!=='—')dt2.textContent='—';}
   if(sbOn)renderSB();
 }
@@ -5135,8 +5141,76 @@ function v4Update(dt,now,t){
   if(net.mode!=='client'){matchTick(dt);evTick(dt);}
   evLocal(dt,t);ringsUpdate(dt,t);grabUpdate(dt,t);pingsUpdate(dt);hazardUpdate(dt,now);bossPush();crewPilotBuff(dt);reviveUpdate(dt);trailUpdate(dt,t);
   for(const e of enemies)if(e.warnT>0){e.warnT-=dt;}
+  if(dead&&deadT===Infinity&&!(MS.mode==='survival'&&MS.phase==='play'))deadT=3;
+  comboTick();
   v4uiT+=dt;if(v4uiT>.2){v4uiT=0;v4UI();}
 }
+
+/* ================= v4.1: kombo, isabet işareti, görev yenileme, hızlı sohbet, dinamik müzik ================= */
+/* ---- Kombo: 4,5 sn içinde art arda avlar çarpan kazandırır ---- */
+var combo={n:0,t:0};
+const COMBO_WIN=4500;
+function comboHit(w){
+  const now=performance.now();if(now-combo.t<COMBO_WIN)combo.n+=w||1;else{combo.n=w||1;combo.m=0;}combo.t=now;
+  if(combo.n>(save.best.combo||0)){save.best.combo=combo.n;v4dirty=true;}
+  const el=$('comboV');if(combo.n<3){el.classList.remove('on');return;}
+  const ms=Math.floor(combo.n/5),hit5=ms>(combo.m||0);let b=0;if(hit5){combo.m=ms;b=gm(Math.min(ms*5,40)*4);save.gold+=b;refreshGold();v4dirty=true;gainXp(ms*20);}
+  el.innerHTML=`🔥 ${tl('KOMBO','COMBO')} ×${combo.n}<small>${b?'+'+b+' 🪙':tl('5\'in katlarında altın','gold every 5 hits')}</small>`;el.classList.remove('on','pop');void el.offsetWidth;el.classList.add('on','pop');
+  if(hit5){tone(660+combo.n*20,990+combo.n*20,.2,'triangle',.12);if(combo.n>=15)bigBanner('🔥 '+tl('KOMBO ','COMBO ')+'×'+combo.n,tl('Durma, devam et!','Keep it going!'));}
+}
+function comboTick(){if(combo.n&&performance.now()-combo.t>COMBO_WIN){combo.n=0;$('comboV').classList.remove('on');}}
+ACH.push({id:'combo',ic:'🔥',tr:'Kombo Ustası',en:'Combo Master',d:['20\'lik kombo yap','Reach a 20 combo'],t:()=>(save.best.combo||0)>=20,g:800,ti:['Kombo Ustası','Combo Master']});
+
+/* ---- İsabet işareti ---- */
+function hitMark(kill){const c=$('cross');c.classList.remove('hit','kill');void c.offsetWidth;c.classList.add(kill?'kill':'hit');clearTimeout(hitMark.t);hitMark.t=setTimeout(()=>c.classList.remove('hit','kill'),220);tone(kill?1500:1100,kill?1800:1300,.06,'square',.05);}
+
+/* ---- Görev yenileme: günde bir bedava, sonrası 60 🪙 ---- */
+$('questList').addEventListener('click',e=>{
+  const b=e.target.closest('[data-rq]');if(!b)return;e.stopPropagation();const i=+b.dataset.rq;if(!save.quests[i])return;
+  const free=save.rrd!==dayKey();if(!free){if(save.gold<60){toast(T.needGold);return;}save.gold-=60;}else save.rrd=dayKey();
+  save.quests[i]=newQuest();persist();renderQuests();toast('↻ '+tl('Yeni görev','New quest')+(free?tl(' (bugünkü bedava hak)',' (today\'s free reroll)'):' −60 🪙'));sfx.food();
+});
+
+/* ---- Hızlı sohbet (telefonda yazmadan) ---- */
+var QCHAT=[['👋 Selam!','👋 Hi!'],['👍 Tamam','👍 OK'],['🆘 Yardım edin!','🆘 Help!'],['➡ Beni takip et','➡ Follow me'],['💀 Boss\'a gidelim','💀 Let\'s hit the boss'],['🎉 İyi oyundu!','🎉 Good game!']];
+function renderQChat(){$('qchat').innerHTML=QCHAT.map((q,i)=>`<button data-qc="${i}">${esc(q[lang==='tr'?0:1])}</button>`).join('');}
+$('qchat').addEventListener('pointerdown',e=>{const b=e.target.closest('[data-qc]');if(!b)return;e.preventDefault();const m=QCHAT[+b.dataset.qc][lang==='tr'?0:1];playerMsg(me.name,me.color,m);sendNet({t:'chat',m});closeChat();});
+
+/* ---- Dinamik müzik: sakin keşif, savaşta hızlanan ritim ---- */
+var mus={on:store.get('aqua-music')!=='0',out:null,next:0,step:0,lvl:0,lvlT:0};
+const MUS_CH=[[57,60,64],[53,57,60],[48,52,55],[55,59,62]],MUS_PENT=[0,3,5,7,10],mf=n=>440*Math.pow(2,(n-69)/12);
+function musInit(){
+  if(!ac||mus.out)return;const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2200;mus.out=ac.createGain();mus.out.gain.value=mus.on?1:0;mus.out.connect(lp).connect(master);mus.lp=lp;mus.next=ac.currentTime+.2;
+}
+function musNote(f,t,dur,type,vol,att){const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+(att||.02));g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(mus.out);o.start(t);o.stop(t+dur+.05);}
+function musHit(t,vol,f0,f1,dur){const b=ac.createBuffer(1,Math.ceil(ac.sampleRate*dur),ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=ac.createBufferSource();s.buffer=b;const f=ac.createBiquadFilter();f.type='bandpass';f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+dur);const g=ac.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f).connect(g).connect(mus.out);s.start(t);}
+function musLevel(){
+  if(!running||dead)return 0;
+  if(MS.mode==='survival'&&MS.phase==='play'&&MS.left>0)return 2;
+  for(const e of enemies){if(e.dead||e.st===0)continue;const d=Math.hypot(e.x-sub.position.x,e.y-sub.position.y,e.z-sub.position.z);if(e.cfg.boss&&d<150)return 2;if(d<45)return 1;}
+  if(MODES[MS.mode].match&&MS.phase==='play')return 1;
+  return 0;
+}
+setInterval(()=>{
+  if(!ac||muted||!mus.on||ac.state!=='running')return;musInit();
+  const L2=musLevel();if(L2!==mus.lvl){mus.lvlT+=.25;if(mus.lvlT>(L2>mus.lvl?.5:4)){mus.lvl=L2;mus.lvlT=0;}}else mus.lvlT=0;
+  mus.lp.frequency.value=sub.position.y>SURF-1.4?6000:2200;
+  const beat=mus.lvl===2?.27:mus.lvl===1?.36:.5;
+  if(mus.next<ac.currentTime)mus.next=ac.currentTime+.05;
+  while(mus.next<ac.currentTime+.7){
+    const t=mus.next,st=mus.step,ch=MUS_CH[Math.floor(st/16)%4],lv=mus.lvl;
+    if(st%16===0)for(const n of ch)musNote(mf(n),t,beat*16,'sine',.022,beat*3);
+    if(st%2===0||lv>0){if(Math.random()<(lv?.7:.45)){const r=ch[0]+12+MUS_PENT[(Math.random()*5)|0]+(Math.random()<.25?12:0);musNote(mf(r),t,beat*2.4,'triangle',lv?.02:.016);}}
+    if(lv>=1&&st%4===0)musNote(mf(ch[0]-12),t,beat*3,'sine',.07,.01);
+    if(lv>=1)musHit(t,lv===2?.03:.016,7000,5000,.05);
+    if(lv===2&&st%4===0){const o=ac.createOscillator(),g=ac.createGain();o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(40,t+.18);g.gain.setValueAtTime(.16,t);g.gain.exponentialRampToValueAtTime(.0001,t+.22);o.connect(g).connect(mus.out);o.start(t);o.stop(t+.25);}
+    if(lv===2&&st%8===4)musHit(t,.05,1800,600,.14);
+    mus.next+=beat;mus.step++;
+  }
+},250);
+function setMusic(on){mus.on=on;store.set('aqua-music',on?'1':'0');if(mus.out)mus.out.gain.value=on?1:0;$('musicBtn').style.opacity=on?'1':'.45';}
+$('musicBtn').onclick=()=>{setMusic(!mus.on);toast(mus.on?'🎵 '+tl('Müzik açık','Music on'):'🎵 '+tl('Müzik kapalı','Music off'));};
+$('musicBtn').style.opacity=mus.on?'1':'.45';
 
 if(store.get('aqua-lang')==='en')lang='en';
 refreshDaily();fillQuests();persist();applyLoadout(true);initTreasures();if(fp)camPitch=0;

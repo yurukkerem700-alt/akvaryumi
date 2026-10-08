@@ -74,6 +74,16 @@ Online co-op / PvP 3D denizaltı oyunu: bosslar, dünya olayları, günlük gör
 - **İzleyici**: batınca arkadaşlarını izle (tıkla / ◀ ▶).
 - **Mürettebat** (`H` / 🤝): arkadaşının denizaltısına bin; 1. tayfa **nişancı** (silahlar hızlı dolar), 2. tayfa **mühendis** (`R` onarır, `C` kalkan verir). Pilot hızlanır, bataryası ve gövdesi kendini toplar.
 
+### v4.1: düzeltmeler + kombo, müzik, hızlı sohbet
+- **Düzeltme**: Hayatta Kalma'da dalga sırasında batıp maç biterse (ya da oda sahibi çıkarsa) oyuncu bir daha doğmuyordu — artık 3 sn sonra doğuyor.
+- **Düzeltme**: nişangâhta boss canı ondalıklı ve ölçeklenmemiş görünüyordu.
+- **Düzeltme**: dar telefon ekranlarında olay/maç şeridi üst düğmelerle çakışıyordu; artık düğmelerin altına yerleşiyor.
+- **Kombo**: 4,5 sn içinde art arda avlar kombo yapar; her 5 komboda altın ve XP. Yeni başarım: Kombo Ustası (20 kombo).
+- **İsabet işareti**: torpido/yakın saldırı isabet edince nişangâh parlar, öldürünce kırmızı.
+- **Görev yenileme** (↻): günde bir bedava, sonra 60 🪙.
+- **Hızlı sohbet**: sohbet açılınca hazır mesajlar (Selam, Tamam, Yardım, Beni takip et, Boss'a gidelim, İyi oyundu) — telefonda yazmadan konuş.
+- **Dinamik müzik** (🎵): keşifte sakin, düşman yaklaşınca ritim başlar, boss ve Hayatta Kalma dalgalarında hızlanır.
+
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 

@@ -5692,6 +5692,7 @@ function spcSend(o){
 }
 function spcRecv(d,from,p){
   if(!p||p.dead)return;const k=typeof d.k==='string'?d.k:'';if(!SPFX[k])return;
+  {const nw=performance.now();if(nw-(p.spcT||0)<120)return;p.spcT=nw;}
   const pp=v3(d.p),dd=v3(d.d),qq=v3(d.q);if(!pp||!dd||!qq||dd.lengthSq()<.01)return;dd.normalize();
   const o={k,p:pp,d:dd,q:qq,ci:intList(d.ci,creatures.length),si:intList(d.si,structs.length),ei:intList(d.ei,enemies.length),by:from,col:p.color,sc:clamp(num(d.z,1),.5,3.2),pts:[],tg:[]};
   if(Array.isArray(d.pt))for(const a of d.pt.slice(0,8)){const v=v3(a);if(v)o.pts.push(v);}

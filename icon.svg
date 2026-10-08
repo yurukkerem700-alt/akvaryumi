@@ -1,11 +1,59 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1633"/><stop offset=".42" stop-color="#0b7f9c"/><stop offset="1" stop-color="#05283a"/></linearGradient><radialGradient id="m"><stop stop-color="#fff7d6"/><stop offset="1" stop-color="#fff7d6" stop-opacity="0"/></radialGradient></defs>
-<rect width="512" height="512" fill="url(#bg)"/>
-<circle cx="392" cy="112" r="70" fill="url(#m)" opacity=".55"/><circle cx="392" cy="112" r="30" fill="#fff6d0"/>
-<g fill="#fff"><circle cx="90" cy="70" r="3"/><circle cx="160" cy="40" r="2"/><circle cx="240" cy="90" r="2.5"/><circle cx="300" cy="46" r="2"/><circle cx="60" cy="140" r="2"/><circle cx="470" cy="190" r="2"/><circle cx="210" cy="150" r="1.8"/></g>
-<path d="M0 205 Q64 188 128 205 T256 205 T384 205 T512 205 V512 H0Z" fill="#0b8aa8" opacity=".55"/>
-<path d="M0 205 Q64 188 128 205 T256 205 T384 205 T512 205" fill="none" stroke="#bff3ff" stroke-width="5" opacity=".8"/>
-<path d="M0 470 Q130 420 256 462 T512 440 V512 H0Z" fill="#05202c"/>
-<g transform="translate(256 318)"><ellipse rx="128" ry="52" fill="#e9eef0" stroke="#2f3f45" stroke-width="8"/><rect x="-96" y="-8" width="44" height="26" rx="6" fill="#ffd56c" opacity=".0"/><path d="M-70-6h140" stroke="#ffcf3f" stroke-width="14" opacity=".9"/><ellipse cx="-24" cy="-6" rx="38" ry="22" fill="#6fe0ff" stroke="#2f3f45" stroke-width="5"/><rect x="-14" y="-82" width="16" height="42" rx="4" fill="#5e737b"/><path d="M-6-82v-24h22" stroke="#79e3ee" stroke-width="6" fill="none"/><circle cx="104" cy="0" r="14" fill="#f7c95a"/><path d="M-128-4l-30-24v56z" fill="#cfd8dc" stroke="#2f3f45" stroke-width="6"/></g>
-<g><ellipse cx="400" cy="370" rx="26" ry="14" fill="#f47b43"/><path d="M374 370l-18-11v22z" fill="#f47b43"/><circle cx="410" cy="367" r="3" fill="#07151b"/></g>
-<g fill="#bff3ff" opacity=".7"><circle cx="352" cy="300" r="7"/><circle cx="370" cy="270" r="5"/><circle cx="344" cy="246" r="4"/></g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+<linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1bb3c9"/><stop offset=".45" stop-color="#0b6f93"/><stop offset="1" stop-color="#062a45"/></linearGradient>
+<linearGradient id="ray" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9fdff" stop-opacity=".5"/><stop offset="1" stop-color="#e9fdff" stop-opacity="0"/></linearGradient>
+<linearGradient id="hull" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe06a"/><stop offset=".5" stop-color="#f2b724"/><stop offset="1" stop-color="#b9780f"/></linearGradient>
+<linearGradient id="belly" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d5378"/><stop offset="1" stop-color="#15263a"/></linearGradient>
+<linearGradient id="tower" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a6690"/><stop offset="1" stop-color="#1c344f"/></linearGradient>
+<linearGradient id="fin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a5c"/><stop offset="1" stop-color="#c8401e"/></linearGradient>
+<radialGradient id="port" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#ffe9b0"/><stop offset=".6" stop-color="#ffb84d"/><stop offset="1" stop-color="#c86e12"/></radialGradient>
+<radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff4c2" stop-opacity=".55"/><stop offset="1" stop-color="#fff4c2" stop-opacity="0"/></radialGradient>
+<linearGradient id="sand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9b77a"/><stop offset="1" stop-color="#8a6a3c"/></linearGradient>
+<clipPath id="pc"><circle r="25"/></clipPath>
+</defs>
+<rect width="512" height="512" fill="url(#sea)"/>
+<g fill="url(#ray)"><path d="M120 0h46L96 512H40z"/><path d="M250 0h34l-30 512h-60z" opacity=".7"/><path d="M380 0h40l70 512h-70z" opacity=".8"/></g>
+<g fill="#e9fdff" opacity=".18"><path d="M0 34c40 10 80 10 128 0s88-10 128 0 88 10 128 0 88-10 128 0v-34H0z"/></g>
+<!-- deniz tabanı -->
+<path d="M0 430c60-22 120-26 190-12s130 18 190 0 100-14 132-4V512H0z" fill="url(#sand)"/>
+<g fill="#ff6f7d"><path d="M64 432c-6-30 4-52 12-60 4 14-2 28 6 40 6-18 18-24 26-24-8 18-4 32-14 46z"/></g>
+<g fill="#2fae73"><path d="M440 436c-10-40 6-80-4-112 18 26 22 70 16 112z"/><path d="M462 436c4-30-10-56-2-86 16 30 16 58 12 86z"/><path d="M28 446c-6-24 4-46-2-70 14 20 16 44 12 70z"/></g>
+<g fill="#ffb347"><circle cx="122" cy="428" r="7"/><circle cx="138" cy="432" r="5"/></g>
+<!-- balıklar -->
+<g><path d="M402 150c14-12 34-12 46 0-12 12-32 12-46 0z" fill="#ff8f3f"/><path d="M402 150l-14-10v20z" fill="#ff8f3f"/><circle cx="436" cy="148" r="2.6" fill="#081a24"/><path d="M420 141v18" stroke="#fff" stroke-width="3"/></g>
+<g opacity=".85"><path d="M70 196c10-8 24-8 32 0-8 8-22 8-32 0z" fill="#7fe3ff"/><path d="M70 196l-10-7v14z" fill="#7fe3ff"/></g>
+<!-- denizaltı -->
+<g transform="translate(246 292) rotate(-6)">
+  <ellipse cx="0" cy="96" rx="150" ry="14" fill="#04131f" opacity=".25"/>
+  <!-- kuyruk kanatları -->
+  <path d="M-150 -6l-44-40h26l36 30z" fill="url(#fin)"/><path d="M-150 10l-44 40h26l36-30z" fill="url(#fin)"/>
+  <path d="M-140 -26L-194 -9v20l54 16z" fill="#1d3d5c"/>
+  <rect x="-206" y="-24" width="16" height="50" rx="5" fill="#c79a46"/>
+  <!-- gövde -->
+  <path d="M-158 0c0-46 60-64 158-64s176 22 176 64-78 64-176 64-158-18-158-64z" fill="url(#hull)"/>
+  <path d="M-150 20c30 32 92 42 150 42s150-8 172-36c-6 30-80 52-172 52s-146-22-150-58z" fill="url(#belly)"/>
+  <path d="M-110 -8h268" stroke="#1d3d5c" stroke-width="10" stroke-linecap="round" opacity=".9"/>
+  <path d="M-110 -8h268" stroke="#ff5a3c" stroke-width="4" stroke-linecap="round"/>
+  <!-- kule -->
+  <path d="M-48 -60c4-34 16-48 40-48h48c20 0 30 14 34 48z" fill="url(#tower)"/>
+  <rect x="-40" y="-84" width="80" height="8" rx="4" fill="#ffd56c"/>
+  <path d="M10 -108v-34h30" stroke="#c79a46" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <circle cx="44" cy="-142" r="7" fill="#c79a46"/>
+  <!-- yan kanatçık -->
+  <path d="M-10 30l-40 28h60l16-28z" fill="url(#fin)"/>
+  <!-- lombozlar: ön lombozda kaptan -->
+  <g fill="#c79a46"><circle cx="-80" cy="-24" r="16"/><circle cx="-30" cy="-26" r="16"/><circle cx="104" cy="-14" r="31"/></g>
+  <g fill="url(#port)"><circle cx="-80" cy="-24" r="11"/><circle cx="-30" cy="-26" r="11"/></g>
+  <g transform="translate(104 -14)">
+    <circle r="25" fill="url(#port)"/>
+    <g clip-path="url(#pc)" fill="#1b2a3c"><circle cx="-2" cy="-4" r="9"/><path d="M-20 26c0-14 8-20 18-20s18 6 18 20z"/><path d="M-11 -8c2-9 18-9 20 0z" fill="#2a1c13"/></g>
+    <path d="M-16 -12a20 20 0 0 1 14-10" stroke="#fff" stroke-width="4" fill="none" opacity=".7" stroke-linecap="round"/>
+  </g>
+  <g fill="#e6c27a"><circle cx="76" cy="-38" r="3"/><circle cx="132" cy="-38" r="3"/><circle cx="76" cy="10" r="3"/><circle cx="132" cy="10" r="3"/></g>
+  <!-- far -->
+  <circle cx="172" cy="10" r="9" fill="#fff6d0"/>
+  <path d="M176 10l150-56v118z" fill="url(#glow)"/>
+</g>
+<!-- kabarcıklar -->
+<g fill="none" stroke="#e6fbff" stroke-width="4" opacity=".75"><circle cx="58" cy="262" r="10"/><circle cx="34" cy="226" r="7"/><circle cx="52" cy="190" r="5"/><circle cx="300" cy="150" r="6"/><circle cx="318" cy="120" r="4"/></g>
 </svg>

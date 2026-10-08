@@ -1,6 +1,6 @@
 # Akvaryum Seferi
 
-Online co-op / PvP 3D denizaltı oyunu (Three.js, tek dosya, sunucusuz — oyuncular PeerJS ile tarayıcıdan tarayıcıya bağlanır).
+Online co-op / PvP 3D denizaltı oyunu: bosslar, dünya olayları, günlük görevler, başarımlar ve 7 oyun modu (Three.js, tek dosya, sunucusuz — oyuncular PeerJS ile tarayıcıdan tarayıcıya bağlanır).
 
 - 1120×640 birimlik dev akvaryum (önceki sürümün 4 katı alan)
 - 27 canlı türü, 12 biyom (Mercan Bahçesi, Yosun Ormanı, Buzul Kutbu, Yanardağ Bacaları, Kristal Mağaraları, Karanlık Uçurum, Batık Şehir, Turkuaz Lagün, Mavi Okyanus, Kızıl Kanyon …)
@@ -51,6 +51,28 @@ Online co-op / PvP 3D denizaltı oyunu (Three.js, tek dosya, sunucusuz — oyunc
 - **Renkli denizaltılar**: her modelin kendi paleti var — gövde, alt gövde, kule, kanatlar, süsleme ve pervane farklı renklerde (Çaylak sarı/lacivert/turuncu, Mercan Avcısı mavi/mercan, Kalamar Kıran yeşil/bronz, Çukur Akıncısı haki, Derin Gölge mor, Leviathan siyah/kızıl). Oyuncu rengi şeritlerde kalır.
 - **Daha az hazine**: ~180 yerine ~70 hazine (teknoloji sandıklarının hepsi ve her hazine türünden en az biri korunur) — bulmak artık daha değerli.
 - **Yeni ikon**: çok renkli denizaltı, lombozda kaptan silueti, ışık huzmeleri ve mercanlar.
+
+### v4.0: hiç sıkılmayan tek oyuncu + arkadaşlarla modlar
+**Tek oyuncu**
+- **Rütbe (XP)**: her skor puanı XP verir; 15 rütbe (Çaylak Dalgıç → Deniz Efsanesi), her seviyede altın ödülü. Görev panelinin üstünde XP çubuğu.
+- **26 başarım ve unvan** (🏆 / `K`): ilk av, 300 balık, boss avcısı, müze, arkeolog, 7 günlük seri, belgeselci… Açılan unvanı seçersin, online'da isminin önünde görünür.
+- **Günlük (3) ve haftalık (1) görevler**: tarihe göre herkese aynı; günlüklerin hepsi bitince 🔥 seri bonusu (en fazla ×7).
+- **Dünya olayları** (2,5–4 dakikada bir, haritada ve radarda ★): Altın Balık Sürüsü, Batık Kargo, Köpekbalığı İstilası, Altın Saati (altın ×2), İkmal Yağmuru, Öfkeli Muhafız.
+- **4 köşe bossu + final**: Kraken (Karanlık Uçurum), Magma Yılanı (Yanardağ), Buz Leviathanı (Buzul), Kristal Muhafız (Kristal Mağaralar); saldırı desenleri (yere vurma, ateş/mürekkep yağmuru, hamle, dondurma, yardakçı çağırma), %40 canın altında öfke. Dördü yenilince Batık Şehir'de **Derinlerin Efendisi** uyanır. Bosslar 8 dakikada bir yeniden doğar.
+- **Tehlikeli biyomlar**: köşe biyomlara tersaneden alınan modülle girilir (🔥 Isı Kalkanı, ❄ Buz Kırıcı, ⬇ Basınç Gövdesi, 💎 Kristal Rezonatör; büyük denizaltılarda dahili).
+- **Kozmetik**: 9 boya (biri finalden sonra açılır) ve 6 pervane izi.
+- **Fotoğraf modu** (`P` / 📷): nişangâhtaki canlıyı çek, albümü doldur (27 tür + düşmanlar ve bosslar).
+- **Kaptanın günlüğü**: harabeler ve bosslarla açılan 10 sayfalık hikâye ve final.
+- **Tek başına modlar**: Hayatta Kalma (dalga rekoru), Yarış (13 halka, süre rekoru), Av Turnuvası (5 dk puan rekoru).
+
+**Arkadaşlarla** (lobide mod seç, oda kur)
+- **7 mod**: Serbest · Ekip (dost ateşi yok, ödül paylaşımı) · Hayatta Kalma · Takım Savaşı (Mavi/Kırmızı, 20 batırma) · Hazine Kapmaca (inciyi üssüne taşı, 5 sayı) · Yarış · Av Turnuvası.
+- **Maç sonu ekranı**: sıralama, MVP, ödüller, oda sahibi için TEKRAR OYNA. `Tab` canlı skor tablosu.
+- **Eşit denizaltı** seçeneği: herkes aynı güçte, tüm modüller açık.
+- **İşaret (ping)** (`Z` / 📍): nişan aldığın yere akıllı işaret (düşman → ⚠, hazine → 💰, diğer → 📍).
+- **Kurtarma**: takım modlarında batan arkadaşının 🛟 enkazının yanında 2 sn dur, kurtar.
+- **İzleyici**: batınca arkadaşlarını izle (tıkla / ◀ ▶).
+- **Mürettebat** (`H` / 🤝): arkadaşının denizaltısına bin; 1. tayfa **nişancı** (silahlar hızlı dolar), 2. tayfa **mühendis** (`R` onarır, `C` kalkan verir). Pilot hızlanır, bataryası ve gövdesi kendini toplar.
 
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.

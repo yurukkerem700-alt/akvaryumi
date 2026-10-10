@@ -148,6 +148,12 @@ Eski denizaltılar da pasif yetenek kazandı: Çaylak **Son Şans** (%20 canda b
 - **Uçma hatası düzeltildi**: sudan zıplayınca artık havada yükselme/ilerleme tuşları işlemez, kanatsız denizaltı hemen düşer. Yalnızca **kanatlı denizaltılar** (Derin Gölge, Volt Vatoz, Prizma) hızlarını koruyarak süzülebilir.
 - **Oyun kolu desteği** (Xbox / PlayStation / Switch Pro; konsol tarayıcılarında da): sol çubuk sür/yürü · sağ çubuk kamera · **RT** makineli top (basılı tut) · **RB** torpido / seçili silah · **LT** hızlan/koş · A yüksel (içeride: kullan) · B alçal (içeride: çık) · X sonar · Y özel silah · LB kalkan · L3 yem · R3 yakın saldırı · yön tuşları: ↑ ışık, ↓ içeri gir/çık, ← onarım, → silah değiştir · Start harita · Back katalog. Menüde A / Start oyunu başlatır. Ateş ve hasarda titreşim vardır.
 
+### v5.3: gerçekçilik güncellemesi
+- **Sualtı balistiği**: mermiler suda sürtünmeyle yavaşlar (menzil ≈ 90 m, uzakta daha az hasar), arkalarında kavitasyon kabarcığı bırakır; namlu ağzında kabarcık püskürür, top atışı denizaltıyı hafifçe geri iter (ağır denizaltıda daha az).
+- **Su altı gürültü modeli**: hız, hızlanma, top ve torpido atışları ve patlamalar canlıları ürkütür; ürkme mesafesi gürültüyle büyür (8 m → en fazla 46 m). Küçük sürü balıkları çabuk kaçar, büyük türler (manta, balina köpekbalığı vb.) çok daha az ürker.
+- **Hareket**: dümen etkisi hızla artar; durağan denizaltı olduğu yerde fırıl fırıl dönemez (düşük hızda dönüş %45'e düşer).
+- Depoya `CLAUDE.md` eklendi: gerçekçilik (biyomlar, canlılar, saldırılar, hareket, tasarımlar) projenin kırmızı çizgisi olarak kayda geçti.
+
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 

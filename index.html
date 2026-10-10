@@ -411,7 +411,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.10-2',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.10-3',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -1387,8 +1387,9 @@ function updateCreatures(t,dt,subs){
     if(far&&((frameN+c.k)&7))continue;
     memberPos(c,c.s.c0,c.s.fw,t,c.pos);memberPos(c,c.s.c1,c.s.fw,t+.15,_p1,true);
     _d.subVectors(_p1,c.pos);
-    for(const sp of subs){const dx=c.pos.x+c.off.x-sp.x,dy=c.pos.y+c.off.y-sp.y,dz=c.pos.z+c.off.z-sp.z,d2=dx*dx+dy*dy+dz*dz;if(d2<64&&d2>.01){const d=Math.sqrt(d2),k=(8-d)*dt*2.5/d;c.off.x+=dx*k;c.off.y+=dy*k;c.off.z+=dz*k;}}
-    c.off.multiplyScalar(Math.exp(-dt*.7));if(c.off.lengthSq()>49)c.off.setLength(7);
+    const skit=SPEC_CFG[c.sp].s<1.2?1:.45;let cap=7;
+    for(let si=0;si<subs.length;si++){const sp=subs[si],R=si===0?Math.min(46,8+(NOISE.base+NOISE.v)*skit):8,dx=c.pos.x+c.off.x-sp.x,dy=c.pos.y+c.off.y-sp.y,dz=c.pos.z+c.off.z-sp.z,d2=dx*dx+dy*dy+dz*dz;if(d2<R*R&&d2>.01){const d=Math.sqrt(d2),k=(R-d)*dt*2.5/d;c.off.x+=dx*k;c.off.y+=dy*k;c.off.z+=dz*k;if(R>10)cap=Math.max(cap,R*.8);}}
+    c.off.multiplyScalar(Math.exp(-dt*.7));if(c.off.lengthSq()>cap*cap)c.off.setLength(cap);
     const hs=Math.hypot(_d.x,_d.z);
     if(hs>.004){c.yaw=angLerp(c.yaw,Math.atan2(_d.x,_d.z),1-Math.exp(-dt*5));}
     const tp=c.sp==='jelly'?0:c.sp==='seahorse'?0:clamp(-Math.atan2(_d.y,hs+.001),-.55,.55);c.pitch+=(tp-c.pitch)*(1-Math.exp(-dt*4));
@@ -2565,7 +2566,7 @@ function fireTorpedo(force){
   const fwd=new THREE.Vector3(0,0,1).applyQuaternion(sub.quaternion);
   if(force){fwd.x+=rr(-.08,.08);fwd.y+=rr(-.05,.05);fwd.z+=rr(-.08,.08);fwd.normalize();}
   const D=SD[tierNow()],side=torpTube?1:-1,p=new THREE.Vector3(side*D.tp[0],D.tp[1],D.tp[2]+.4*D.k).multiplyScalar(subSc).applyQuaternion(sub.quaternion).add(sub.position);
-  gearKick(local,side>0?'tpR':'tpL',GD.tp);spFlash(p,0xffd9a0,3.2,.22);
+  gearKick(local,side>0?'tpR':'tpL',GD.tp);spFlash(p,0xffd9a0,3.2,.22);NOISE.v=Math.max(NOISE.v,35);
   const vel=subVel.clone().addScaledVector(fwd,7).add(new THREE.Vector3(0,-1.4,0));
   const tid=net.myId+':'+(++torpSeq);
   spawnTorp({tid,own:true,p,vel,dir:fwd.clone(),aim:aim.p.clone(),tc:aim.ci,te:aim.ei,tpl:aim.pid});
@@ -2633,9 +2634,11 @@ function updateTorps(dt,wt){
 
 
 /* ================= Makineli top: sol tık (veya 🔫) basılı tutulunca güvertedeki çift namlu sırayla ateş eder ================= */
-const GUN_CD=.085,GUN_SPD=105,GUN_LIFE=1.5,BULLET_MAX=180;
+const GUN_CD=.085,GUN_SPD=105,GUN_LIFE=1.7,BULLET_MAX=180;
 let gunCd=0,gunSide=0,gunHeat=0,gunOver=false,gunHeld=false,gunNetT=0,bhT=0,impN=0;
 const bullets=[],bhQ=new Map();
+/* Su altı gürültü modeli: denizaltının hızı, hızlanma, top/torpido atışları ve patlamalar canlıları ürkütür; büyük türler daha az ürker */
+const NOISE={base:0,v:0};
 const bulletMesh=new THREE.InstancedMesh(new THREE.BoxGeometry(.07,.07,2.4),new THREE.MeshBasicMaterial({color:0xffe9a8,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false}),BULLET_MAX);
 bulletMesh.frustumCulled=false;bulletMesh.count=0;bulletMesh.renderOrder=7;scene.add(bulletMesh);
 const _bq=new THREE.Quaternion(),_bm=new THREE.Matrix4(),_bs=new THREE.Vector3(1,1,1),_bd=new THREE.Vector3(),_bz=new THREE.Vector3(0,0,1);
@@ -2656,6 +2659,8 @@ function fireGun(){
   const dir=f.applyQuaternion(sub.quaternion);
   dir.x+=rr(-.012,.012);dir.y+=rr(-.012,.012);dir.z+=rr(-.012,.012);dir.normalize();
   spawnBullet(p,dir,subVel,true,net.myId);
+  NOISE.v=Math.max(NOISE.v,16);subVel.addScaledVector(dir,-.05/subSc);
+  for(let i=0;i<3;i++)spawnBubble(p.x+rr(-.1,.1),p.y+rr(-.1,.1),p.z+rr(-.1,.1),.03+Math.random()*.06,dir.x*rr(1,4)+rr(-.4,.4),dir.y*rr(1,4)+rr(0,.8),dir.z*rr(1,4)+rr(-.4,.4));
   gearKick(local,side>0?'gnR':'gnL',GD.gn);
   gunHeat+=.04;if(gunHeat>=1){gunHeat=1;gunOver=true;toast(tl('Namlular aşırı ısındı — soğuyor…','Barrels overheated — cooling…'));sfx.empty();}
   noise(.035,2600,900,.045);tone(190,80,.045,'square',.025);shake=Math.max(shake,.04);gpRumble(.1,.35,50);
@@ -2683,19 +2688,22 @@ function bulletImpact(b,kind){
   if(!b.own){if(kind==='me')hurt(2.6,b.by,false,_bd.copy(b.d).multiplyScalar(1.2));return;}
   if(kind==='s'){const st=structs[HI.si];if(st&&st.alive&&!st.falling){st.chip=(st.chip||0)+1;if(st.chip>=14){st.chip=0;curMine=true;hurtStruct(st,1,false,p);supportCheck(false,p);curMine=false;}}}
   else if(kind==='c'){const c=creatures[HI.i];if(c){c.off.x+=b.d.x*.35;c.off.y+=b.d.y*.35;c.off.z+=b.d.z*.35;}}
-  else if(kind==='e'){hitMark(false);const e=enemies[HI.i];if(e&&!e.dead){const ap=apT>0?2:1;if(net.mode!=='client')hurtEnemy(e,(e.cfg.boss?.14:.2)*ap,net.myId);else bhQ.set(e.i,(bhQ.get(e.i)||0)+ap);}}
+  else if(kind==='e'){hitMark(false);const e=enemies[HI.i];if(e&&!e.dead){const ap=(apT>0?2:1)*(.5+.5*clamp(b.v.length()/GUN_SPD,.35,1));if(net.mode!=='client')hurtEnemy(e,(e.cfg.boss?.14:.2)*ap,net.myId);else bhQ.set(e.i,(bhQ.get(e.i)||0)+Math.max(1,Math.round(ap)));}}
   else if(kind==='p')hitMark(false);
 }
 function updateBullets(dt,wt){
   if(running&&!dead&&!IN.on){local.gPt=local.gPt||new THREE.Vector3();local.g.updateMatrixWorld(true);local.g.worldToLocal(local.gPt.copy(aim.p));}else local.gPt=null;
-  gunCd-=dt;
+  gunCd-=dt;NOISE.v=Math.max(0,NOISE.v-dt*28);
   if(gunHeld&&!gunOver){let n=0;while(gunCd<=0&&n<3){if(!fireGun()){gunCd=0;break;}gunCd+=GUN_CD;n++;}if(gunCd<-.1)gunCd=-.1;}
   gunHeat=Math.max(0,gunHeat-dt*(gunHeld&&!gunOver?.12:.55));
   if(gunOver&&gunHeat<.35){gunOver=false;}
   const he=$('heat');if(he){const on=gunHeat>.02;if(he.classList.contains('on')!==on)he.classList.toggle('on',on);if(on){he.firstChild.style.width=(gunHeat*100).toFixed(0)+'%';he.classList.toggle('hot',gunOver||gunHeat>.75);}}
   for(let i=bullets.length-1;i>=0;i--){
     const b=bullets[i];b.age+=dt;let hit=null;
+    /* sudaki mermi hızla enerji kaybeder (menzil ≈ 90 m) ve arkasında kavitasyon kabarcıkları bırakır */
+    b.v.multiplyScalar(Math.exp(-.9*dt));
     for(let s=0;s<2;s++){b.p.addScaledVector(b.v,dt/2);hit=bulletHit(b,wt);if(hit)break;}
+    if(Math.random()<dt*22&&b.p.distanceTo(camera.position)<70)spawnBubble(b.p.x+rr(-.08,.08),b.p.y+rr(-.08,.08),b.p.z+rr(-.08,.08),.03+Math.random()*.05,rr(-.3,.3),rr(.2,.8),rr(-.3,.3));
     if(hit||b.age>GUN_LIFE){if(hit)bulletImpact(b,hit);bullets.splice(i,1);}
   }
   {const ac=apT>0?0xff8a3a:0xffe9a8;if(bulletMesh.userData.c!==ac){bulletMesh.userData.c=ac;bulletMesh.material.color.setHex(ac);}}
@@ -2718,6 +2726,7 @@ function explode(x,y,z,ci,tid){
   {const wt=worldTime(),near=[];
    for(let i=0;i<creatures.length;i++){const c=creatures[i];if(i===ci||c.deadUntil>wt)continue;const dx=c.wx-x,dy=c.wy-y,dz=c.wz-z,rk=BLAST_R+hitR(c)*.5,d2=dx*dx+dy*dy+dz*dz;if(d2<rk*rk)near.push([d2,i]);}
    near.sort((a,b)=>a[0]-b[0]);for(let k=0;k<near.length&&k<10;k++)killCreature(near[k][1],pos,mine);}
+  if(dist<160)NOISE.v=Math.max(NOISE.v,clamp(70-dist*.3,20,60));
   const L=flashLights[flashIdx++%2];L.position.copy(pos);L.userData.t=0;L.intensity=900;
   const core=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xfff0c0,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));core.position.copy(pos);core.scale.setScalar(.1);scene.add(core);
   const gas=new THREE.Mesh(gasGeo,gasMat);gas.position.copy(pos);gas.scale.setScalar(.1);gas.renderOrder=6;scene.add(gas);
@@ -3852,7 +3861,8 @@ function updateSub(dt){
   const fwdIn=ctl*clamp((keys.w?1:0)-(keys.s?1:0)+vk.fwd+auto,-1,1),turnIn=ctl*clamp((keys.d?1:0)-(keys.a?1:0)+vk.turn,-1,1),upIn=ctl*clamp((keys.e?1:0)-(keys.q?1:0)+vk.up-vk.down,-1,1);
   const boost=stunT<=0&&(keys.shift||vk.boost)&&battery>1&&ORB.by!==net.myId&&(Math.abs(fwdIn)>.1||Math.abs(upIn)>.1);
   if(vk.boost&&battery<=1){vk.boost=0;syncTog();toast(T.battEmpty);}
-  camYaw-=turnIn*1.7*dt;
+  /* dümen etkisi hızla artar: durağan denizaltı olduğu yerde fırıl fırıl dönemez */
+  camYaw-=turnIn*1.7*dt*(.45+.55*clamp(Math.hypot(subVel.x,subVel.z)/6,0,1));
   const prevYaw=subYaw;
   if(Math.abs(fwdIn)>.05||Math.abs(turnIn)>.05)subYaw=angLerp(subYaw,camYaw,1-Math.exp(-(Math.abs(fwdIn)>.05?2.6:4)*dt));
   _fwd.set(Math.sin(subYaw),0,Math.cos(subYaw));
@@ -3862,7 +3872,7 @@ function updateSub(dt){
   subVel.addScaledVector(_fwd,fwdIn*acc*dt*(air&&!wing?.1:1));subVel.y+=air?0:upIn*(boost?16:10)*spdMul*dt;
   if(netPullT>0){netPullT-=dt;const o=posOf(netPullBy);if(o){_tmp.subVectors(o,sub.position);const dd=_tmp.length();if(dd>6)subVel.addScaledVector(_tmp.divideScalar(dd),26*dt);}}
   if(air&&wing){const k=Math.exp(-.35*dt);subVel.x*=k;subVel.z*=k;subVel.y*=Math.exp(-.4*dt);}else subVel.multiplyScalar(Math.exp(-1.45*dt));
-  const hs=Math.hypot(subVel.x,subVel.z),mx=(boost?28:13)*spdMul*sk;if(hs>mx){subVel.x*=mx/hs;subVel.z*=mx/hs;}
+  const hs=Math.hypot(subVel.x,subVel.z),mx=(boost?28:13)*spdMul*sk;NOISE.base=Math.min(14,hs*.8+(boost?4:0));if(hs>mx){subVel.x*=mx/hs;subVel.z*=mx/hs;}
   subVel.y=clamp(subVel.y,-11,11);
   // yüzeyde dümen kırmadan sabit dur: yüzdürme yayı (Q/E ya da ▲/▼ ile bırakır)
   if(sub.position.y>SURF-1.4&&sub.position.y<SURF+.35&&Math.abs(upIn)<.05){subVel.y+=(SURF-.15+Math.sin(worldTime()*1.3)*.07-sub.position.y)*14*dt;subVel.y*=Math.exp(-4*dt);}

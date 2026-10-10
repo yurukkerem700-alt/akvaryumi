@@ -11,7 +11,7 @@ Online co-op / PvP 3D denizaltı oyunu: bosslar, dünya olayları, günlük gör
 
 - **Mobil**: ▲ / ▼ / ⚡ düğmeleri tek dokunuşla açılıp kapanır (basılı tutmak gerekmez); ⚡ açıkken denizaltı batarya bitene kadar ya da tekrar basılana dek hızla ilerler. Adaptif çözünürlük, hafifletilmiş gölgelendirici/geometri, `backdrop-filter` kapalı, ince bildirimler (tür keşfi 2 sn'lik küçük bir şerit).
 - **Yüzeyde sabit durma**: yüzeye çıkınca denizaltı batmaz, Q/E ya da ▼ ile dalana kadar yüzer.
-- **Yakın saldırı** (sağ tık / X / ⚔): önündeki canlıları, düşmanları, yapıları ve (online) rakip oyuncuları vurur.
+- **Yakın saldırı** (X / ⚔; v5.1'den beri sağ tık torpido atar): önündeki canlıları, düşmanları, yapıları ve (online) rakip oyuncuları vurur.
 - **Ağ** (8 / N / 🕸): balık sürüsünü ya da düşmanı yakalar, etkisiz hale getirip sana çeker; online'da rakibi de yakalar.
 - **Birinci şahıs bakış** (B / 👁); **tür kataloğu** PC'de de T ile açılıp kapanır.
 - **Alan hasarı**: torpido/mayın etrafındaki canlıları da öldürür, uzaktakileri sarsar.
@@ -111,6 +111,24 @@ Eski denizaltılar da pasif yetenek kazandı: Çaylak **Son Şans** (%20 canda b
 **Her saldırının görünür donanımı**: tüm denizaltıların gövdesinde artık silahların aygıtı var ve atışta hareket eder — EMP çanağı (kıç üstte, EMP'de hızla döner), mayın kapağı (karında, mayın bırakırken açılır), şok plakası ve halkası (karın altı), ağ mortarı (üstte, tamburlu), mafsallı yakın dövüş pençeleri (pruvada, saldırıda öne uzanır), onarım kolu (tamirde kaynak yapar), sonar kubbesi ve kalkan düğümleri. Torpido çıkış noktası ve mayın kapağı her denizaltının kendi gövdesine göre.
 
 **Denizaltının içi artık işlevli** (yaklaşınca E, telefonda 🪑 dokunuşu; panelde yeşil/kırmızı lamba hazır/beklemede): Sonar Konsolu, Harita Masası, Telsiz (müzik / online sohbet), Silah Konsolu (tüm beklemeleri yarıya indirir), Ranza (dinlen: batarya dolar, gövde +%15), Kahve Makinesi (batarya +25, 45 sn hız bonusu), Revir Dolabı (gövde +%35), Torpido Rafı (+3 torpido), Mayın Kovanı (+2 mayın), Özel Modül Reaktörü (özel silahı anında şarj eder), Jeneratör (aşırı yük: 20 sn 3 kat şarj) ve Hasar Kontrol (acil onarım, sersemlik/mürekkep temizler).
+
+### v5.1: silah mekanizması, her denizaltının kendine özgü içi
+**Silahlar** (artık her saldırının görünür bir ateşleme yeri var)
+- **Makineli top** — **sol tık basılı tut** (telefonda 🔫): güvertedeki çift namlu sırayla mermi yağdırır (saniyede ~11 mermi, iz bırakan sarı kurşunlar, nişan noktasına yakınsar). Namlular ısınır; ekranın altındaki ısı çubuğu dolunca (aşırı ısınma) soğuyana kadar ateş etmez. Mermiler düşmanlara, yapılara (yavaş yavaş aşındırır) ve online'da rakip oyunculara hasar verir; balıkları öldürmez, sadece iter.
+- **Torpido ve ağır silahlar** — **sağ tık / Y / orta tık** (telefonda 🚀): seçili silahı (torpido → salvo → mayın → EMP) ateşler. Torpido artık gövdenin içinden değil, burun yanlarındaki **iki görünür torpido tüpünün namlu ağzından** çıkar; atışta o tüp geri tepip ağız ateşi verir (salvo'da tüpler sırayla çalışır).
+- Ağ hazırlıyken sol tık ağı fırlatır. Yakın saldırı artık **X** / ⚔ (sağ tık torpidoya geçti).
+- Online: mermiler diğer oyuncularda da görünür; hasar, vurulan oyuncunun cihazında uygulanır (kalkan mermiyi emer); mermi mesajları hız sınırlıdır.
+
+**Her denizaltının içi farklı** — genişlik (1,8 – 3,4 m yarı genişlik: en dar *Derin Gölge*, en geniş *Leviathan*), kabuk yarıçapı, ön cam genişliği, duvar/zemin dokusu ve renk paleti denizaltıya göre değişir; kendine özgü süsleri vardır: Çaylak (mini akvaryum, lastik ördek), Mercan Avcısı (köpekbalığı çenesi, mercan saksıları), Kalamar Kıran (zıpkın rafı, alarm lambaları), Çukur Akıncısı (kamuflaj duvar, cephane sandıkları), Derin Gölge (mor neon şeritler), Leviathan (kaburgalı sütunlar), Pırana (yarış şeridi, kupa), Volt Vatoz (tesla bobinleri), Kutup Kırıcı (buz kristalleri), Lav Yakıcı (parlayan lav boruları, çatlak zemin), Kraken Pençe (dokunaç kemerleri, bakan göz), Prizma (renk değiştiren kristaller). Kontrol odasında denizaltının adının yazdığı pano vardır. İç mekân, tersaneden denizaltı değiştirince otomatik yeniden kurulur; işlevli istasyonlar genişliğe göre kayar.
+
+**Denizaltının içinde artık yapılacak çok şey var** (E / 🪑; panelde yeşil lamba hazır, kırmızı beklemede). Eski istasyonlara ek olarak 7 yenisi:
+- 🔭 **Periskop** (kontrol odası): çevredeki düşman sayısını ve en yakınının mesafesini söyler, 48 m içindeki türleri keşfettirir (35 sn bekleme).
+- 📜 **Kaptanın Günlüğü** (ana konsol): bulduğun günlük sayfalarını sırayla okursun.
+- 🏪 **Tersane Terminali** (kontrol odası): denizaltı ve geliştirmeleri içeriden satın al; yeni denizaltıya geçince iç mekân yeni denizaltıya göre yeniden kurulur.
+- 🏆 **Başarım Rafı** (kontrol odası): profil, rütbe ve başarımlar.
+- 🎨 **Boya Dolabı** (yaşam mahalli): denizaltının rengini değiştirir.
+- 🔩 **Cephane Atölyesi** (torpido odası): 60 🪙 karşılığı 45 sn **zırh delici mermi** (makineli top hasarı ×2, turuncu izli kurşunlar).
+- 🎰 **Şans Çarkı** (torpido odası): 30 🪙 ile çevir; altın, batarya, torpido, mayın, onarım kiti ya da 200 🪙 jackpot.
 
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.

@@ -1,7 +1,7 @@
 /* Akvaryum Seferi — çevrimdışı önbellek + arka planda sürüm indirme.
    Yeni sürümde VER değerini artır (index.html içindeki BUILD ve version.json ile aynı olmalı).
    Yeni service worker kurulurken dosyaları arka planda indirir; kullanıcı menüde GÜNCELLE'ye basınca devreye girer. */
-const VER='2026.10.08-7';
+const VER='2026.10.10-1';
 const CACHE='akvaryum-'+VER;
 const CORE=['./','index.html','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{

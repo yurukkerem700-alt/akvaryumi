@@ -154,6 +154,15 @@ Eski denizaltılar da pasif yetenek kazandı: Çaylak **Son Şans** (%20 canda b
 - **Hareket**: dümen etkisi hızla artar; durağan denizaltı olduğu yerde fırıl fırıl dönemez (düşük hızda dönüş %45'e düşer).
 - Depoya `CLAUDE.md` eklendi: gerçekçilik (biyomlar, canlılar, saldırılar, hareket, tasarımlar) projenin kırmızı çizgisi olarak kayda geçti.
 
+### v5.4: mermi etkileri ve gerçekçilik incelemesi
+Ayrıntılı inceleme ve yol haritası: [`GERCEKCILIK.md`](GERCEKCILIK.md).
+- **Mermiler yosunu keser**: yosun, kamış ve çayır mermi geçtiği yükseklikten kesilir; üst parça gerçek bir parça olarak sürüklenip yavaşça batar, kök kısa kalır (alttan vurulursa bitki tümden gider). Kesimde yeşil sıvı bulutu ve kabarcık çıkar.
+- **Balıklar delik deşik olur**: her isabet vücutta kalıcı bir mermi deliği (kanlı halka + koyu çukur) bırakır, kan bulutu çıkar; canlının boyutuna göre dayanıklılığı vardır (küçük balık birkaç mermide, manta onlarca mermide); yeterince delinince gerçek parçalara ayrılır. Denizanası kan yerine şeffaf sıvı verir. **Kan köpekbalığı çeker**: yaralı balığın 90 m çevresindeki köpekbalıkları uyarılır. Online'da öldürme herkese yansır.
+- **Yapılar toza döner**: her mermi taş kırıntısı koparır, yapı küçülüp kararır (çarpışma yarıçapı da küçülür); bitince iri parça yerine uzun süre askıda kalan toz bulutu ve ince moloz oluşur. Desteği giden yapılar yine çöker.
+- **Süpürme çarpışması**: hızlı mermi artık küçük balık ve ince bitkilerin arasından tünelleyip geçmez.
+- **Derinlikle ışık soğurması**: su rengi artık derinliğe de bağlı; önce kırmızı, sonra yeşil kaybolur, derinde daha koyu ve puslu.
+- **Yırtıcı etkisi**: köpekbalığı, yılan balığı gibi düşmanlar yakınlarındaki balık sürülerini dağıtır. **Pervane suyu** dipteki kumu kaldırır.
+
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 

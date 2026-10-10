@@ -130,6 +130,24 @@ Eski denizaltılar da pasif yetenek kazandı: Çaylak **Son Şans** (%20 canda b
 - 🔩 **Cephane Atölyesi** (torpido odası): 60 🪙 karşılığı 45 sn **zırh delici mermi** (makineli top hasarı ×2, turuncu izli kurşunlar).
 - 🎰 **Şans Çarkı** (torpido odası): 30 🪙 ile çevir; altın, batarya, torpido, mayın, onarım kiti ya da 200 🪙 jackpot.
 
+### v5.2: Komuta Seferi, askeri denizaltı, oyun kolu
+- **Komuta Seferi** (⚓, lobide mod seçiminden; online ya da tek başına): hepiniz **aynı askeri denizaltının içindesiniz**. Kimlik sırasına göre en baştaki oyuncu **kaptandır** (sürer); diğerleri otomatik tayfa olarak biner, içeride yürür ve birbirini görür (konumlar 10 Hz paylaşılır, uzak tayfa kendi rengiyle yürür / görev yerinde durur). Roller oyuncu sayısına göre dağılır:
+
+  | Oyuncu | Roller |
+  |---|---|
+  | 1 | tek kişi her göreve bakar |
+  | 2 | 🧭 Kaptan · 🎯 Silahçı (+ sonar, onarım, yükleme) |
+  | 3 | 🧭 Kaptan · 🎯 Silahçı · 📡 Sonarcı (+ onarım, yükleme) |
+  | 4 | 🧭 Kaptan · 🎯 Silahçı · 📡 Sonarcı · 🔧 Mühendis (+ yükleme) |
+  | 5 | 🧭 Kaptan · 🎯 Silahçı · 📡 Sonarcı · 🔧 Mühendis · 🚀 Torpido Ustası |
+  | 6+ | ek oyuncular ikinci/üçüncü silahçı olur |
+
+  Kaptan yalnızca sürer; **silahçı** makineli top, torpido, mayın, EMP, şok, ağ ve yakın saldırıyı kullanır; **sonarcı** sonar atar ve periskopu kullanır; **mühendis** onarır, kalkan açar, jeneratörü aşırı yükler; **torpido ustası** torpido rafından silahçıya torpido yükler. Başkasının görevini denersen uyarı çıkar. Koltuk (E / 🪑) tayfa için "görev yeri" görünümüdür: dışarıyı izlersin, silahçı buradan nişan alıp ateş eder. `H`: tayfa ve rol listesi. Hasarı yalnızca kaptan alır, gövde herkesin ekranında kaptanınkini gösterir.
+- **Komuta Denizaltısı** (yalnızca bu modda; tersanede satılmaz): gerçek bir nükleer saldırı denizaltısı gibi — uzun gözyaşı gövde, yelken (periskop/anten direkleri, yelken dümenleri), çapraz kıç dümenleri, pompa-jet, dikey füze silosu kapakları, çekili sonar kılıfı, baş torpido tüpleri. İçi de diğerlerinden çok farklı: geniş, gri çelik, kırmızı gece aydınlatması, taktik harita masası ve silah rafı.
+- **Makineli top artık nişan yönüne döner**: güverte topları (sağ/sol) nişan noktasına doğru yatay ve dikey döner, mermi namlunun baktığı yönden çıkar. Komuta modunda silahçı atarken gerçek geminin topları da onun nişanına döner.
+- **Uçma hatası düzeltildi**: sudan zıplayınca artık havada yükselme/ilerleme tuşları işlemez, kanatsız denizaltı hemen düşer. Yalnızca **kanatlı denizaltılar** (Derin Gölge, Volt Vatoz, Prizma) hızlarını koruyarak süzülebilir.
+- **Oyun kolu desteği** (Xbox / PlayStation / Switch Pro; konsol tarayıcılarında da): sol çubuk sür/yürü · sağ çubuk kamera · **RT** makineli top (basılı tut) · **RB** torpido / seçili silah · **LT** hızlan/koş · A yüksel (içeride: kullan) · B alçal (içeride: çık) · X sonar · Y özel silah · LB kalkan · L3 yem · R3 yakın saldırı · yön tuşları: ↑ ışık, ↓ içeri gir/çık, ← onarım, → silah değiştir · Start harita · Back katalog. Menüde A / Start oyunu başlatır. Ateş ve hasarda titreşim vardır.
+
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 

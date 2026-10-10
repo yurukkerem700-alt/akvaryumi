@@ -7,7 +7,8 @@ Proje sahibinin kırmızı çizgisi: **biyomlar, canlılar, saldırılar, hareke
 |---|---|
 | ✅ | Su rengi yalnızca bölgeye bağlıydı; artık derinlikle önce kırmızı, sonra yeşil kaybolur; sis yoğunlaşır, hemisfer ve güneş ışığı kısılır (aynı biyom sığda turkuaz, dipte koyu mavi). |
 | ✅ | Pervane suyu dipteki kumu kaldırır (hız ve dibe yakınlığa bağlı tortu bulutu). |
-| 🔜 | Işık huzmelerinin (god rays) güneş açısı ve dalga hareketiyle bağlanması; canlıların üzerinde kostik (ışık ağı); biyomlara göre bulanıklık (yosun ormanı yeşilimsi ve puslu, buzul berrak); derinde biyolüminesans ve "deniz karı" (marine snow). |
+| ✅ | **Biyolüminesans**: hareketin uyandırdığı ışıklı plankton izi (denizaltı, mermi, torpido, patlama) ve karanlık biyomlarda dipte nabız gibi yanan ışıklı organizmalar. **Deniz karı**: derinlikle çoğalan, dibe süzülen organik parçacıklar. |
+| 🔜 | Işık huzmelerinin (god rays) güneş açısı ve dalga hareketiyle bağlanması; canlıların üzerinde kostik (ışık ağı); biyomlara göre bulanıklık (yosun ormanı yeşilimsi ve puslu, buzul berrak). |
 
 ## 2. Bitkiler
 | Durum | Bulgu |
@@ -41,7 +42,8 @@ Proje sahibinin kırmızı çizgisi: **biyomlar, canlılar, saldırılar, hareke
 | Durum | Bulgu |
 |---|---|
 | ✅ | Komuta Denizaltısı gerçek nükleer saldırı denizaltısı oranlarında: gözyaşı gövde, yelken + dümenler, çapraz kıç, pompa-jet, silo kapakları, çekili sonar. |
-| 🔜 | Diğer 12 denizaltının "oyuncak" ayrıntılarını azaltmak: tutarlı malzeme (mat boya, çelik, pas/yosun kaplaması), perçin ve panel dikişleri (normal map), seyir ışıkları, pencere/iniş kapakları; iç mekânda ışık-gölge tutarlılığı. |
+| ✅ | 12 denizaltı mat donanma paletlerine geçti, oyuncak ayrıntılar (dişler, göz gibi lambalar, parlak toplar) kaldırıldı. |
+| 🔜 | Kalan işler: tutarlı malzeme (mat boya, çelik, pas/yosun kaplaması), perçin ve panel dikişleri (normal map), seyir ışıkları, pencere/iniş kapakları; iç mekânda ışık-gölge tutarlılığı. |
 
 ## 7. Ses
 🔜 Su altı akustiği: derinlik ve mesafeyle alçak geçiren filtre, ses gecikmesi, pervane kavitasyonu sesi, gerçek sonar "ping" dalga formu, balık sürüsü ve kalp-atışı benzeri ambiyans.
@@ -51,3 +53,6 @@ Proje sahibinin kırmızı çizgisi: **biyomlar, canlılar, saldırılar, hareke
 
 ## Uygulama ilkesi
 Her yeni özellik önce gerçek dünyadaki fiziğe/ekolojiye dayanır; oyun akışını bozacak kadar ağır olanlar (örn. gerçek merminin 3 m menzili) *makul ölçekte* uygulanır ve README'de gerekçesiyle belirtilir.
+
+## Keşif ve gizem (v5.5)
+Akvaryum artık keşfe yönlendiriyor: balina iskeletleri, ışıklı mağaralar, mühürlü kayaların altındaki mabetler. Gerçek denizlerde de batmış balina leşleri ("balina düşüşü") dipte benzersiz topluluklar barındırır; iskelet ve çevresindeki yaşam bir sonraki adım olarak eklenebilir.

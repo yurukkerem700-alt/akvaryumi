@@ -163,6 +163,14 @@ Ayrıntılı inceleme ve yol haritası: [`GERCEKCILIK.md`](GERCEKCILIK.md).
 - **Derinlikle ışık soğurması**: su rengi artık derinliğe de bağlı; önce kırmızı, sonra yeşil kaybolur, derinde daha koyu ve puslu.
 - **Yırtıcı etkisi**: köpekbalığı, yılan balığı gibi düşmanlar yakınlarındaki balık sürülerini dağıtır. **Pervane suyu** dipteki kumu kaldırır.
 
+### v5.5: gizemler, mağaralar, biyolüminesans, deniz karı
+- **Gizemler ve keşif** (14 yapı): akvaryumun derinliklerinde devasa **balina iskeletleri** (omurga, kemerli kaburgalar, dişli kafatası), **ışıklı mağaralar** (kayalardan örülü kubbe, giriş, karanlık iç, parlayan kristaller, sunakta emanet) ve gömülü **mabetler** var. Bir kısmı baştan açık; bir kısmı **mühürlü kaya**nın altında: ışıldayan işaretli, çatlağından kabarcık çıkan kayalar. Bunları **torpidoyla ya da sürekli makineli top ateşiyle** kırınca altından yapı yavaşça yükselir (kum bulutu, sarsıntı) ya da mağaranın ağzı açılır. Mağara duvarları ise gerçek kayadır, kırılmaz. **Sonar** (SPACE) en yakın keşfedilmemiş yapının yönünü ve mesafesini söyler. Keşif altın, deneyim, yeni **günlük sayfaları** (4 yeni sayfa) ve haritada işaret verir; yapıya yaklaşıp içine girince keşfedilir.
+- **Biyolüminesans**: denizaltı, mermi, torpido ve patlamalar suyu karıştırınca mavi-yeşil ışıklı plankton izi bırakır (karanlık biyomlarda ve derinde belirgin); Karanlık Uçurum, Hendek, Mezarlık, Kristal, Batık Şehir ve Mavi Delik'te dipte nabız gibi yanıp sönen ışıklı organizmalar vardır.
+- **Deniz karı**: ışıkta yavaşça süzülen organik parçacıklar (derinde çoğalır); hareket ettikçe akarak hız hissi verir.
+- **Denizaltı tasarımları**: oyuncak parlaklığı gitti — 12 denizaltının tümü mat donanma paletlerine (beyaz+turuncu işaret, mavi-gri, zeytin, koyu çelik, lacivert, kömür…) geçti; oyuncak ayrıntılar kaldırıldı (köpekbalığı dişleri, göz gibi lambalar, parlak kırmızı/camgöbeği toplar, kırmızı burun topu).
+- **Üçüncü şahıs kamera**: uzaklık artık gövde boyuna göre; kamera biraz yukarıdan ve önü gösterecek biçimde bakar, uzun denizaltılar (Komuta, Leviathan) ekranı kaplamaz.
+- **Parşömenler** artık kendiliğinden kapanır (yeni bulunan 3 sn, günlükten okunan 8 sn); dokunmak gerekmez.
+
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 

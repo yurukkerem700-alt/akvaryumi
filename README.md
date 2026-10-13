@@ -1,5 +1,7 @@
 # Akvaryum Seferi
 
+![Akvaryum Seferi — Derinlikleri Keşfet](cover.webp)
+
 Online co-op / PvP 3D denizaltı oyunu: bosslar, dünya olayları, günlük görevler, başarımlar ve 7 oyun modu (Three.js, tek dosya, sunucusuz — oyuncular PeerJS ile tarayıcıdan tarayıcıya bağlanır).
 
 - Bilgisayarda 2240×1280 birimlik dev akvaryum, telefonda hafif cihazları zorlamayan küçük akvaryum (v5.0)

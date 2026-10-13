@@ -11,6 +11,9 @@
   "theme_color": "#04202e",
   "lang": "tr",
   "categories": ["games"],
+  "screenshots": [
+    { "src": "screenshot.webp", "sizes": "1280x720", "type": "image/webp", "form_factor": "wide", "label": "Akvaryum Seferi — Derinlikleri Keşfet" }
+  ],
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },

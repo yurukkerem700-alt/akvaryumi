@@ -65,6 +65,10 @@
 .cross.lock{border-color:#ff5a4a;transform:scale(.8)}.cross.lock i{border-color:rgba(255,90,74,.8);animation:spin 1.6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .aimInfo{position:fixed;left:50%;top:calc(50% + 30px);transform:translateX(-50%);z-index:7;pointer-events:none;font-size:10px;font-weight:900;letter-spacing:1px;color:#ffd0c8;text-shadow:0 1px 3px #000;white-space:nowrap}
+#nukeCrack{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:0;mix-blend-mode:screen;filter:drop-shadow(0 0 2px rgba(180,230,255,.7))}
+#nkBox .nkR{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid rgba(255,190,80,.35);border-radius:12px;background:rgba(60,28,6,.35)}#nkBox .nkR b{flex:1 1 220px}#nkBox small{display:block;font-weight:400;opacity:.8;margin-top:3px;line-height:1.35}
+#codeRow{display:flex;gap:8px;margin-top:8px}#codeRow input{flex:1;min-width:0;padding:9px 11px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.35);color:inherit;font:inherit;letter-spacing:.12em;text-transform:uppercase}
+.slot.nk kbd{background:#ffb347;color:#2a1400}
 #flashV{position:fixed;inset:0;z-index:4;pointer-events:none;background:radial-gradient(circle,rgba(255,244,210,.55),rgba(255,244,210,0) 70%);opacity:0}
 .tag{position:fixed;z-index:6;transform:translate(-50%,-100%);padding:3px 8px;border-radius:8px;background:rgba(2,14,24,.6);font-size:11px;font-weight:800;white-space:nowrap;pointer-events:none;border:1px solid rgba(255,255,255,.12)}
 .modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:rgba(0,10,16,.5);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);overflow:auto}
@@ -285,7 +289,7 @@ body.crew #cockpit{display:none!important}
 </head>
 <body>
 <div id="game"></div>
-<div class="cross" id="cross"><i></i></div><div id="heat"><i></i></div><div id="roleTag"></div><div class="aimInfo" id="aimInfo"></div><div id="flashV"></div><div id="hurtV"></div><div id="inkV"></div>
+<div class="cross" id="cross"><i></i></div><div id="heat"><i></i></div><div id="roleTag"></div><div class="aimInfo" id="aimInfo"></div><div id="flashV"></div><div id="nukeCrack"></div><div id="hurtV"></div><div id="inkV"></div>
 <div id="tags"></div><div id="inFade"></div><div id="inRoom"></div><div id="inPrompt"></div>
 <div id="cockpit"><div id="ckInner"><svg id="ckFrame"></svg><div id="ckGlass"></div><svg id="ckDash"></svg></div></div>
 
@@ -391,6 +395,7 @@ body.crew #cockpit{display:none!important}
   <div class="k" data-i="subsH">DENİZALTILAR</div><div class="subGrid" id="subGrid"></div>
   <div class="k" data-i="upH">GELİŞTİRMELER</div><div id="upList"></div>
   <div class="k" id="museumH">MÜZE</div><div id="museum"></div>
+  <div class="k" id="nukeH">SİLAHLAR</div><div id="nkBox"></div><div id="codeRow"><input id="kodIn" maxlength="20" placeholder="KOD" autocomplete="off" spellcheck="false"><button class="btn" id="kodBtn" data-a="code">KODU KULLAN</button></div>
   <div class="k" id="modH">MODÜLLER</div><div id="modList"></div>
   <div class="k" id="skinH" style="margin-top:12px">BOYA</div><div class="subGrid" id="skinGrid"></div>
   <div class="k" id="trailH">PERVANE İZİ</div><div class="subGrid" id="trailGrid"></div>
@@ -434,7 +439,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.13-1',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.14-1',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -677,6 +682,7 @@ const sun=new THREE.DirectionalLight(0xfaffff,2.6);sun.position.set(-30,80,-20);
 const fill=new THREE.DirectionalLight(0x6fd8ff,1.1);fill.position.set(40,-10,30);scene.add(fill);
 
 /* Shader enjeksiyonu: su kostikleri + sallanma animasyonları */
+let FLOORG=null;
 const U={t:{value:0},cam:{value:new THREE.Vector3()},bend:{value:[new THREE.Vector4(0,0,0,0),new THREE.Vector4(0,0,0,0),new THREE.Vector4(0,0,0,0)]}};
 /* denizaltı (ve yakındaki oyuncular) geçerken yosunlar ve otlar yana eğilir: xyz = dünya konumu, w = etki yarıçapı */
 const BENDV='for(int bi=0;bi<3;bi++){vec4 bq=uBend[bi];if(bq.w>0.){vec3 bd=ip-bq.xyz;float bl=length(bd.xz);float bf=smoothstep(bq.w,0.,bl)*(1.-smoothstep(18.,34.,abs(bd.y)));if(bf>0.){vec2 bu=bd.xz/max(bl,.3);transformed.x+=bu.x*bf*1.1*position.y*position.y;transformed.z+=bu.y*bf*1.1*position.y*position.y;}}}';
@@ -714,6 +720,7 @@ function streamReg(m,list){
   const n=list.length,M=new Float32Array(m.instanceMatrix.array),C=m.instanceColor?new Float32Array(m.instanceColor.array):null,P=new Float32Array(n*2),slot=new Int32Array(n).fill(-1);
   for(let i=0;i<n;i++){P[i*2]=list[i].x;P[i*2+1]=list[i].z;}
   m.setMatrixAt=(i,mat)=>{mat.toArray(M,i*16);const k=slot[i];if(k>=0)mat.toArray(m.instanceMatrix.array,k*16);};
+  m.getMatrixAt=(i,mat)=>mat.fromArray(M,i*16);
   if(C)m.setColorAt=(i,c)=>{C[i*3]=c.r;C[i*3+1]=c.g;C[i*3+2]=c.b;const k=slot[i];if(k>=0){const a=m.instanceColor.array;a[k*3]=c.r;a[k*3+1]=c.g;a[k*3+2]=c.b;}};
   streams.push({m,n,M,C,P,slot});
 }
@@ -766,7 +773,7 @@ let signCv=null,signTex=null;
     col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;
   }
   g.setAttribute('color',new THREE.BufferAttribute(col,3));g.computeVertexNormals();
-  scene.add(new THREE.Mesh(g,stdMat({vertexColors:true,roughness:1},'floor',{caus:1.25})));
+  FLOORG=g;scene.add(new THREE.Mesh(g,stdMat({vertexColors:true,roughness:1},'floor',{caus:1.25})));
   // cam paneller
   const glassMat=new THREE.MeshStandardMaterial({color:0xd8fbff,transparent:true,opacity:.1,roughness:.05,metalness:.2,side:THREE.DoubleSide,depthWrite:false});
   const gy=(SURF+4+TANK_BOTTOM)/2,gh=SURF+4-TANK_BOTTOM;
@@ -862,6 +869,8 @@ function updateEnv(dt){
   sun.intensity=(2.6*envL*(1-skyK)+1.3*skyK)*(1-.55*envDk*(1-skyK))*nl;sun.color.lerpColors(SUN_UNDER,SUN_NIGHT,skyK);
   surfaceMat.color.lerpColors(SURF_UNDER,SURF_NIGHT,skyK);surfaceMat.opacity=.62+.26*skyK;surfaceMat.emissiveIntensity=.55-.35*skyK;
   sky.position.copy(camera.position);
+  /* nükleer patlama bölgesi: kül ve çamurla dolu, görüş çok düşük */
+  if(!above&&nukeZones.length){const nz=nukeZoneK(camera.position.x,camera.position.z);if(nz>0){scene.fog.density*=1+1.6*nz;scene.fog.color.lerp(NK_ASH,.55*nz);scene.background.copy(scene.fog.color);}}
   /* termoklin: sıcaklık tabakasının sınırında su bulanıklaşır ve sonar yansıması bozulur */
   const tb=above?0:1-clamp(Math.abs(camera.position.y-THERMO_Y)/5,0,1);if(tb>0)scene.fog.density*=1+.5*tb;
   if(running&&!dead){const inT=Math.abs(sub.position.y-THERMO_Y)<5&&sub.position.y<SURF-2;if(inT&&!thermoWas)toast('🌡 '+tl('Termoklin tabakası — düşman algısı zayıflıyor','Thermocline layer — enemy detection is weakened'));thermoWas=inT;}
@@ -2224,6 +2233,9 @@ const sfx={slash(v=1){noise(.28,6500,900,.3*v);tone(1100,220,.22,'sawtooth',.16*
   boom(v=1){tone(70,24,1.6,'sine',.7*v);noise(2.2,900,60,.6*v);noise(.35,5000,800,.2*v);},empty(){tone(1300,1000,.05,'square',.05);},
   hurt(v=1){tone(120,45,.35,'sawtooth',.4*v);noise(.4,1800,200,.35*v);},zap(v=1){tone(1900,300,.5,'sawtooth',.16*v);noise(.5,6000,900,.22*v);tone(90,60,.7,'square',.12*v);},bite(v=1){tone(220,70,.25,'square',.3*v);noise(.25,3000,400,.3*v);},emp(v=1){tone(300,1600,.5,'sine',.3*v);tone(1600,80,.9,'triangle',.25*v,.4);},mine(){tone(700,700,.06,'square',.06);},squish(v=1){tone(180,60,.3,'sine',.3*v);noise(.3,900,200,.25*v);},crash(v=1){noise(1.4,700,80,.5*v);tone(60,30,1,'sine',.4*v);},swv(v=1){tone(70,22,1.3,'sine',.7*v);noise(1.1,1800,90,.55*v);tone(220,1000,.35,'sawtooth',.14*v,.05);},
   splash(v=1){noise(.7,3200,500,.4*v);tone(220,90,.3,'sine',.2*v);},
+  nukeLaunch(){tone(60,28,1.4,'sine',.6);noise(1.6,1800,120,.35);tone(140,50,1.1,'sawtooth',.08);},
+  nukeFlash(v=1){tone(2400,2200,.5,'sine',.05*v);noise(.18,9000,2000,.4*v);},
+  nuke(v=1){tone(46,16,6.5,'sine',.95*v);tone(31,12,7,'sine',.7*v);tone(88,30,3.2,'sawtooth',.22*v);noise(6,800,36,.85*v);noise(1.4,4200,220,.42*v,.05);tone(3300,3100,3.4,'sine',.035*v,.25);},
   shield(){tone(400,900,.4,'sine',.25);tone(600,1200,.5,'triangle',.15,.15);},shieldHit(){tone(900,300,.15,'triangle',.2);},repair(){[500,650,800].forEach((f,i)=>tone(f,f*1.05,.25,'square',.06,i*.2));}};
 /* ortak beyaz gürültü tamponu: her atışta yeni tampon üretmek (saniyede ~11 top atışı) çöp ve CPU yükü yaratıyordu */
 let _nb=null;
@@ -2649,13 +2661,13 @@ function makeTorpMesh(){
   scene.add(g);return {g,prop,glow,trail,tp,tcol:tc};
 }
 function spawnTorp(o){
-  const m=makeTorpMesh();
+  const m=o.nuke?makeNukeMesh():makeTorpMesh();
   const Q={...o,...m,age:0,ignited:false,passed:false,bubAcc:0,trailT:0,trailN:0,spin:0};
   for(let i=0;i<TRAIL_N;i++){Q.tp[i*3]=o.p.x;Q.tp[i*3+1]=o.p.y;Q.tp[i*3+2]=o.p.z;}
   Q.pos=o.p.clone();Q.g.position.copy(Q.pos);torps.push(Q);
   // tüpten basınçlı hava ile atış: kaba hava kabarcığı "slug"u
   for(let i=0;i<34;i++)spawnBubble(Q.pos.x+rr(-.3,.3),Q.pos.y+rr(-.3,.3),Q.pos.z+rr(-.3,.3),.1+Math.random()*.28,o.dir.x*rr(2,7)+rr(-1.5,1.5),rr(-1,1.5),o.dir.z*rr(2,7)+rr(-1.5,1.5));
-  const d=Q.pos.distanceTo(camera.position);sfx.launch(clamp(1.2-d/120,.05,1));
+  const d=Q.pos.distanceTo(camera.position);if(o.nuke)sfx.nukeLaunch();else sfx.launch(clamp(1.2-d/120,.05,1));
   return Q;
 }
 function fireTorpedo(force){
@@ -2707,14 +2719,24 @@ function updateTorps(dt,wt){
         if(!tgt&&!Q.passed)tgt=Q.aim;
         if(tgt){_rd.subVectors(tgt,Q.pos);const dist=_rd.length();
           if(!lock&&dist<3)Q.passed=true;
-          else{_rd.divideScalar(dist);const ang=Q.dir.angleTo(_rd);if(ang>1e-4){Q.dir.lerp(_rd,Math.min(1,(lock?3.2:2.4)*dt/ang)).normalize();}}}
+          else{_rd.divideScalar(dist);const ang=Q.dir.angleTo(_rd);if(ang>1e-4){Q.dir.lerp(_rd,Math.min(1,(Q.nuke?.45:lock?3.2:2.4)*dt/ang)).normalize();}}}
       }
-      Q.vel.lerp(_tmp.copy(Q.dir).multiplyScalar(TORP_SPEED),1-Math.exp(-2.4*dt));
+      Q.vel.lerp(_tmp.copy(Q.dir).multiplyScalar(Q.nuke?NUKE_SPEED:TORP_SPEED),1-Math.exp(-(Q.nuke?1.2:2.4)*dt));
       Q.vel.y+=Math.sin(Q.age*7+i)*.15*dt;
     }
     let hit=null;const steps=3;
     for(let s=0;s<steps;s++){Q.pos.addScaledVector(Q.vel,dt/steps);hit=torpHit(Q,wt);if(hit)break;}
-    if(hit||Q.age>(Q.own?8:9.5)){
+    if(Q.nuke){ /* nükleer: silahlanma mesafesi, uzaktakiler patlama mesajını bekler */
+      if(!Q.own){if(hit)Q.vel.set(0,0,0);if(Q.age>24){removeTorp(i);continue;}hit=null;}
+      else if(hit||Q.age>18){
+        if(Q.pos.distanceTo(Q.p0)>=NUKE_ARM){runNuke(Q.tid,Q.pos.x,Q.pos.y,Q.pos.z,net.myId);sendNet({t:'nuke',tid:Q.tid,p:r3(Q.pos)});}
+        else{ /* silahlanmadı: sönük patlar, torpido geri alınır */
+          for(let k=0;k<40;k++)spawnBubble(Q.pos.x+rr(-1,1),Q.pos.y+rr(-1,1),Q.pos.z+rr(-1,1),.08+Math.random()*.2,rr(-3,3),rr(0,4),rr(-3,3));
+          addPuff(Q.pos.x,Q.pos.y,Q.pos.z,0x6b645b,0,.5,0,3,14,.5,6);sfx.boom(.35);if(!nukeSave.inf){nukeSave.n=Math.min(NUKE_MAX,nukeSave.n+1);persistNuke();}nukeCd=0;
+          toast('☢ '+tl('Başlık silahlanmadan çarptı (güvenli mesafe '+NUKE_ARM+' m) — torpido geri alındı','Warhead hit before arming ('+NUKE_ARM+' m safe distance) — torpedo recovered'));updateWpnHUD();}
+        removeTorp(i);continue;}
+    }
+    else if(hit||Q.age>(Q.own?8:9.5)){
       if(Q.own){if(hit==='e'||hit==='c'||hit==='p')hitMark(false);const ci=hit==='c'?HI.i:-1,si=hit==='s'?HI.si:-1,ei=hit==='e'?HI.i:-1;
         explode(Q.pos.x,Q.pos.y,Q.pos.z,ci,Q.tid);applyBlast({x:Q.pos.x,y:Q.pos.y,z:Q.pos.z,si,ei,tid:Q.tid,own:true,by:net.myId});
         sendNet({t:'boom',tid:Q.tid,p:r3(Q.pos),ci,si,ei});}
@@ -3272,6 +3294,179 @@ function updateBlasts(dt){
     if(t>1.2){scene.remove(b.core);b.core.material.dispose();b.shock.material.dispose();if(b.shock.parent)scene.remove(b.shock);if(!b.popped)scene.remove(b.gas);blasts.splice(i,1);}
   }
 }
+
+/* ================= Nükleer torpido ================= */
+/* Yavaş, iri ve ölümcül: güvenli mesafede (NUKE_ARM) silahlanır, patlayınca dalga cepheleri akvaryumu süpürür.
+   Bölgede 4 dakika hiçbir şey oluşmaz; sonra yaşam dıştan içe doğru geri döner. Yapılar bir daha yapılmaz. */
+const NUKE_R=Math.min(HX,HZ)*.45,NUKE_SPEED=15,NUKE_ARM=95,NUKE_COST=4500,NUKE_MAX=3,NUKE_QUIET=240,NUKE_GROW=60,NUKE_CD=8;
+const nukeSave=(()=>{const o={n:0,inf:false};try{const j=JSON.parse(store.get('aqua-nuke')||'null');if(j&&typeof j==='object'){o.n=clamp(Math.floor(num(j.n)),0,NUKE_MAX);o.inf=j.inf===true;}}catch{}return o;})();
+const persistNuke=()=>store.set('aqua-nuke',JSON.stringify(nukeSave));
+const nukeOwned=()=>nukeSave.inf||nukeSave.n>0;
+const nukeTxt=()=>nukeSave.inf?'∞':String(nukeSave.n);
+let nukeCd=0,deafT=0;
+const nukeZones=[],nukeDone=new Set(),NK_ASH=new THREE.Color(0x4a443c);
+const nkBody=new THREE.MeshStandardMaterial({color:0x2d3329,roughness:.42,metalness:.7}),nkDark=new THREE.MeshStandardMaterial({color:0x12151a,roughness:.5,metalness:.6}),
+  nkBand=new THREE.MeshStandardMaterial({color:0xe8c010,roughness:.5,metalness:.3}),nkRed=new THREE.MeshBasicMaterial({color:0xff2a1a});
+function makeNukeMesh(){
+  const m=makeTorpMesh(),g=m.g;
+  g.traverse(o=>{if(o.isMesh)o.material=o.material===TM.dark?nkDark:o.material===TM.band?nkBand:nkBody;});
+  /* tehlike şeritleri ve kırmızı burun halkası: ayırt edilsin */
+  for(const z of [.2,.95,-.1]){const r=new THREE.Mesh(new THREE.CylinderGeometry(.36,.36,.14,18),z===.2?nkRed:nkBand);r.rotation.x=Math.PI/2;r.position.z=z;g.add(r);}
+  g.scale.setScalar(2.7);m.glow.material.color.set(0xff8a4a);
+  return m;
+}
+function fireNuke(){
+  if(!running||chatOpen()||dead)return;
+  if(tutOn||MS.mode==='ship'){toast('☢ '+tl('Bu modda nükleer torpido kullanılamaz','Nuclear torpedoes are unavailable in this mode'));return;}
+  if(sub.position.y>SURF-3.2){toast(T.noSurfFire);return;}
+  if(!nukeOwned()){toast('☢ '+tl('Nükleer torpido yok — Tersane\'den satın al','No nuclear torpedo — buy one at the Shipyard'));sfx.empty();return;}
+  if(nukeCd>0){toast('☢ '+tl('Nükleer tüp yükleniyor…','Nuclear tube is reloading…'));return;}
+  if(!nukeSave.inf){nukeSave.n--;persistNuke();}nukeCd=NUKE_CD;
+  const fwd=new THREE.Vector3(0,0,1).applyQuaternion(sub.quaternion),p=fwd.clone().multiplyScalar(2.8*subSc).add(sub.position);
+  const vel=subVel.clone().addScaledVector(fwd,4),tid=net.myId+':nk'+(++torpSeq);
+  spawnTorp({tid,own:true,nuke:true,p,vel,dir:fwd.clone(),aim:aim.p.clone(),tc:-1,te:-1,tpl:null,p0:p.clone()});
+  subVel.addScaledVector(fwd,-3.5);shake=Math.max(shake,.5);NOISE.v=Math.max(NOISE.v,70);sfx.nukeLaunch();spFlash(p,0xffd9a0,5,.35);
+  toast('☢ '+tl('Nükleer torpido ateşlendi — silahlanma mesafesi '+NUKE_ARM+' m. UZAKLAŞ!','Nuclear torpedo away — arms after '+NUKE_ARM+' m. GET CLEAR!'));
+  sendNet({t:'torp',nk:1,tid,p:r3(p),v:r3(vel),d:r3(fwd),a:r3(aim.p),tc:-1,te:-1});
+  if(!nukeOwned())weapon=0;renderWpn();
+}
+const hzD=(x,z,ax,az)=>Math.hypot(x-ax,z-az);
+function nukeZoneK(x,z){
+  let k=0;
+  for(const Z of nukeZones){const d=hzD(x,z,Z.x,Z.z),ins=clamp((Z.R*1.1-d)/(Z.R*.3),0,1);if(ins<=0)continue;
+    const a=Z.age,m=(a<20?a/20:1)*(1-sm(NUKE_QUIET,NUKE_QUIET+NUKE_GROW,a));k=Math.max(k,ins*m);}
+  return k;
+}
+/* cam çatlakları: akvaryumun duvarlarına, patlamaya yakınlığa göre büyüyen çatlak çıkartmaları */
+const glassCracks=[];let crackTex=null;
+function makeCrackTex(){
+  const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');g.lineCap='round';
+  const rnd=mulberry32(7);
+  const branch=(x,y,a,len,w,depth)=>{if(len<10||depth>4)return;const n=Math.max(2,Math.floor(len/22));let px=x,py=y;
+    for(let i=0;i<n;i++){const na=a+(rnd()-.5)*.55,sl=len/n;const nx=px+Math.cos(na)*sl,ny=py+Math.sin(na)*sl;g.lineWidth=w;g.strokeStyle='rgba(235,250,255,'+(.85-depth*.12)+')';g.beginPath();g.moveTo(px,py);g.lineTo(nx,ny);g.stroke();
+      if(rnd()<.45)branch(nx,ny,na+(rnd()<.5?-1:1)*(.5+rnd()*.7),len*(.35+rnd()*.3),Math.max(.6,w*.6),depth+1);px=nx;py=ny;a=na;}};
+  for(let i=0;i<14;i++)branch(256,256,i/14*Math.PI*2+rnd()*.3,190+rnd()*60,2.6,0);
+  g.strokeStyle='rgba(255,255,255,.5)';g.lineWidth=1.2;for(let r=30;r<200;r+=38){g.beginPath();for(let i=0;i<=24;i++){const a=i/24*Math.PI*2,rr2=r+(rnd()-.5)*10;const px=256+Math.cos(a)*rr2,py=256+Math.sin(a)*rr2;i?g.lineTo(px,py):g.moveTo(px,py);}g.stroke();}
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+function addGlassCracks(x,z,R){
+  if(!crackTex)crackTex=makeCrackTex();
+  const gy=(SURF+4+TANK_BOTTOM)/2,walls=[[x,-HZ,0,0,Math.abs(z+HZ)],[x,HZ,0,Math.PI,Math.abs(HZ-z)],[-HX,z,1,Math.PI/2,Math.abs(x+HX)],[HX,z,1,-Math.PI/2,Math.abs(HX-x)]];
+  for(const [wx,wz,ax,ry,dist] of walls){
+    const k=clamp(1-dist/(R*4.6),0,1);if(k<.04)continue;
+    const n=1+(k>.35?1:0)+(k>.65?2:0);
+    for(let i=0;i<n;i++){
+      const sz=(70+k*420)*(1-.18*i),m=new THREE.Mesh(new THREE.PlaneGeometry(sz,sz*.8),new THREE.MeshBasicMaterial({map:crackTex,transparent:true,depthWrite:false,opacity:clamp(.5+k*.5,.5,1),side:THREE.DoubleSide,fog:false}));
+      const off=(i?rr(-1,1)*sz*.5:0);
+      m.position.set(ax?(wx<0?wx+.35:wx-.35):clamp(wx+off,-HX+10,HX-10),clamp(gy+(i?rr(-1,1)*18:0),TANK_BOTTOM+8,SURF),ax?clamp(wz+off,-HZ+10,HZ-10):(wz<0?wz+.35:wz-.35));
+      m.rotation.y=ry;m.rotation.z=rr(-.5,.5);m.renderOrder=6;scene.add(m);glassCracks.push(m);
+      if(glassCracks.length>36){const o=glassCracks.shift();scene.remove(o);o.material.dispose();o.geometry.dispose();}
+    }
+  }
+}
+function showCockpitCrack(k){
+  let el=$('nukeCrack');if(!el)return;
+  if(!el.dataset.b){el.dataset.b=1;const rnd=mulberry32((Math.random()*1e6)|0);let h='';const W=960,H=540;
+    for(let s=0;s<3;s++){let x=W*(.2+rnd()*.6),y=H*(.2+rnd()*.5);for(let a=0;a<9;a++){let px=x,py=y,ang=a/9*Math.PI*2+rnd();for(let i=0;i<7;i++){const nx=px+Math.cos(ang)*(30+rnd()*60),ny=py+Math.sin(ang)*(30+rnd()*60);h+=`<line x1="${px|0}" y1="${py|0}" x2="${nx|0}" y2="${ny|0}"/>`;px=nx;py=ny;ang+=(rnd()-.5)*.7;}}}
+    el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" width="100%" height="100%" stroke="rgba(235,250,255,.8)" stroke-width="1.6" fill="none">${h}</svg>`;}
+  el.style.transition='none';el.style.opacity=String(clamp(.35+k*.65,.35,1));clearTimeout(showCockpitCrack.t);
+  showCockpitCrack.t=setTimeout(()=>{el.style.transition='opacity 6s';el.style.opacity='0';},6000);
+}
+function nukeFlash(op,dur){const fv=$('flashV');fv.style.transition='none';fv.style.background='#fff';fv.style.opacity=String(op);requestAnimationFrame(()=>{fv.style.transition='opacity '+dur+'s';fv.style.opacity='0';});clearTimeout(nukeFlash.t);nukeFlash.t=setTimeout(()=>{fv.style.background='';},dur*1000+300);}
+function nukeFelt(Z,d,mine){
+  const R=Z.R,f=clamp(1-d/(R*2.4),0,1);if(f<.02)return;
+  shake=Math.max(shake,1.2+1.4*f);NOISE.v=100;deafT=Math.max(deafT,1.5+5*f);gpRumble(1,1,900);
+  nukeFlash(clamp(f*1.6,0,1),1.4+2.4*f);
+  sfx.nuke(clamp(.25+f*1.1,.2,1));
+  if(d<R*.95)showCockpitCrack(1-d/(R*.95));
+  const p=sub.position,dx=p.x-Z.x,dz=p.z-Z.z,l=Math.hypot(dx,dz)||1;subVel.x+=dx/l*40*f;subVel.z+=dz/l*40*f;subVel.y+=rr(-6,6)*f;
+  if(!dead&&!tutOn&&!CREW.pilot&&(mine||pvpOK(Z.by))){
+    let dmg=0;if(d<R*.38)dmg=HULL_MAX*1.6;else if(d<R*.95)dmg=HULL_MAX*.95*Math.pow(1-(d-R*.38)/(R*.57),1.5);
+    if(dmg>1)hurt(dmg,Z.by,false,_bd.set(dx/l,.1,dz/l).multiplyScalar(12));
+  }
+}
+function runNuke(tid,x,y,z,by){
+  if(nukeDone.has(tid))return;nukeDone.add(tid);if(nukeDone.size>60)nukeDone.delete(nukeDone.values().next().value);
+  const mine=by===net.myId,R=NUKE_R,wt=worldTime(),pos=new THREE.Vector3(x,y,z);
+  const Z={x,y,z,R,t0:wt,by,mine,age:0,front:0,felt:false,cr:[],fl:[],st:[],en:[],vi:null,ci:0,fi:0,si:0,ei:0,vp:0,fr:0,vr:0,act:[],mush:0,L:null};
+  /* etkilenecek her şeyin listesi (patlama anında bir kez; yatay uzaklıkla sıralı: yok oluş merkezden dışa, dönüş dıştan içe) */
+  for(let i=0;i<creatures.length;i++){const c=creatures[i];if(c.deadUntil>wt||c.wx>1e5)continue;const d=hzD(c.wx,c.wz,x,z);if(d<R)Z.cr.push({c,d});}
+  Z.cr.sort((a,b)=>a.d-b.d);
+  {const R2=R*R,tmp=[];for(const f of flora){const dx=f.x-x,dz=f.z-z;if(f.alive&&dx*dx+dz*dz<R2)tmp.push(f);}
+   Z.flM=new Float32Array(tmp.length*16);const DD=new Float32Array(tmp.length);
+   tmp.forEach((f,j)=>{f.mesh.getMatrixAt(f.idx,_m);Z.flM.set(_m.elements,j*16);DD[j]=Math.hypot(f.x-x,f.z-z);});
+   const ord=Array.from(tmp.keys()).sort((a,b)=>DD[a]-DD[b]);Z.fl=ord.map(j=>({f:tmp[j],d:DD[j],o:j*16}));}
+  for(const s of structs){if(!s.alive||s.hard)continue;const d=hzD(s.x,s.z,x,z);if(d<R)Z.st.push({s,d});}
+  Z.st.sort((a,b)=>a.d-b.d);
+  if(net.mode!=='client')for(const e of enemies){if(e.dead)continue;const d=hzD(e.x,e.z,x,z);if(d<R)Z.en.push({e,d});}
+  Z.en.sort((a,b)=>a.d-b.d);
+  if(FLOORG){const P=FLOORG.attributes.position.array,C=FLOORG.attributes.color.array,idx=[],R2=R*R;for(let i=0,n=P.length/3;i<n;i++){const dx=P[i*3]-x,dz=P[i*3+2]-z;if(dx*dx+dz*dz<R2)idx.push(i);}
+    const D=new Float32Array(idx.length),orig=new Float32Array(idx.length*3);for(let j=0;j<idx.length;j++){const v=idx[j];D[j]=Math.hypot(P[v*3]-x,P[v*3+2]-z);orig[j*3]=C[v*3];orig[j*3+1]=C[v*3+1];orig[j*3+2]=C[v*3+2];}
+    const ord=Array.from(idx.keys()).sort((a,b)=>D[a]-D[b]);Z.vi={idx,D,ord,orig};}
+  /* görsel: çekirdek, kubbe, şok küresi, ışık */
+  const core=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xfff2d0,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,fog:false}));core.position.copy(pos);core.scale.setScalar(1);core.renderOrder=10;scene.add(core);
+  const dome=new THREE.Mesh(gasGeo,new THREE.MeshBasicMaterial({color:0xffa850,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false}));dome.position.copy(pos);dome.scale.setScalar(1);dome.renderOrder=8;scene.add(dome);
+  const shock=new THREE.Mesh(sonarGeo,shockMat.clone());shock.position.copy(pos);shock.renderOrder=9;scene.add(shock);
+  Z.core=core;Z.dome=dome;Z.shock=shock;Z.L=flashLights[flashIdx++%2];Z.L.position.copy(pos);
+  nukeZones.push(Z);
+  for(let i=0;i<260;i++){_v.set(rr(-1,1),rr(-.4,1),rr(-1,1)).normalize().multiplyScalar(rr(4,26));spawnBubble(x+rr(-8,8),y+rr(-4,4),z+rr(-8,8),.08+Math.random()*.5,_v.x,_v.y+rr(2,8),_v.z);}
+  bioBurst(pos,120,12);
+  addGlassCracks(x,z,R);
+  const dc=hzD(camera.position.x,camera.position.z,x,z);
+  {const f=clamp(1-dc/(R*3),0,1);if(f>.02)nukeFlash(clamp(f*1.2,0,1),1.8);}
+  sfx.nukeFlash(clamp(1-dc/(R*3),.1,1));
+  toast('☢ '+tl('NÜKLEER PATLAMA!','NUCLEAR DETONATION!'));
+  bigBanner('☢ '+tl('NÜKLEER PATLAMA','NUCLEAR DETONATION'),tl('Bölge 4 dakika boyunca ölü kalacak','The zone stays dead for 4 minutes'));
+}
+function updateNukes(dt,wt){
+  for(let zi=nukeZones.length-1;zi>=0;zi--){
+    const Z=nukeZones[zi];Z.age+=dt;const a=Z.age,R=Z.R,pos=_nkp.set(Z.x,Z.y,Z.z);
+    Z.front=Math.min(R*1.25,a*R*1.25/4.2);
+    /* --- yok oluş dalgası: merkezden dışa --- */
+    while(Z.ci<Z.cr.length&&Z.cr[Z.ci].d<=Z.front){const o=Z.cr[Z.ci++],c=o.c;if(c.deadUntil>wt)continue;
+      c.deadUntil=Z.t0+NUKE_QUIET+NUKE_GROW*(1-o.d/R);if(Z.mine)statFish(c.sp);
+      if(Math.hypot(c.wx-camera.position.x,c.wz-camera.position.z)<130&&(Z.ci&3)===0)addPuff(c.wx,c.wy,c.wz,0x2a2622,rr(-1,1),rr(0,1),rr(-1,1),1,5,.5,5);}
+    let dirty=false;
+    while(Z.fi<Z.fl.length&&Z.fl[Z.fi].d<=Z.front){const f=Z.fl[Z.fi++].f;if(!f.alive)continue;f.alive=false;f.mesh.setMatrixAt(f.idx,_zero);dirtyMeshes.add(f.mesh);dirty=true;}
+    let sd=0;while(Z.si<Z.st.length&&Z.st[Z.si].d<=Z.front&&sd<40){const s=Z.st[Z.si++].s;if(!s.alive)continue;destroyStruct(s,true,pos);sd++;
+      if((Z.si&7)===0&&Math.hypot(s.x-camera.position.x,s.z-camera.position.z)<160){const pr=Math.min(s.r,8);addPuff(s.x,s.y,s.z,0x9a948a,rr(-2,2),rr(0,2),rr(-2,2),pr*.8,pr*3,.4,rr(8,14));}}
+    if(sd)supportCheck(true,pos);
+    while(Z.ei<Z.en.length&&Z.en[Z.ei].d<=Z.front){const e=Z.en[Z.ei++].e;if(e.dead)continue;
+      if(e.cfg.boss){e.hp=Math.max(1,e.hp-e.hpM*.6);e.flash=1;}else{hurtEnemy(e,9999,Z.by);if(e.respT!==Infinity)e.respT=Math.max(5,Z.t0+NUKE_QUIET+NUKE_GROW*(1-Z.en[Z.ei-1].d/R)-wt);}}
+    if(Z.vi){const V=Z.vi,C=FLOORG.attributes.color.array;let n=0;
+      while(Z.vp<V.ord.length&&V.D[V.ord[Z.vp]]<=Z.front&&n<9000){const j=V.ord[Z.vp++],v=V.idx[j],k=clamp(1-Math.pow(V.D[j]/R,2.2),0,1)*.94;
+        C[v*3]=V.orig[j*3]*(1-k)+.085*k;C[v*3+1]=V.orig[j*3+1]*(1-k)+.078*k;C[v*3+2]=V.orig[j*3+2]*(1-k)+.07*k;n++;}
+      if(n)FLOORG.attributes.color.needsUpdate=true;}
+    /* --- oyuncuya ulaşma --- */
+    if(!Z.felt){const rp=dead?camera.position:sub.position,d=hzD(rp.x,rp.z,Z.x,Z.z);if(Z.front>=d||Z.front>=R*1.25){Z.felt=true;nukeFelt(Z,d,Z.mine);}}
+    /* --- görseller --- */
+    Z.core.scale.setScalar(a<.15?a/.15*R*.35:R*.35+a*R*.05);Z.core.material.opacity=a<.15?1:Math.max(0,1-(a-.15)/2.6);Z.core.material.color.setRGB(1,clamp(.95-a*.18,.35,.95),clamp(.8-a*.3,.1,.8));
+    const dr=R*.55*sm(0,3.6,a);Z.dome.scale.set(dr,dr*.75,dr);Z.dome.material.opacity=.55*(1-sm(1.2,4.6,a));Z.dome.material.color.setRGB(1,clamp(.66-a*.1,.2,.66),clamp(.31-a*.06,.06,.31));
+    Z.shock.scale.setScalar(Math.max(1,Z.front));Z.shock.material.uniforms.uA.value=Math.max(0,1-a/5.2)*1.5;
+    Z.L.intensity=9000*Math.exp(-a*2.6);Z.L.position.copy(pos);
+    /* mantar bulutu: gövde yükselir, başlık yüzeye yakın yayılır, zeminde toz halkası */
+    if(a<5.2){
+      const fy=floorQ(Z.x,Z.z);
+      if(a>.25&&Z.mush<30&&Z.mush<a*8){Z.mush++;const yy=fy+3+(SURF-10-fy)*sm(0,4.2,a),w=10+yy*.1;addPuff(Z.x+rr(-w,w)*.4,yy,Z.z+rr(-w,w)*.4,a<1.8?0xffa050:0x7a736a,rr(-1.5,1.5),rr(2,6),rr(-1.5,1.5),20,70+a*8,.55,16);}
+      if(a>2.4&&(Z.cap=(Z.cap||0))<26&&Z.cap<(a-2.4)*9){Z.cap++;const ang=Math.random()*6.283,rc=R*.55*rr(.35,1)*sm(2.4,5,a);addPuff(Z.x+Math.cos(ang)*rc,SURF-rr(5,12),Z.z+Math.sin(ang)*rc,0x6b645b,Math.cos(ang)*4,rr(-.5,.5),Math.sin(ang)*4,50,150,.5,20);}
+      if(a>.3&&Z.front<R*1.2&&(frameN&1)===0){const ang=Math.random()*6.283,rx=Z.x+Math.cos(ang)*Z.front,rz=Z.z+Math.sin(ang)*Z.front;if(hzD(rx,rz,camera.position.x,camera.position.z)<260)addPuff(rx,floorQ(rx,rz)+2,rz,0xb8a57c,Math.cos(ang)*5,rr(.5,2),Math.sin(ang)*5,10,32,.38,14);}
+    }
+    if(a>6&&Z.core.parent){scene.remove(Z.core);Z.core.material.dispose();scene.remove(Z.dome);Z.dome.material.dispose();scene.remove(Z.shock);Z.shock.material.dispose();Z.L.intensity=0;}
+    /* --- dönüş: dıştan içe (4 dk sonra) --- */
+    if(a>NUKE_QUIET){
+      const g=clamp((a-NUKE_QUIET)/NUKE_GROW,0,1),rg=R*(1-g);
+      while(Z.fr<Z.fl.length&&Z.fl[Z.fl.length-1-Z.fr].d>=rg){const o=Z.fl[Z.fl.length-1-Z.fr++];if(!o.f.alive){o.f.alive=true;Z.act.push({o,t:0});}}
+      if(Z.vi){const V=Z.vi,C=FLOORG.attributes.color.array;let n=0;while(Z.vr<V.ord.length&&V.D[V.ord[V.ord.length-1-Z.vr]]>=rg&&n<9000){const j=V.ord[V.ord.length-1-Z.vr++],v=V.idx[j];C[v*3]=V.orig[j*3];C[v*3+1]=V.orig[j*3+1];C[v*3+2]=V.orig[j*3+2];n++;}if(n)FLOORG.attributes.color.needsUpdate=true;}
+    }
+    for(let i=Z.act.length-1;i>=0;i--){const A=Z.act[i];A.t+=dt;const k=Math.min(1,A.t/3),e=k*k*(3-2*k),el=Z.flM,ob=A.o.o;
+      for(let q=0;q<16;q++)_nkm.elements[q]=el[ob+q];for(const q of [0,1,2,4,5,6,8,9,10])_nkm.elements[q]=el[ob+q]*Math.max(.001,e);
+      A.o.f.mesh.setMatrixAt(A.o.f.idx,_nkm);dirtyMeshes.add(A.o.f.mesh);if(k>=1)Z.act.splice(i,1);}
+    if(a>NUKE_QUIET+NUKE_GROW+4&&!Z.act.length){if(Z.core.parent){scene.remove(Z.core);scene.remove(Z.dome);scene.remove(Z.shock);}nukeZones.splice(zi,1);}
+  }
+  if(deafT>0)deafT-=dt;
+  if(nukeCd>0)nukeCd=Math.max(0,nukeCd-dt);
+}
+const _nkp=new THREE.Vector3(),_nkm=new THREE.Matrix4();
 function addPuff(x,y,z,color,vx,vy,vz,s0,s1,op,life=12){
   if(puffs.length>(isTouch?160:300)){const o=puffs.shift();scene.remove(o.s);o.s.material.dispose();}
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:puffTex,color,transparent:true,depthWrite:false,opacity:0}));s.position.set(x,y,z);s.scale.setScalar(s0);s.renderOrder=4;scene.add(s);
@@ -4007,7 +4202,7 @@ function fireWeapon(){
   if(MS.mode==='race'&&MS.phase==='play'){toast('🏁 '+tl('Yarışta silahlar kapalı','Weapons are off in races'));return;}
   if(!shipCan('gun')){shipDeny('gun');return;}
   if(netArmed){launchNet();return;}
-  if(weapon===0)fireTorpedo();else if(weapon===1)fireSalvo();else if(weapon===2)dropMine();else doEmp();
+  if(weapon===0)fireTorpedo();else if(weapon===1)fireSalvo();else if(weapon===2)dropMine();else if(weapon===4)fireNuke();else doEmp();
 }
 function doShield(){
   if(running&&!shipCan('eng')){shipDeny('eng');return;}
@@ -4023,19 +4218,20 @@ function doRepair(){
   if(hull>=HULL_MAX){toast(T.repairFull);return;}if(kits<=0){toast(T.noKit);sfx.empty();return;}
   kits--;repairT=3;sfx.repair();toast(T.repairStart);
 }
-const WPN_ICON=['🚀','🚀','💣','⚡'];
+const WPN_ICON=['🚀','🚀','💣','⚡','☢'];
 function renderWpn(){
-  $('wpn').innerHTML=[T.w1,T.w2,T.w3,T.w4,T.w5,T.w6,T.w7,T.w8,T.w9].concat(curSub&&curSub.spc?[tl(curSub.sn[0],curSub.sn[1]).toUpperCase()]:[]).map((n,i)=>`<div class="slot ${(i===weapon&&!netArmed)||(i===7&&netArmed)?'on':''}" data-w="${i}"><kbd>${i===9?0:i+1}</kbd><span>${esc(n)}</span><b id="wc${i}">–</b></div>`).join('');
+  const names=[T.w1,T.w2,T.w3,T.w4,T.w5,T.w6,T.w7,T.w8,T.w9,curSub&&curSub.spc?tl(curSub.sn[0],curSub.sn[1]).toUpperCase():null,nukeOwned()?tl('NÜKLEER','NUCLEAR'):null];
+  $('wpn').innerHTML=names.map((n,i)=>n==null?'':`<div class="slot ${((i===weapon||(i===10&&weapon===4))&&!netArmed&&i!==4)||(i===7&&netArmed)?'on':''}${i===10?' nk':''}" data-w="${i}"><kbd>${i===9?0:i===10?'U':i+1}</kbd><span>${esc(n)}</span><b id="wc${i}">–</b></div>`).join('');
   updateWpnHUD();
 }
-function setWeapon(i){if(i===9){doSpecial();return;}if(i<4&&netArmed){netArmed=false;setNetProp();}if(i===4){doShield();return;}if(i===5){doRepair();return;}if(i===6){doShock();return;}if(i===7){doNet();return;}if(i===8){doMelee();return;}weapon=i;renderWpn();}
+function setWeapon(i){if(i===10){if(!nukeOwned()){toast('☢ '+tl('Nükleer torpido yok — Tersane\'den satın al','No nuclear torpedo — buy one at the Shipyard'));return;}if(netArmed){netArmed=false;setNetProp();}weapon=4;renderWpn();return;}if(i===9){doSpecial();return;}if(i<4&&netArmed){netArmed=false;setNetProp();}if(i===4){doShield();return;}if(i===5){doRepair();return;}if(i===6){doShock();return;}if(i===7){doNet();return;}if(i===8){doMelee();return;}weapon=i;renderWpn();}
 function updateWpnHUD(){
-  const sh=shieldT>0?'●':shieldCd>0?String(Math.ceil(shieldCd)):'✓',v=[torpAmmo,torpAmmo>=3?'✓':'✗',mineAmmo,empCd>0?Math.ceil(empCd)+'s':'✓',sh,repairT>0?'+':kits,swvCd>0?Math.ceil(swvCd)+'s':'✓',netCd>0?Math.ceil(netCd)+'s':'✓',meleeCd>0?Math.ceil(meleeCd)+'s':'✓',spcCd>0?Math.ceil(spcCd)+'s':'✓'];
+  const sh=shieldT>0?'●':shieldCd>0?String(Math.ceil(shieldCd)):'✓',v=[torpAmmo,torpAmmo>=3?'✓':'✗',mineAmmo,empCd>0?Math.ceil(empCd)+'s':'✓',sh,repairT>0?'+':kits,swvCd>0?Math.ceil(swvCd)+'s':'✓',netCd>0?Math.ceil(netCd)+'s':'✓',meleeCd>0?Math.ceil(meleeCd)+'s':'✓',spcCd>0?Math.ceil(spcCd)+'s':'✓',nukeCd>0?Math.ceil(nukeCd)+'s':nukeTxt()];
   v.forEach((x,i)=>{const el=$('wc'+i);if(el&&el.textContent!==String(x))el.textContent=x;});
   if(isTouch){
     const set=(id,h)=>{const el=$(id);if(el&&el.dataset.h!==h){el.dataset.h=h;el.innerHTML=h;}};
     set('fireB',WPN_ICON[weapon]);
-    set('wpnB',WPN_ICON[weapon]+(weapon===1?'×3':'')+'<small>'+(weapon<2?torpAmmo:weapon===2?mineAmmo:(empCd>0?Math.ceil(empCd):'✓'))+'</small>');
+    set('wpnB',WPN_ICON[weapon]+(weapon===1?'×3':'')+'<small>'+(weapon<2?torpAmmo:weapon===2?mineAmmo:weapon===4?nukeTxt():(empCd>0?Math.ceil(empCd):'✓'))+'</small>');
     set('shB','🛡<small>'+(shieldT>0?'●':shieldCd>0?Math.ceil(shieldCd):'')+'</small>');
     set('rpB','🔧<small>'+(repairT>0?'+':kits)+'</small>');
     set('swB','💥<small>'+(swvCd>0?Math.ceil(swvCd):'✓')+'</small>');
@@ -4125,7 +4321,8 @@ function handleCommon(d,from){
     case 'torp':{const pp=v3(d.p),vv=v3(d.v),dd=v3(d.d),aa=v3(d.a);if(!p||!pp||!vv||!dd||!aa||torps.length>40)break;
       const tc=Number.isInteger(d.tc)&&d.tc>=0&&d.tc<creatures.length?d.tc:-1,te=Number.isInteger(d.te)&&d.te>=0&&d.te<enemies.length?d.te:-1,tpl=typeof d.pl==='string'?d.pl.slice(0,64):null;
       gearKick(p.sub,p.sub.g.worldToLocal(pp.clone()).x>0?'tpR':'tpL',GD.tp);
-      spawnTorp({tid:String(d.tid).slice(0,48),own:false,p:pp,vel:vv,dir:dd.lengthSq()>.01?dd.normalize():new THREE.Vector3(0,0,1),aim:aa,tc,te,tpl});}break;
+      spawnTorp({tid:String(d.tid).slice(0,48),own:false,nuke:d.nk===1,p:pp,vel:vv,dir:dd.lengthSq()>.01?dd.normalize():new THREE.Vector3(0,0,1),aim:aa,tc,te,tpl});}break;
+    case 'nuke':{const pp=v3(d.p);if(!pp)break;const tid=String(d.tid).slice(0,48);const i=torps.findIndex(q=>q.tid===tid);if(i>=0)removeTorp(i);runNuke(tid,clamp(pp.x,-HX,HX),clamp(pp.y,-45,SURF),clamp(pp.z,-HZ,HZ),from);}break;
     case 'blt':{const pp=v3(d.p),dd=v3(d.d),vv=v3(d.v);if(!p||!pp||!dd||dd.lengthSq()<.01||dd.lengthSq()>9)break;const now=performance.now();if(now-(p.bl||0)<55)break;p.bl=now;
       dd.normalize();spawnBullet(pp,dd,vv||new THREE.Vector3(),false,from);
       {const gs=p.cr===net.myId?local:((p.cr&&players.get(p.cr))||p).sub,lq=gs.g.quaternion.clone().invert();gs.gDir=dd.clone().applyQuaternion(lq);gs.gDirT=performance.now()*.001;gearKick(gs,gs.g.worldToLocal(pp.clone()).x>0?'gnR':'gnL',GD.gn);}
@@ -4189,7 +4386,7 @@ function hostRecv(c,d){
     pl.bhB=Math.min(16,(pl.bhB==null?16:pl.bhB)+(now-(pl.bhL||now))/1000*14);pl.bhL=now;
     const m=Math.min(Math.floor(clamp(num(d.n,1),1,8)),Math.floor(pl.bhB)),e=enemies[ei];
     if(e&&!e.dead&&m>=1){pl.bhB-=m;hurtEnemy(e,(e.cfg.boss?.24:.36)*m,id);}return;}
-  if(['st','food','sonar','chat','torp','boom','mine','emp','swv','dead','resp','mel','net','pg','qd','spc','blt','ip','crl','ck','sd'].includes(d.t)){d.id=id;handleCommon(d,id);broadcast(d,id);}
+  if(['st','food','sonar','chat','torp','boom','nuke','mine','emp','swv','dead','resp','mel','net','pg','qd','spc','blt','ip','crl','ck','sd'].includes(d.t)){d.id=id;handleCommon(d,id);broadcast(d,id);}
 }
 // ---- Katılımcı
 async function startJoin(code){
@@ -4304,7 +4501,7 @@ addEventListener('keydown',e=>{
   else if(k.length===1&&k>='1'&&k<='9')setWeapon(+k-1);
   else if(k==='0'||k==='j')doSpecial();
   else if(k==='n')doNet();else if(k==='x')doMelee();else if(k==='y')fireWeapon();else if(k==='b')toggleView();else if(k==='i')enterInterior();else if(k==='t')toggleCatalog();else if(k==='g')toggleGarage();
-  else if(k==='o')toggleSilent();else if(k==='v')doShock();else if(k==='c')doShield();else if(k==='r')doRepair();
+  else if(k==='o')toggleSilent();else if(k==='u')setWeapon(10);else if(k==='v')doShock();else if(k==='c')doShield();else if(k==='r')doRepair();
   else if(k==='p')doPhoto();else if(k==='z')doPing();else if(k==='h')doBoard();else if(k==='k')toggleProfile();else if(k==='tab'){e.preventDefault();sbShow(true);}
   else if(k==='escape'&&$('mapM').style.display==='grid')toggleMap(false);
   else if(k==='enter'&&net.mode!=='solo'){e.preventDefault();openChat();}
@@ -4344,7 +4541,7 @@ function pollGamepad(dt){
   }else{
     const a=B(0),b=B(1);if(a!==gpA){gpA=a;keys.e=a;}if(b!==gpB){gpB=b;keys.q=b;}
     if(edge(2))doSonar();if(edge(3))doSpecial();if(edge(4))doShield();if(edge(10))doFood();if(edge(11))doMelee();
-    if(edge(12))toggleLight();if(edge(13))enterInterior();if(edge(14))doRepair();if(edge(15))setWeapon((weapon+1)%4);
+    if(edge(12))toggleLight();if(edge(13))enterInterior();if(edge(14))doRepair();if(edge(15))setWeapon(weapon===3&&nukeOwned()?10:weapon===4?0:(weapon+1)%4);
     if(B(5)){gpRBt-=dt;if(gpRBt<=0){gpRBt=weapon===0?.55:1.2;fireWeapon();gpRumble(.6,.3,120);}}else gpRBt=0;
   }
   if(edge(9))toggleMap();if(edge(8))toggleCatalog();
@@ -4369,7 +4566,7 @@ if(isTouch){
   canvas.addEventListener('pointermove',e=>{if(e.pointerId!==lid||!running)return;if(IN.on){IN.cy-=(e.clientX-tx)*.005;IN.cp=clamp(IN.cp+(e.clientY-ty)*.004,IN.fpv?-1.2:-.55,IN.fpv?1.2:1.05);tx=e.clientX;ty=e.clientY;return;}camYaw-=(e.clientX-tx)*.005;camPitch=pitchClamp(camPitch+(e.clientY-ty)*.004);tx=e.clientX;ty=e.clientY;});
   const endL=e=>{if(e.pointerId===lid)lid=null;};canvas.addEventListener('pointerup',endL);canvas.addEventListener('pointercancel',endL);
   let fireIv=null;const stopFire=()=>{clearInterval(fireIv);fireIv=null;};
-  const ACT={swv:doShock,sonar:doSonar,food:doFood,light:toggleLight,shield:doShield,repair:doRepair,map:()=>toggleMap(),chatb:()=>{if(net.mode!=='solo')openChat();},cat:toggleCatalog,room:()=>$('roomP').classList.toggle('open'),wpn:()=>setWeapon((weapon+1)%4),net:doNet,melee:doMelee,spc:doSpecial,quest:()=>$('questP').classList.toggle('open'),view:()=>{if(IN.on){IN.fpv=!IN.fpv;toast(IN.fpv?T.viewFp:T.viewTp);}else toggleView();},gar:()=>toggleGarage(),help:()=>startTutorial(),prof:()=>toggleProfile(),photo:doPhoto,ping:doPing,crew:doBoard,
+  const ACT={swv:doShock,sonar:doSonar,food:doFood,light:toggleLight,shield:doShield,repair:doRepair,map:()=>toggleMap(),chatb:()=>{if(net.mode!=='solo')openChat();},cat:toggleCatalog,room:()=>$('roomP').classList.toggle('open'),wpn:()=>setWeapon(weapon===3&&nukeOwned()?10:weapon===4?0:(weapon+1)%4),net:doNet,melee:doMelee,spc:doSpecial,quest:()=>$('questP').classList.toggle('open'),view:()=>{if(IN.on){IN.fpv=!IN.fpv;toast(IN.fpv?T.viewFp:T.viewTp);}else toggleView();},gar:()=>toggleGarage(),help:()=>startTutorial(),prof:()=>toggleProfile(),photo:doPhoto,ping:doPing,crew:doBoard,
     inside:()=>{if(IN.on)exitInterior();else enterInterior();},act:()=>inInteract(),seat:()=>{if(IN.on&&IN.mode==='walk')exitInterior();},run:()=>{vk.run=vk.run?0:1;$('runB').classList.toggle('on',!!vk.run);}};
   const TOG={up:1,down:1,boost:1};
   document.querySelectorAll('#touch button').forEach(b=>{const t=b.dataset.t;
@@ -4457,7 +4654,7 @@ function updateSub(dt){
   if(spd>2&&Math.random()<spd*dt*2.2){_tmp.set(rr(-.3,.3),rr(-.3,.3),-3.2*subSc).applyQuaternion(sub.quaternion).add(p);spawnBubble(_tmp.x,_tmp.y,_tmp.z,.06+Math.random()*.1);}
   if(engG){engG.gain.value=muted?0:clamp(spd/20,0,1)*.25;engO.frequency.value=40+spd*3;}
   if(uwLP&&(frameN&7)===0){ /* suyun altında yüksek frekanslar emilir: derinleştikçe ve dışarıdan dinlerken sesler boğuklaşır */
-    const dep=Math.max(0,SURF-sub.position.y),fq=sub.position.y>SURF-.5?16000:IN.on?3600:Math.max(2300,9500*Math.exp(-dep/48));
+    const dep=Math.max(0,SURF-sub.position.y);let fq=sub.position.y>SURF-.5?16000:IN.on?3600:Math.max(2300,9500*Math.exp(-dep/48));if(deafT>0)fq=Math.min(fq,520);
     uwLP.frequency.setTargetAtTime(fq,ac.currentTime,.25);}
   /* gövde gıcırtısı: derinde ve sert dümende basınç altındaki çelik inler */
   creakCd-=dt;if(creakCd<=0&&ac&&!muted&&sub.position.y<SURF-14){creakCd=rr(5,11);const dep=SURF-sub.position.y,pr=clamp((dep-14)/50+Math.abs(yawVel)*.25,0,1);
@@ -5341,7 +5538,7 @@ function loop(){
   ptime('canlılar',()=>updateCreatures(t,dt,subsPos));updateFood(t);updateBubbles(dt,t);
   if(net.mode!=='client'){ptime('düşman YZ',()=>updateEnemiesAI(dt));netEnT+=dt;if(net.mode==='host'&&netEnT>.1){netEnT=0;sendEnemySnap();}}
   updateEnemyView(dt);updateMines(dt);updateProjs(dt);updateArcs(dt);
-  updateTorps(dt,t);updateBullets(dt,t);updateBlasts(dt);updateSnow(dt,t);updateBio(dt);updateMyst(dt,t);BIOFLORA.visible=camera.position.y<SURF;BIOFLORA.material.opacity=(.5+.25*Math.sin(t*.9))*clamp(.35+(1-envL)*1.2+envDk*.5,0,1);updatePuffs(dt);updateFrags(dt);updateFalling(dt);updateSlashes(dt);updateNets(dt);
+  updateTorps(dt,t);updateBullets(dt,t);updateBlasts(dt);updateNukes(dt,t);updateSnow(dt,t);updateBio(dt);updateMyst(dt,t);BIOFLORA.visible=camera.position.y<SURF;BIOFLORA.material.opacity=(.5+.25*Math.sin(t*.9))*clamp(.35+(1-envL)*1.2+envDk*.5,0,1);updatePuffs(dt);updateFrags(dt);updateFalling(dt);updateSlashes(dt);updateNets(dt);
   for(let i=sonarFx.length-1;i>=0;i--){const m=sonarFx[i];m.userData.age+=dt;const a=m.userData.age/1.8;m.scale.setScalar(1+a*45);m.material.uniforms.uA.value=1-a;if(a>=1){scene.remove(m);m.material.dispose();sonarFx.splice(i,1);}}
   if(running){
     sonarCd=Math.max(0,sonarCd-dt);foodCd=Math.max(0,foodCd-dt);torpCd=Math.max(0,torpCd-dt);empCd=Math.max(0,empCd-dt);swvCd=Math.max(0,swvCd-dt);meleeCd=Math.max(0,meleeCd-dt);netCd=Math.max(0,netCd-dt);stats.ms+=dt*1000;
@@ -6366,7 +6563,13 @@ $('profM').addEventListener('click',e=>{if(e.target===$('profM'))toggleProfile(f
 $('profBtn').onclick=$('profBtn2').onclick=()=>toggleProfile();
 
 /* ---- Tersane: modüller ve kozmetik ---- */
+function renderNuke(){
+  $('nukeH').textContent=tl('SİLAHLAR · NÜKLEER TORPİDO','WEAPONS · NUCLEAR TORPEDO');$('kodIn').placeholder=tl('KOD','CODE');$('kodBtn').textContent=tl('KODU KULLAN','REDEEM CODE');
+  const full=nukeSave.inf||nukeSave.n>=NUKE_MAX,btn=nukeSave.inf?`<button class="btn" disabled>${esc(tl('SINIRSIZ','UNLIMITED'))}</button>`:full?`<button class="btn" disabled>${esc(tl('DEPO DOLU','FULL'))}</button>`:`<button class="btn gold" data-a="nuke"${save.gold<NUKE_COST?' style="opacity:.55"':''}>${esc(T.buy)} · ${NUKE_COST} 🪙</button>`;
+  $('nkBox').innerHTML=`<div class="nkR"><b>☢ ${esc(tl('Nükleer Torpido','Nuclear Torpedo'))} <span class="gold">${nukeTxt()}${nukeSave.inf?'':'/'+NUKE_MAX}</span><small>${esc(tl('Yavaş ve devasa. '+NUKE_ARM+' m sonra silahlanır; patlayınca dalga akvaryumu süpürür: bölgedeki tüm canlılar, bitkiler ve yapılar yok olur, camlar çatlar, 4 dakika boyunca hiçbir şey oluşmaz; sonra yaşam dıştan içe döner. Çok yakınsan sen de gidersin. Tuş: U','Slow and huge. Arms after '+NUKE_ARM+' m; the blast wave sweeps the tank: every creature, plant and structure in the zone is erased, the glass cracks and nothing forms for 4 minutes; then life returns from the outside in. Stay too close and you go too. Key: U'))}</small></b>${btn}</div>`;
+}
 function renderGarage4(){
+  renderNuke();
   $('modH').textContent=tl('MODÜLLER · TEHLİKELİ KÖŞE BİYOMLARI (bosslar orada)','MODULES · HAZARDOUS CORNER BIOMES (bosses live there)');$('skinH').textContent=tl('BOYA','PAINT');$('trailH').textContent=tl('PERVANE İZİ','PROPELLER TRAIL');
   $('modList').innerHTML=Object.keys(MODS).map(k=>{const m=MODS[k],own=save.mods.includes(k),auto=!own&&(SUBS[save.tier].rk>=m.tier||(SUBS[save.tier].mods||[]).includes(k));
     const b=own||auto?`<button class="btn" disabled>${esc(own?tl('TAKILI','FITTED'):tl('GÖVDEDE VAR','BUILT-IN'))}</button>`:`<button class="btn gold" data-a="mod" data-k="${k}"${save.gold<m.price?' style="opacity:.55"':''}>${esc(T.buy)} · ${m.price} 🪙</button>`;
@@ -6492,11 +6695,16 @@ refreshDaily();fillQuests();persist();applyLoadout(true);initTreasures();if(fp)c
 $('garBtn').onclick=$('garBtn2').onclick=()=>toggleGarage();$('garClose').onclick=()=>toggleGarage(false);
 $('catBtn').onclick=toggleCatalog;$('viewBtn').onclick=()=>{if(IN.on)inKey('b');else toggleView();};$('inBtn').onclick=()=>{if(IN.on)exitInterior();else enterInterior();};
 $('updBtn').onclick=()=>{if(window.__applyUpdate)window.__applyUpdate();};
+$('kodIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('kodBtn').click();}});
 $('garageM').addEventListener('click',e=>{
   if(e.target===$('garageM')){toggleGarage(false);return;}
   const b=e.target.closest('button[data-a]');if(!b)return;const a=b.dataset.a;
   if(a==='eq'){const i=+b.dataset.s;if(save.owned.includes(i)){save.tier=i;applyLoadout(!running);}}
   else if(a==='buy'){const i=+b.dataset.s,s=SUBS[i];if(!s||save.owned.includes(i))return;if(save.gold<s.price){toast(T.needGold);return;}save.gold-=s.price;save.owned.push(i);save.tier=i;applyLoadout(!running);toast(T.boughtSub);sfx.shield();}
+  else if(a==='nuke'){if(nukeSave.inf||nukeSave.n>=NUKE_MAX)return;if(save.gold<NUKE_COST){toast(T.needGold);return;}save.gold-=NUKE_COST;nukeSave.n++;persistNuke();toast('☢ '+tl('Nükleer torpido satın alındı','Nuclear torpedo purchased'));sfx.shield();renderWpn();}
+  else if(a==='code'){const c=$('kodIn').value.trim().toUpperCase();$('kodIn').value='';
+    if(c==='KEJDERYA'){if(nukeSave.inf)toast('☢ '+tl('Kod zaten etkin','Code already active'));else{nukeSave.inf=true;persistNuke();toast('☢ '+tl('KEJDERYA: sınırsız nükleer torpido açıldı!','KEJDERYA: unlimited nuclear torpedoes unlocked!'));sfx.disc();renderWpn();}}
+    else if(c)toast(tl('Geçersiz kod','Invalid code'));}
   else if(a==='mod'||a==='skin'||a==='trail')garage4Click(a,b);
   else if(a==='up'){const k=b.dataset.k,l=save.up[k];if(l===undefined||l>=UPG_MAX)return;const c=upCost(k,l);if(save.gold<c){toast(T.needGold);return;}save.gold-=c;save.up[k]=l+1;applyLoadout(!running);toast(T.boughtUp);sfx.repair();}
   persist();renderGarage();renderQuests();

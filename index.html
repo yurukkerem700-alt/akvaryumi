@@ -439,7 +439,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.14-2',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.14-3',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -2234,6 +2234,7 @@ const sfx={slash(v=1){noise(.28,6500,900,.3*v);tone(1100,220,.22,'sawtooth',.16*
   hurt(v=1){tone(120,45,.35,'sawtooth',.4*v);noise(.4,1800,200,.35*v);},zap(v=1){tone(1900,300,.5,'sawtooth',.16*v);noise(.5,6000,900,.22*v);tone(90,60,.7,'square',.12*v);},bite(v=1){tone(220,70,.25,'square',.3*v);noise(.25,3000,400,.3*v);},emp(v=1){tone(300,1600,.5,'sine',.3*v);tone(1600,80,.9,'triangle',.25*v,.4);},mine(){tone(700,700,.06,'square',.06);},squish(v=1){tone(180,60,.3,'sine',.3*v);noise(.3,900,200,.25*v);},crash(v=1){noise(1.4,700,80,.5*v);tone(60,30,1,'sine',.4*v);},swv(v=1){tone(70,22,1.3,'sine',.7*v);noise(1.1,1800,90,.55*v);tone(220,1000,.35,'sawtooth',.14*v,.05);},
   splash(v=1){noise(.7,3200,500,.4*v);tone(220,90,.3,'sine',.2*v);},
   nukeLaunch(){tone(60,28,1.4,'sine',.6);noise(1.6,1800,120,.35);tone(140,50,1.1,'sawtooth',.08);},
+  geiger(v=1){noise(.012,7000,2600,.22*v);},
   nukeFlash(v=1){tone(2400,2200,.5,'sine',.05*v);noise(.18,9000,2000,.4*v);},
   nuke(v=1){tone(46,16,6.5,'sine',.95*v);tone(31,12,7,'sine',.7*v);tone(88,30,3.2,'sawtooth',.22*v);noise(6,800,36,.85*v);noise(1.4,4200,220,.42*v,.05);tone(3300,3100,3.4,'sine',.035*v,.25);},
   shield(){tone(400,900,.4,'sine',.25);tone(600,1200,.5,'triangle',.15,.15);},shieldHit(){tone(900,300,.15,'triangle',.2);},repair(){[500,650,800].forEach((f,i)=>tone(f,f*1.05,.25,'square',.06,i*.2));}};
@@ -3304,7 +3305,8 @@ const nukeSave=(()=>{const o={n:0,inf:false};try{const j=JSON.parse(store.get('a
 const persistNuke=()=>store.set('aqua-nuke',JSON.stringify(nukeSave));
 const nukeOwned=()=>nukeSave.inf||nukeSave.n>0;
 const nukeTxt=()=>nukeSave.inf?'∞':String(nukeSave.n);
-let nukeCd=0,deafT=0;
+let nukeCd=0,deafT=0,geigerAcc=0,inRad=false,nkLi=0;
+const nukeLights=[0,1].map(()=>{const l=new THREE.PointLight(0xffd8a0,0,420,1.2);if(!isTouch)scene.add(l);return l;});
 const nukeZones=[],nukeDone=new Set(),NK_ASH=new THREE.Color(0x4a443c);
 const nkBody=new THREE.MeshStandardMaterial({color:0x2d3329,roughness:.42,metalness:.7}),nkDark=new THREE.MeshStandardMaterial({color:0x12151a,roughness:.5,metalness:.6}),
   nkBand=new THREE.MeshStandardMaterial({color:0xe8c010,roughness:.5,metalness:.3}),nkRed=new THREE.MeshBasicMaterial({color:0xff2a1a});
@@ -3382,11 +3384,24 @@ function nukeFelt(Z,d,mine){
   if(d<R*.95)showCockpitCrack(1-d/(R*.95));
   const p=sub.position,dx=p.x-Z.x,dz=p.z-Z.z,l=Math.hypot(dx,dz)||1;const pk=mine&&!dead&&!tutOn?.35:1;subVel.x+=dx/l*40*f*pk;subVel.z+=dz/l*40*f*pk;subVel.y+=rr(-6,6)*f*pk;
   if(mine&&!dead&&!tutOn){ /* otomatik kalkan: kendi başlığımızın şok dalgasına karşı gövde sertleştirilmiş kalkanla sarılır */
-    shieldT=Math.max(shieldT,3.5);shieldHp=Math.max(shieldHp,HULL_MAX*2);shieldFlash=.5;sfx.shield();toast('🛡 '+tl('Otomatik nükleer kalkan devrede','Automatic nuclear shield engaged'));}
+    shieldT=Math.max(shieldT,4.6);shieldHp=Math.max(shieldHp,HULL_MAX*3);shieldFlash=.5;sfx.shield();toast('🛡 '+tl('Otomatik nükleer kalkan devrede','Automatic nuclear shield engaged'));}
+  Z.pulses=[{at:Z.age+1.1,k:.45},{at:Z.age+2.2,k:.2}]; /* su altı patlamasında gaz kabarcığı salınır: ana şoktan sonra daha zayıf basınç darbeleri gelir */
+  if(!mine&&!dead&&!tutOn&&!CREW.pilot){ /* şok elektroniği vurur: batarya boşalır, sonar bir süre kör, mürettebat sendeler */
+    battery=Math.max(0,battery-45*f);sonarCd=Math.max(sonarCd,7*f);if(shieldT<=0)stunT=Math.max(stunT,2.4*f);}
+  nukeHit(Z,d,mine,dx,dz,l,1);
+}
+function nukeDmg(d,R){return d<R*.38?HULL_MAX*1.6:d<R*.95?HULL_MAX*.95*Math.pow(1-(d-R*.38)/(R*.57),1.5):0;}
+function nukeHit(Z,d,mine,dx,dz,l,k){
   if(!dead&&!tutOn&&!CREW.pilot&&(mine||pvpOK(Z.by))){
-    let dmg=0;if(d<R*.38)dmg=HULL_MAX*1.6;else if(d<R*.95)dmg=HULL_MAX*.95*Math.pow(1-(d-R*.38)/(R*.57),1.5);
+    const dmg=nukeDmg(d,Z.R)*k;
     if(dmg>1)hurt(dmg,Z.by,false,_bd.set(dx/l,.1,dz/l).multiplyScalar(12));
   }
+}
+function nukePulse(Z,k){
+  const p=dead?camera.position:sub.position,dx=p.x-Z.x,dz=p.z-Z.z,d=Math.hypot(dx,dz),l=d||1,f=clamp(1-d/(Z.R*2.4),0,1)*k;if(f<.015)return;
+  shake=Math.max(shake,.5+1.1*f);gpRumble(.6*k+.2,.6*k+.2,400);sfx.nuke(clamp(.12+f*.9,.1,.6));
+  const pk=Z.mine&&!dead&&!tutOn?.35:1;subVel.x+=dx/l*18*f*pk;subVel.z+=dz/l*18*f*pk;
+  nukeHit(Z,d,Z.mine,dx,dz,l,k);
 }
 function runNuke(tid,x,y,z,by){
   if(nukeDone.has(tid))return;nukeDone.add(tid);if(nukeDone.size>60)nukeDone.delete(nukeDone.values().next().value);
@@ -3410,7 +3425,7 @@ function runNuke(tid,x,y,z,by){
   const core=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xfff2d0,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,fog:false}));core.position.copy(pos);core.scale.setScalar(1);core.renderOrder=10;scene.add(core);
   const dome=new THREE.Mesh(gasGeo,new THREE.MeshBasicMaterial({color:0xffd890,transparent:true,opacity:.9,depthWrite:false,side:THREE.DoubleSide,fog:false}));dome.position.copy(pos);dome.scale.setScalar(1);dome.renderOrder=8;scene.add(dome);
   const shock=new THREE.Mesh(sonarGeo,shockMat.clone());shock.position.copy(pos);shock.renderOrder=9;scene.add(shock);
-  Z.core=core;Z.dome=dome;Z.shock=shock;Z.L=flashLights[flashIdx++%2];Z.L.position.copy(pos);
+  Z.core=core;Z.dome=dome;Z.shock=shock;Z.L=nukeLights[nkLi++%2];Z.L.position.copy(pos);
   nukeZones.push(Z);
   for(let i=0;i<260;i++){_v.set(rr(-1,1),rr(-.4,1),rr(-1,1)).normalize().multiplyScalar(rr(4,26));spawnBubble(x+rr(-8,8),y+rr(-4,4),z+rr(-8,8),.08+Math.random()*.5,_v.x,_v.y+rr(2,8),_v.z);}
   bioBurst(pos,120,12);
@@ -3442,11 +3457,12 @@ function updateNukes(dt,wt){
       if(n)FLOORG.attributes.color.needsUpdate=true;}
     /* --- oyuncuya ulaşma --- */
     if(!Z.felt){const rp=dead?camera.position:sub.position,d=hzD(rp.x,rp.z,Z.x,Z.z);if(Z.front>=d||Z.front>=R*1.25){Z.felt=true;nukeFelt(Z,d,Z.mine);}}
+    if(Z.pulses)while(Z.pulses.length&&a>=Z.pulses[0].at)nukePulse(Z,Z.pulses.shift().k);
     /* --- görseller --- */
     Z.core.scale.setScalar(a<.15?a/.15*R*.35:R*.35+a*R*.05);Z.core.material.opacity=a<.15?1:Math.max(0,1-(a-.15)/2.6);Z.core.material.color.setRGB(1,clamp(.95-a*.18,.35,.95),clamp(.8-a*.3,.1,.8));
     const dr=R*.55*sm(0,3.6,a);Z.dome.scale.set(dr,dr*.75,dr);Z.dome.material.opacity=.92*(1-sm(1.6,5.4,a));Z.dome.material.color.setRGB(clamp(1.05-a*.16,.32,1),clamp(.86-a*.2,.12,.86),clamp(.55-a*.14,.05,.55));
     Z.shock.scale.setScalar(Math.max(1,Z.front));Z.shock.material.uniforms.uA.value=Math.max(0,1-a/5.2)*1.5;
-    Z.L.intensity=9000*Math.exp(-a*2.6);Z.L.position.copy(pos);
+    if(a<6){Z.L.intensity=9000*Math.exp(-a*2.6);Z.L.position.copy(pos);}
     /* mantar bulutu: gövde yükselir, başlık yüzeye yakın yayılır, zeminde toz halkası */
     if(a<5.2){
       const fy=floorQ(Z.x,Z.z);
@@ -3454,7 +3470,7 @@ function updateNukes(dt,wt){
       if(a>2.4&&(Z.cap=(Z.cap||0))<26&&Z.cap<(a-2.4)*9){Z.cap++;const ang=Math.random()*6.283,rc=R*.55*rr(.35,1)*sm(2.4,5,a);addPuff(Z.x+Math.cos(ang)*rc,SURF-rr(5,12),Z.z+Math.sin(ang)*rc,0x6b645b,Math.cos(ang)*4,rr(-.5,.5),Math.sin(ang)*4,50,150,.5,20);}
       if(a>.3&&Z.front<R*1.2&&(frameN&1)===0){const ang=Math.random()*6.283,rx=Z.x+Math.cos(ang)*Z.front,rz=Z.z+Math.sin(ang)*Z.front;if(hzD(rx,rz,camera.position.x,camera.position.z)<260)addPuff(rx,floorQ(rx,rz)+2,rz,0xb8a57c,Math.cos(ang)*5,rr(.5,2),Math.sin(ang)*5,10,32,.38,14);}
     }
-    if(a>6&&Z.core.parent){scene.remove(Z.core);Z.core.material.dispose();scene.remove(Z.dome);Z.dome.material.dispose();scene.remove(Z.shock);Z.shock.material.dispose();Z.L.intensity=0;}
+    if(a>6&&Z.core.parent){scene.remove(Z.core);Z.core.material.dispose();scene.remove(Z.dome);Z.dome.material.dispose();scene.remove(Z.shock);Z.shock.material.dispose();Z.L.intensity=0;Z.L=null;}
     /* --- dönüş: dıştan içe (4 dk sonra) --- */
     if(a>NUKE_QUIET){
       const g=clamp((a-NUKE_QUIET)/NUKE_GROW,0,1),rg=R*(1-g);
@@ -3466,6 +3482,11 @@ function updateNukes(dt,wt){
       A.o.f.mesh.setMatrixAt(A.o.f.idx,_nkm);dirtyMeshes.add(A.o.f.mesh);if(k>=1)Z.act.splice(i,1);}
     if(a>NUKE_QUIET+NUKE_GROW+4&&!Z.act.length){if(Z.core.parent){scene.remove(Z.core);scene.remove(Z.dome);scene.remove(Z.shock);}nukeZones.splice(zi,1);}
   }
+  /* patlama bölgesi kirli ve radyoaktif: sayaç tıklar, girince ve çıkınca uyarı */
+  {const nz=nukeZones.length&&!dead?nukeZoneK(sub.position.x,sub.position.z):0;
+   if(nz>.12&&!inRad){inRad=true;toast('☢ '+tl('Kirlenmiş bölge — Geiger sayacı tıkırdıyor, görüş düşük; dışarı çık','Contaminated zone — Geiger counter ticking, visibility low; get out'));}
+   else if(nz<.04&&inRad){inRad=false;toast('☢ '+tl('Kirlenmiş bölgeden çıktın','You left the contaminated zone'));}
+   if(nz>.05){geigerAcc+=dt*(3+nz*45)*(.5+Math.random());if(geigerAcc>1){geigerAcc=0;sfx.geiger(.6+.4*nz);}}}
   if(deafT>0)deafT-=dt;
   if(nukeCd>0)nukeCd=Math.max(0,nukeCd-dt);
 }

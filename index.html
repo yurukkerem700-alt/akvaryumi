@@ -2153,10 +2153,10 @@ const garageOpen=()=>$('garageM').style.display==='grid';
 function toggleGarage(force){const m=$('garageM'),open=force??!garageOpen();m.style.display=open?'grid':'none';if(open){renderGarage();if(document.pointerLockElement)document.exitPointerLock();}}
 
 /* ================= Ses ================= */
-let ac=null,master=null,engG=null,engO=null,muted=store.get('aqua-mute')==='1';
+let ac=null,master=null,uwLP=null,engG=null,engO=null,muted=store.get('aqua-mute')==='1';
 function audioInit(){
   if(ac)return;try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch{return;}
-  master=ac.createGain();master.gain.value=muted?0:.55;master.connect(ac.destination);
+  master=ac.createGain();master.gain.value=muted?0:.55;uwLP=ac.createBiquadFilter();uwLP.type='lowpass';uwLP.frequency.value=9000;uwLP.Q.value=.4;master.connect(uwLP);uwLP.connect(ac.destination);
   const buf=ac.createBuffer(1,ac.sampleRate*3,ac.sampleRate),d=buf.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){l=(l+.02*(Math.random()*2-1))/1.02;d[i]=l*3.2;}
   const src=ac.createBufferSource();src.buffer=buf;src.loop=true;const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=420;const g=ac.createGain();g.gain.value=.5;src.connect(lp).connect(g).connect(master);src.start();
   engO=ac.createOscillator();engO.type='sawtooth';engO.frequency.value=48;const el=ac.createBiquadFilter();el.type='lowpass';el.frequency.value=180;engG=ac.createGain();engG.gain.value=0;engO.connect(el).connect(engG).connect(master);engO.start();
@@ -3703,6 +3703,7 @@ function registerKill(vid,k){
   let kn='?';
   if(k&&ETYPE[k])kn=ETYPE[k][lang];
   else if(k==='haz')kn=tl('tehlikeli sular','hazardous waters');
+  else if(k==='rock')kn=tl('kayalar','the rocks');
   else if(k===net.myId)kn=me.name;
   else if(k&&players.has(k))kn=players.get(k).name;
   if(k&&k!==vid&&(k===net.myId||players.has(k)))kills.set(k,(kills.get(k)||0)+1);
@@ -4301,7 +4302,15 @@ if(isTouch){
 /* ================= Güncelleme ================= */
 const _tmp=new THREE.Vector3(),_fwd=new THREE.Vector3();
 const syncTog=()=>document.querySelectorAll('#touch .tvb button').forEach(b=>b.classList.toggle('on',!!vk[b.dataset.t]));
-let surfQT=0;
+/* Akıntı: konum ve zamana göre yavaşça değişen büyük ölçekli su hareketi (m/s); denizaltıyı, kesilmiş bitkileri ve duman bulutlarını sürükler */
+const CUR={x:0,z:0};
+function curAt(x,z,t,o){o=o||CUR;o.x=.55*Math.sin(t*.021+x*.0042+z*.0031)+.2*Math.sin(t*.057-z*.011);o.z=.55*Math.cos(t*.017-x*.0033+z*.0047)+.2*Math.cos(t*.049+x*.009);return o;}
+let ballast=0,yawVel=0,bumpCd=0,creakCd=3;
+/* sert çarpma: hıza orantılı gövde hasarı, gürültü ve sarsıntı (düşük hızda sürtünme zarar vermez) */
+function hullBump(sp,c){
+  if(bumpCd>0)return;bumpCd=.7;const d=clamp((sp-5.5)*1.7,0,16);NOISE.v=Math.max(NOISE.v,24);shake=Math.max(shake,clamp(sp/22,.15,.8));
+  sfx.crash(clamp(sp/30,.15,.6));if(d>1&&!tutOn)hurt(d,'rock',false,null);
+}
 function updateSub(dt){
   if(dead)return {boost:false,spd:0};
   if(CREW.pilot)return crewFollow(dt);
@@ -4313,15 +4322,24 @@ function updateSub(dt){
   /* dümen etkisi hızla artar: durağan denizaltı olduğu yerde fırıl fırıl dönemez */
   camYaw-=turnIn*1.7*dt*(.45+.55*clamp(Math.hypot(subVel.x,subVel.z)/6,0,1));
   const prevYaw=subYaw;
-  if(Math.abs(fwdIn)>.05||Math.abs(turnIn)>.05)subYaw=angLerp(subYaw,camYaw,1-Math.exp(-(Math.abs(fwdIn)>.05?2.6:4)*dt));
+  /* dönüşte açısal atalet: gövde nişan yönüne kritik sönümlü yayla yaklaşır; ağır denizaltı geç döner ve dönüşü geç keser */
+  {const wn=(Math.abs(fwdIn)>.05||Math.abs(turnIn)>.05?(Math.abs(fwdIn)>.05?2.6:4):2.2)/Math.sqrt(subSc),e=((camYaw-subYaw+Math.PI*3)%(Math.PI*2))-Math.PI;
+   yawVel+=(e*wn*wn-2*wn*yawVel)*dt;yawVel=clamp(yawVel,-3.2,3.2);subYaw+=yawVel*dt;}
   _fwd.set(Math.sin(subYaw),0,Math.cos(subYaw));
   const sk=spdK()*1.25*(frenzyT>0?1.3:1)*(coffeeT>0?1.1:1),acc=(boost?38:19)*spdMul*sk;
   const air=sub.position.y>SURF+.35,wing=WINGED.has(MS.eq?2:tierNow());
   /* havada pervane boşta döner: kanatsız denizaltılar süzülemez, yalnızca kanatlılar hızını koruyarak yavaş alçalır */
-  subVel.addScaledVector(_fwd,fwdIn*acc*dt*(air&&!wing?.1:1));subVel.y+=air?0:upIn*(boost?16:10)*spdMul*dt;
+  /* safra: tanklar dolup boşalana kadar dikey itki gecikir (büyük denizaltıda daha yavaş) */
+  ballast+=(upIn-ballast)*(1-Math.exp(-dt*2.6/Math.sqrt(subSc)));
+  subVel.addScaledVector(_fwd,fwdIn*acc*dt*(air&&!wing?.1:1));subVel.y+=air?0:ballast*(boost?16:10)*spdMul*dt;
+  { /* akıntı denizaltıyı hafifçe sürükler */
+    const cw=curAt(sub.position.x,sub.position.z,worldTime());if(!air){subVel.x+=cw.x*.7*dt;subVel.z+=cw.z*.7*dt;}}
   if(netPullT>0){netPullT-=dt;const o=posOf(netPullBy);if(o){_tmp.subVectors(o,sub.position);const dd=_tmp.length();if(dd>6)subVel.addScaledVector(_tmp.divideScalar(dd),26*dt);}}
-  if(air&&wing){const k=Math.exp(-.35*dt);subVel.x*=k;subVel.z*=k;subVel.y*=Math.exp(-.4*dt);}else subVel.multiplyScalar(Math.exp(-1.45*dt));
-  const hs=Math.hypot(subVel.x,subVel.z),mx=(boost?28:13)*spdMul*sk;NOISE.base=Math.min(14,hs*.8+(boost?4:0));if(hs>mx){subVel.x*=mx/hs;subVel.z*=mx/hs;}
+  const mx=(boost?28:13)*spdMul*sk;
+  /* sürükleme ~ v²: sabit itkide hız kendiliğinden azami hıza oturur; düşük hızda su direnci az olduğu için denizaltı sürüklenerek ilerler */
+  if(air&&wing){const k=Math.exp(-.35*dt);subVel.x*=k;subVel.z*=k;subVel.y*=Math.exp(-.4*dt);}
+  else{const sp3=subVel.length(),k0=acc/Math.max(mx,1);subVel.multiplyScalar(Math.exp(-k0*(.4+.6*sp3/Math.max(mx,1))*dt));}
+  const hs=Math.hypot(subVel.x,subVel.z);NOISE.base=Math.min(14,hs*.8+(boost?4:0));if(hs>mx*1.2){subVel.x*=mx*1.2/hs;subVel.z*=mx*1.2/hs;}
   subVel.y=clamp(subVel.y,-11,11);
   // yüzeyde dümen kırmadan sabit dur: yüzdürme yayı (Q/E ya da ▲/▼ ile bırakır)
   if(sub.position.y>SURF-1.4&&sub.position.y<SURF+.35&&Math.abs(upIn)<.05){subVel.y+=(SURF-.15+Math.sin(worldTime()*1.3)*.07-sub.position.y)*14*dt;subVel.y*=Math.exp(-4*dt);}
@@ -4338,11 +4356,12 @@ function updateSub(dt){
   if(afl&&!wasAfl){const nw=performance.now();if(nw-surfT>25000){surfT=nw;toast(T.surfaced);}if(nw-surfQT>6000){surfQT=nw;qEvent('surf','');}}
   wasAfl=afl;
   if(vk.up&&p.y>SURF-.4){vk.up=0;syncTog();}
-  const fh=floorQ(p.x,p.z)+1.7*subSc;if(p.y<fh){p.y=fh;subVel.y=Math.max(0,subVel.y);}
+  bumpCd=Math.max(0,bumpCd-dt);
+  const fh=floorQ(p.x,p.z)+1.7*subSc;if(p.y<fh){if(subVel.y<-6.5)hullBump(-subVel.y,null);p.y=fh;subVel.y=Math.max(0,subVel.y);}
   if(vk.down&&p.y<=fh+.3){vk.down=0;syncTog();}
-  for(const c of colsAt(p.x,p.z)){const dx=p.x-c.x,dy=p.y-c.y,dz=p.z-c.z,d2=dx*dx+dy*dy+dz*dz,rs=c.r+rad;if(d2<rs*rs&&d2>1e-4){const d=Math.sqrt(d2),push=(rs-d)/d;p.x+=dx*push;p.y+=dy*push;p.z+=dz*push;const vn=(subVel.x*dx+subVel.y*dy+subVel.z*dz)/d;if(vn<0){subVel.x-=vn*dx/d;subVel.y-=vn*dy/d;subVel.z-=vn*dz/d;}}}
+  for(const c of colsAt(p.x,p.z)){const dx=p.x-c.x,dy=p.y-c.y,dz=p.z-c.z,d2=dx*dx+dy*dy+dz*dz,rs=c.r+rad;if(d2<rs*rs&&d2>1e-4){const d=Math.sqrt(d2),push=(rs-d)/d;p.x+=dx*push;p.y+=dy*push;p.z+=dz*push;const vn=(subVel.x*dx+subVel.y*dy+subVel.z*dz)/d;if(vn<-5.5)hullBump(-vn,c);if(vn<0){subVel.x-=vn*dx/d;subVel.y-=vn*dy/d;subVel.z-=vn*dz/d;}}}
   for(const o of players.values()){if(o.cr||o.dead)continue;const q=o.sub.g.position,dx=p.x-q.x,dy=p.y-q.y,dz=p.z-q.z,d2=dx*dx+dy*dy+dz*dz;if(d2<16&&d2>1e-4){const d=Math.sqrt(d2),push=(4-d)/d*.5;p.x+=dx*push;p.y+=dy*push;p.z+=dz*push;}}
-  if(boost)battery=Math.max(0,battery-9*dt*drainMul*(MS.mode==='race'?.35:1));else battery=Math.min(100,battery+3.5*dt*regenMul*(genT>0?3:1));
+  if(boost)battery=Math.max(0,battery-9*dt*drainMul*(.3+.7*Math.min(1.1,(hs/mx)**2))*(MS.mode==='race'?.35:1));else battery=Math.min(100,battery+3.5*dt*regenMul*(genT>0?3:1));
   const yawRate=((subYaw-prevYaw+Math.PI*3)%(Math.PI*2)-Math.PI)/Math.max(dt,1e-4);
   subRoll+=(clamp(-yawRate*.35,-.5,.5)-subRoll)*(1-Math.exp(-4*dt));
   subPitch+=(clamp(-subVel.y*.045,-.4,.4)-subPitch)*(1-Math.exp(-4*dt));
@@ -4356,6 +4375,12 @@ function updateSub(dt){
   local.beam.visible=lightOn&&!fp&&!IN.on;spot.visible=lightOn;
   if(spd>2&&Math.random()<spd*dt*2.2){_tmp.set(rr(-.3,.3),rr(-.3,.3),-3.2*subSc).applyQuaternion(sub.quaternion).add(p);spawnBubble(_tmp.x,_tmp.y,_tmp.z,.06+Math.random()*.1);}
   if(engG){engG.gain.value=muted?0:clamp(spd/20,0,1)*.25;engO.frequency.value=40+spd*3;}
+  if(uwLP&&(frameN&7)===0){ /* suyun altında yüksek frekanslar emilir: derinleştikçe ve dışarıdan dinlerken sesler boğuklaşır */
+    const dep=Math.max(0,SURF-sub.position.y),fq=sub.position.y>SURF-.5?16000:IN.on?3600:Math.max(2300,9500*Math.exp(-dep/48));
+    uwLP.frequency.setTargetAtTime(fq,ac.currentTime,.25);}
+  /* gövde gıcırtısı: derinde ve sert dümende basınç altındaki çelik inler */
+  creakCd-=dt;if(creakCd<=0&&ac&&!muted&&sub.position.y<SURF-14){creakCd=rr(5,11);const dep=SURF-sub.position.y,pr=clamp((dep-14)/50+Math.abs(yawVel)*.25,0,1);
+    if(Math.random()<pr*.9){const f=rr(70,140);tone(f,f*rr(.7,.9),rr(.9,1.6),'sawtooth',.03*pr+.01);tone(f*1.51,f*1.3,rr(.7,1.2),'triangle',.012*pr);}}
   return {boost,spd};
 }
 function updateRemotes(dt,now){

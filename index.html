@@ -439,7 +439,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.14-4',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.14-5',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -3527,7 +3527,7 @@ const fragCache={},fragMats={},EG={};
 function fragPieces(sp){
   if(fragCache[sp])return fragCache[sp];
   const g=specMesh[sp]?specMesh[sp].geometry:EG[sp],P=g.attributes.position,N=g.attributes.normal,C=g.attributes.color,nt=P.count/3;
-  const K=sp==='whaleshark'||sp==='narwhal'||sp==='manta'?13:sp==='oarfish'?10:sp==='shark'?14:sp==='squid'?12:sp==='eel'?10:sp==='swarm'?9:sp==='turtle'||sp==='ray'?12:sp==='jelly'?9:sp==='seahorse'?6:8;
+  const K=sp==='whaleshark'||sp==='narwhal'||sp==='manta'?13:sp==='oarfish'?10:sp==='shark'?14:sp==='squid'||sp==='kraken'?12:sp==='eel'?10:sp==='swarm'?9:sp==='turtle'||sp==='ray'?12:sp==='jelly'?9:sp==='seahorse'?6:8;
   const cen=new Float32Array(nt*3);
   for(let t=0;t<nt;t++)for(let a=0;a<3;a++)cen[t*3+a]=(P.array[t*9+a]+P.array[t*9+3+a]+P.array[t*9+6+a])/3;
   const seeds=[0],md=new Float32Array(nt).fill(1e9);
@@ -3750,6 +3750,28 @@ const EGEO={
       a.push(colorize(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([0,1,2,3,4].map(pt)),16,.045,6,false),'#e88a94'),P(new THREE.SphereGeometry(.13,8,6),'#c24a58',pt(4).toArray()));}
     return merge(a);
   },
+  kraken:()=>{ /* devasa kalamar (Architeuthis): uzun manto, kuyruk yüzgeçleri, dev gözler, 8 kol ve 2 uzun yakalama dokunacı; kollarda emiciler */
+    const a=[],rnd=mulberry32(4242),taper=(pts,r0,r1,hex)=>{for(let i=1;i<pts.length;i++){const t=(i-.5)/(pts.length-1);a.push(segGeo(pts[i-1],pts[i],r0+(r1-r0)*t,hex,7));}},sph=(r,hex,p,sc)=>P(new THREE.SphereGeometry(r,10,8),hex,p,[0,0,0],sc||[1,1,1]);
+    a.push(P(new THREE.SphereGeometry(1,24,16),'#8c2f3d',[0,.04,-1.0],[0,0,0],[.52,.5,1.75]),P(new THREE.SphereGeometry(1,20,12),'#e0b0a8',[0,-.14,-.95],[0,0,0],[.44,.34,1.65]),
+      P(new THREE.SphereGeometry(1,18,12),'#a03a48',[0,0,.95],[0,0,0],[.46,.44,.55]),
+      P(new THREE.SphereGeometry(1,14,8),'#7a2735',[.62,.02,-2.15],[0,.25,0],[.85,.06,.8]),P(new THREE.SphereGeometry(1,14,8),'#7a2735',[-.62,.02,-2.15],[0,-.25,0],[.85,.06,.8]),
+      P(new THREE.ConeGeometry(.12,.4,8),'#8c2f3d',[0,-.36,.8],[-Math.PI/2,0,0]),P(new THREE.ConeGeometry(.1,.3,6),'#1a1210',[0,-.06,1.5],[Math.PI/2,0,0]));
+    for(const sg of [-1,1])a.push(sph(.2,'#efe6c8',[sg*.44,.1,1.02]),sph(.11,'#05080c',[sg*.55,.12,1.1]),sph(.05,'#9ab0b8',[sg*.58,.15,1.14]));
+    for(let i=0;i<46;i++){const t=rnd()*2-1,ph=.15+rnd()*(Math.PI-.3),sc2=Math.sqrt(Math.max(0,1-t*t));a.push(sph(.05+rnd()*.05,rnd()<.5?'#c24a58':'#5e1c2a',[Math.cos(ph)*.52*sc2,.04+Math.sin(ph)*.5*sc2,-1+t*1.75],[1,.5,1]));}
+    for(let i=0;i<8;i++){
+      const ang=i/8*Math.PI*2+Math.PI/8,len=2.3+(i%2)*.35+rnd()*.3,pts=[],ca=Math.cos(ang),sa=Math.sin(ang);
+      for(let k=0;k<=9;k++){const u=k/9;pts.push([ca*(.26+.6*Math.sin(u*Math.PI*.75)),sa*(.26+.6*Math.sin(u*Math.PI*.75))-u*u*.35+Math.sin(u*5+i)*.07*u,1.45+u*len]);}
+      taper(pts,.11,.015,i%2?'#a03a48':'#8c2f3d');
+      for(let k=2;k<=9;k++)for(const sg of [-1,1]){const q=pts[k],r1=.11-.095*(k/9)*.9;a.push(sph(Math.max(.014,r1*.45),'#f0d8d0',[q[0]-ca*r1*.55+sg*sa*r1*.4,q[1]-sa*r1*.55-sg*ca*r1*.4,q[2]],[1,1,.7]));}
+    }
+    for(const sg of [-1,1]){
+      const pts=[];for(let k=0;k<=12;k++){const u=k/12;pts.push([sg*(.14+.45*Math.sin(u*Math.PI*.9)),.05+Math.cos(u*4+sg)*.1*u-u*u*.3,1.4+u*4.6]);}
+      taper(pts,.05,.022,'#c26a74');
+      const e=pts[12];a.push(sph(.16,'#a03a48',[e[0],e[1],e[2]+.05],[.8,.55,2.2]));
+      for(let k=0;k<12;k++)a.push(sph(.03,'#f6e4dc',[e[0]+(k%2?.07:-.07),e[1]-.07,e[2]-.25+k*.07],[1,1,.8]));
+    }
+    return merge(a);
+  },
   swarm:()=>{
     const rnd=mulberry32(99),a=[];
     for(let i=0;i<9;i++){
@@ -3762,6 +3784,7 @@ const EGEO={
 ANIM.shark='float sw=smoothstep(.2,-1.8,position.z);transformed.x+=sin(uT*3.8+ph+position.z*1.8)*.2*sw;';
 ANIM.eel='float kk=smoothstep(2.6,-3.3,position.z);transformed.x+=sin(uT*4.+ph-position.z*1.6)*.5*kk;transformed.y+=cos(uT*3.1+ph-position.z*1.2)*.12*kk;';
 ANIM.squid='float tn=smoothstep(.6,3.6,position.z);transformed.x+=sin(uT*3.+ph+position.z*3.)*.22*tn;transformed.y+=cos(uT*2.6+ph+position.z*2.5)*.22*tn;float mp=sin(uT*2.2+ph)*.05*smoothstep(.2,-1.5,position.z);transformed.xy*=1.+mp;';
+ANIM.kraken='float tn=smoothstep(.9,5.6,position.z);transformed.x+=sin(uT*1.5+ph+position.z*2.2)*.3*tn;transformed.y+=cos(uT*1.25+ph+position.z*1.8)*.22*tn;float mp=sin(uT*1.1+ph)*.045*smoothstep(.4,-1.8,position.z);transformed.xy*=1.+mp;';
 ANIM.swarm='transformed.x+=sin(uT*10.+position.x*3.+position.y*4.)*.05;transformed.y+=cos(uT*9.+position.z*3.)*.05;';
 const enemies=[];
 {
@@ -3886,7 +3909,7 @@ function updateEnemiesAI(dt){
       let tt=null,td=1e9;for(const a of tg){let d=Math.hypot(a.pos.x-e.x,a.pos.y-e.y,a.pos.z-e.z);if(a.sl>1&&d>14)d*=a.sl;if(d<td){td=d;tt=a;}}
       AI[e.type](e,tt,td,dt,tg);
     }
-    e.x=clamp(e.x,-HX+8,HX-8);e.z=clamp(e.z,-HZ+8,HZ-8);e.y=clamp(e.y,floorQ(e.x,e.z)+(e.cfg.boss?e.r*.55:2.5),SURF-(e.cfg.boss?e.r*.5:4));
+    {const mg=e.cfg.boss&&e.r>15?e.r*1.3:8;e.x=clamp(e.x,-HX+mg,HX-mg);e.z=clamp(e.z,-HZ+mg,HZ-mg);}e.y=clamp(e.y,floorQ(e.x,e.z)+(e.cfg.boss?e.r*.55:2.5),SURF-(e.cfg.boss?e.r*.5:4));
     for(const c of colsAt(e.x,e.z)){const dx=e.x-c.x,dy=e.y-c.y,dz=e.z-c.z,d2=dx*dx+dy*dy+dz*dz,rs=c.r+e.r*.5;if(d2<rs*rs&&d2>1e-4){const d=Math.sqrt(d2),k=(rs-d)/d;e.x+=dx*k;e.y+=dy*k;e.z+=dz*k;}}
   }
 }
@@ -6052,13 +6075,13 @@ const pvpQuest=()=>net.mode!=='solo'&&(MODES[MS.mode].pvp!=='none');
 
 /* ---- Ek düşman yuvaları: bosslar, boss yardakçıları, olay ve dalga düşmanları (hepsi baştan aynı sırayla kurulur) ---- */
 Object.assign(ETYPE,{
-  kraken:{tr:'Kraken',en:'Kraken',hp:60,sc:5.2,r:9,aggro:95,leash:150,col:'#ff4a8a',boss:1,base:'squid',tint:0xc0607a,em:0x300818,gold:1500,atk:['slam','barrage','summon']},
-  magma:{tr:'Magma Yılanı',en:'Magma Serpent',hp:50,sc:3.6,r:7.5,aggro:90,leash:150,col:'#ff7a2a',boss:1,base:'eel',tint:0xff8a50,em:0x6a1800,gold:1300,fire:1,atk:['charge','barrage','slam']},
-  frost:{tr:'Buz Leviathanı',en:'Frost Leviathan',hp:55,sc:4,r:8,aggro:95,leash:150,col:'#9fe8ff',boss:1,base:'shark',tint:0xd8f4ff,em:0x10405a,gold:1400,atk:['charge','freeze','slam']},
-  crystal:{tr:'Kristal Muhafız',en:'Crystal Warden',hp:55,sc:4.2,r:8,aggro:95,leash:150,col:'#c08aff',boss:1,base:'shark',tint:0xc890ff,em:0x3a1060,gold:1400,atk:['charge','summon','barrage','slam']},
-  leviathan:{tr:'Leviatan',en:'Leviathan',hp:70,sc:5.6,r:10,aggro:100,leash:150,col:'#3aa0ff',boss:1,legend:1,base:'eel',tint:0x2a6ab0,em:0x061a3a,gold:1800,atk:['charge','slam','barrage']},
-  megalodon:{tr:'Megalodon',en:'Megalodon',hp:65,sc:6.2,r:11,aggro:100,leash:150,col:'#b8c4cc',boss:1,legend:1,base:'shark',tint:0x8a96a0,em:0x14181c,gold:1700,atk:['charge','slam']},
-  lord:{tr:'Derinlerin Efendisi',en:'Lord of the Deep',hp:130,sc:7.5,r:12,aggro:120,leash:170,col:'#ff3a3a',boss:1,final:1,base:'squid',tint:0x6a3060,em:0x400020,gold:5000,atk:['slam','barrage','summon','freeze','charge']}
+  kraken:{tr:'Kraken',en:'Kraken',hp:160,sc:21,r:26,aggro:150,leash:240,col:'#ff4a8a',boss:1,base:'kraken',tint:0xffffff,em:0x1a0408,gold:3500,atk:['slam','barrage','summon']},
+  magma:{tr:'Magma Yılanı',en:'Magma Serpent',hp:110,sc:14,r:22,aggro:140,leash:230,col:'#ff7a2a',boss:1,base:'eel',tint:0xff8a50,em:0x6a1800,gold:2600,fire:1,atk:['charge','barrage','slam']},
+  frost:{tr:'Buz Leviathanı',en:'Frost Leviathan',hp:120,sc:17,r:24,aggro:145,leash:235,col:'#9fe8ff',boss:1,base:'shark',tint:0xd8f4ff,em:0x10405a,gold:2800,atk:['charge','freeze','slam']},
+  crystal:{tr:'Kristal Muhafız',en:'Crystal Warden',hp:120,sc:17,r:24,aggro:145,leash:235,col:'#c08aff',boss:1,base:'shark',tint:0xc890ff,em:0x3a1060,gold:2800,atk:['charge','summon','barrage','slam']},
+  leviathan:{tr:'Leviatan',en:'Leviathan',hp:140,sc:17,r:26,aggro:150,leash:240,col:'#3aa0ff',boss:1,legend:1,base:'eel',tint:0x2a6ab0,em:0x061a3a,gold:3600,atk:['charge','slam','barrage']},
+  megalodon:{tr:'Megalodon',en:'Megalodon',hp:140,sc:23,r:30,aggro:150,leash:240,col:'#b8c4cc',boss:1,legend:1,base:'shark',tint:0x8a96a0,em:0x14181c,gold:3400,atk:['charge','slam']},
+  lord:{tr:'Derinlerin Efendisi',en:'Lord of the Deep',hp:300,sc:26,r:32,aggro:180,leash:270,col:'#ff3a3a',boss:1,final:1,base:'kraken',tint:0x6a3060,em:0x400020,gold:9000,atk:['slam','barrage','summon','freeze','charge']}
 });
 const BOSS_AT=Object.fromEntries(Object.entries({kraken:[-468,214],magma:[-372,-205],frost:[470,-215],crystal:[466,208],lord:[-70,238],leviathan:[90,-262],megalodon:[-250,40]}).map(([k,[x,z]])=>[k,[x*WS,z*WS]]));
 function addSlot(type,x,y,z,pool){
@@ -6147,7 +6170,7 @@ function bossDown(e,by){
 const relics=[],RELIC_KEY='aqua-relics';
 function relicGeo(base,r){
   const parts=[],bc='#d9d3bf',bd='#bdb59c',chain=(pts,rad,col,n=5)=>{for(let i=1;i<pts.length;i++)parts.push(segGeo(pts[i-1],pts[i],rad*(1-.5*i/pts.length),col,n));};
-  if(base==='squid'){
+  if(base==='squid'||base==='kraken'){
     const L=r*4.6;
     parts.push(segGeo([-L/2,0,0],[L/2,0,0],r*.06,bc,6));
     for(let i=0;i<24;i++){const t=i/23,x=-L/2+t*L*.85,w=r*.7*Math.pow(Math.sin(Math.PI*clamp(t*1.1+.04,0,1)),.8);for(const sg of [-1,1])parts.push(segGeo([x,0,0],[x+L*.035,0,sg*w],r*.025,i%2?bc:bd,4));}
@@ -6218,7 +6241,7 @@ function updateRelics(dt){
   }
 }
 (function loadRelics(){try{const a=JSON.parse(store.get(RELIC_KEY)||'[]');if(!Array.isArray(a))return;
-  for(const o of a.slice(-14)){if(!o||!ETYPE[o.t]||!['squid','eel','shark'].includes(o.b))continue;const r=clamp(num(o.r),4,16),x=clamp(num(o.x),-HX+20,HX-20),z=clamp(num(o.z),-HZ+20,HZ-20);relicMake(o.t,o.b,r,x,0,z,num(o.ry),true);}}catch{}})();
+  for(const o of a.slice(-14)){if(!o||!ETYPE[o.t]||!['squid','kraken','eel','shark'].includes(o.b))continue;const r=clamp(num(o.r),4,40),x=clamp(num(o.x),-HX+20,HX-20),z=clamp(num(o.z),-HZ+20,HZ-20);relicMake(o.t,o.b,r,x,0,z,num(o.ry),true);}}catch{}})();
 function wakeLord(){const e=bossOf('lord');if(!e||!e.dead||!BOSSES.every(b=>save.bosses.includes(b)))return;const [x,z]=BOSS_AT.lord;activateSlot(e,x,e.home.y,z);e.tmp=false;e.pool=null;bigBanner('💀 '+tl('DERİNLERİN EFENDİSİ UYANDI','THE LORD OF THE DEEP AWAKENS'),tl('Batık Şehir · haritadaki kafatasını izle','Sunken City · follow the skull on the map'));}
 function showEnding(){
   unlockLore(9,true);addGold(5000,true);

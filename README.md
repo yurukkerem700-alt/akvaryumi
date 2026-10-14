@@ -206,6 +206,7 @@ Ayrıntılı inceleme ve yol haritası: [`GERCEKCILIK.md`](GERCEKCILIK.md).
 - **Gerilim**: torpido giderken uğursuz sonar vuruşları (silahlanınca sıklaşır), kırmızı nabız, yaklaştıkça titreşim; diğer oyunculara "NÜKLEER TORPİDO YAKLAŞIYOR" uyarısı.
 - **Boss ve mağara**: bölgedeki boss (Derinlerin Efendisi hariç) ölür ve **devasa iskeleti dibe çöküp oyun boyunca kalır** (kaydedilir; kalamarda gladius+gaga+emici halkalar, yılanbalığında omurga+kaburga, köpekbalığında omurga+diş sıraları). Bölgedeki **mağaralar çöker**. İki yeni efsanevi boss: **Leviatan** ve **Megalodon**.
 - **Balina iskeletleri** artık torpido, top ve patlamalara tepki verir; kemik parçaları kopar, yeterince hasarda dağılır.
+- **Gerçek bosslar**: tüm bosslar normal türlerinin ~10 katı boyutta (Kraken ≈ 100 m'lik dev kalamar: 8 kol + 2 yakalama dokunacı, emiciler, dev gözler; Derinlerin Efendisi ondan da iri). Saldırı menzilleri ve dayanıklılıkları buna göre ölçeklendi.
 - **Tersane → SİLAHLAR**: 4500 🪙 (en fazla 3). **`KEJDERYA`** kodu (Tersane'de kod alanı) **sınırsız** nükleer torpido verir. Online'da patlama herkeste aynı gerçekleşir; oyuncular yalnızca dost ateşi açıksa zarar görür.
 
 ### Yeni sürüm yayınlarken

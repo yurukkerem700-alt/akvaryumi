@@ -51,6 +51,17 @@ Proje sahibinin kırmızı çizgisi: **biyomlar, canlılar, saldırılar, hareke
 ## 8. Biyomlar
 🔜 Her biyomun fiziksel mantığı: sıcak baca çevresinde kaynayan su titreşimi ve mineral bulutu, buzul kutbunda erimeden gelen tatlı su tabakası (ışık kırılması), karanlık uçurumda biyolüminesans ve avcı-av zinciri, batık şehirde yosun/midye kaplı yapı, mercan beyazlaşması gibi dinamik olaylar.
 
+## v5.7–v6.0 ile yapılanlar
+| Alan | Yapılan |
+|---|---|
+| Hareket | ✅ v² sürükleme, boost'ta hızla artan harcama, açısal atalet, safra gecikmesi, hıza orantılı çarpma hasarı, akıntı. |
+| Ses | ✅ Derinlik/iç-dış filtre, gövde gıcırtısı, patlama sonrası kulak çınlaması. |
+| Canlılar | ✅ Gece-gündüz, yem topu sıkışması, merak, türe özgü kaçış (kirpibalığı şişer, mürekkep). |
+| Bitkiler | ✅ Denizaltı geçerken yana eğilme; patlamada kopma/yatma. |
+| Biyom | ✅ Termoklin, plankton çiçeklenmesi, mercan beyazlaşması, mercan yumurtlaması. |
+| Silahlar | ✅ Basınç dalgası mesafeyle düşer; patlama balık ve bitkiyi etkiler; makineli top 360°; nükleer torpido (silahlanma mesafesi, dalga cephesi, 4 dk ölü bölge, dıştan içe yeniden doğuş). |
+| 🔜 | Gövde detayı dokusu, seyir ışıkları, yosun/pas birikimi; mermi deliklerinin gövdede çizik olarak yeniden kullanılması; hasar kontrol küçük oyunu. |
+
 ## Uygulama ilkesi
 Her yeni özellik önce gerçek dünyadaki fiziğe/ekolojiye dayanır; oyun akışını bozacak kadar ağır olanlar (örn. gerçek merminin 3 m menzili) *makul ölçekte* uygulanır ve README'de gerekçesiyle belirtilir.
 

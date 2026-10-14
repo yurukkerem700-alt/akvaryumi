@@ -173,6 +173,36 @@ Ayrıntılı inceleme ve yol haritası: [`GERCEKCILIK.md`](GERCEKCILIK.md).
 - **Üçüncü şahıs kamera**: uzaklık artık gövde boyuna göre; kamera biraz yukarıdan ve önü gösterecek biçimde bakar, uzun denizaltılar (Komuta, Leviathan) ekranı kaplamaz.
 - **Parşömenler** artık kendiliğinden kapanır (yeni bulunan 3 sn, günlükten okunan 8 sn); dokunmak gerekmez.
 
+### v5.7 → v6.0: gerçekçilik ve eğlence yol haritası (optimizasyon korunarak) + nükleer torpido
+**Optimizasyon (önce)**
+- Işık huzmeleri 300 ayrı mesh yerine **tek `InstancedMesh`** (sallanma köşe gölgelendiricisinde); sualtı sesleri **ortak gürültü tamponu** kullanır (her top atışında tampon üretimi kalktı); yem bitince boşuna matris yazımı yok.
+- **`?perf=1`**: kare süresi, draw call, üçgen sayısı ve alt sistem süreleri (canlılar, düşman YZ, çizim) ekranın köşesinde.
+
+**Hareket ve fizik**
+- **Sürükleme ~ v²** (azami hız korunur, düşük hızda süzülme uzar), **boost harcaması hızla artar**, dönüşte **açısal atalet** (ağır denizaltı geç döner, dönüşü geç keser), **safra** gecikmesi, **çarpma hasarı hıza orantılı** (yavaş sürtünme zarar vermez), hafif **akıntı** denizaltıyı sürükler.
+- **Su altı sesi**: derinlik ve dışarıdan/içeriden dinlemeye göre alçak geçiren filtre; derinde ve sert dümende **gövde gıcırtısı**. Patlamadan sonra kısa süreli **kulak çınlaması**.
+
+**Canlılar ve biyom**
+- **Gece-gündüz** (12 dk): gece yüzeye yakın ışık söner, resif balıkları kayalıklara çekilir, denizanaları yüzeye çıkar (`NIGHT`).
+- **Sürü sıkışması** (yırtıcı/gürültü yaklaşınca yem topu), **merak** (sessiz denizaltıya yunus, kaplumbağa, vatoz, palyaço yaklaşır), **kirpibalığı şişer**, **ahtapot/mürekkep balığı mürekkep bırakıp fışkırır**.
+- **Bitkiler denizaltı geçerken yana eğilir** (shader'da 3 "bozucu" uniform'u; ek CPU maliyeti yok).
+- **Ortam olayları** (6 dk dilimli, herkeste aynı): plankton çiçeklenmesi (görüş düşer), mercan beyazlaşması, gece mercan toplu yumurtlaması. **Termoklin** tabakası (-10 m civarı): su bulanıklaşır, düşman algısı zayıflar.
+
+**Oyun**
+- **Sessiz seyir** (`O`): yavaşsın, gürültün düşer, düşmanlar seni geç fark eder (termoklin ile birleşir).
+- **Gövde sızıntısı**: ağır vuruş sonrası gövde %50'nin altındaysa yavaşça can kaybedilir (%15'in altına inmez); onarınca (`R`) durur.
+- **Patlama basıncı mesafeyle düşer** (düşmanlar); **patlamalar artık balıkları ve bitkileri de etkiler**: şok dalgası yakındaki balıkları öldürür (büyük türler dayanıklı), bitkileri koparır ya da yatırır.
+
+**Makineli top**
+- Taretler **yatayda 360°, düşeyde ±90°** döner (arkaya, yukarı ve aşağı ateş); en kısa yoldan döner.
+- **Güçlendirilmiş mermiler**: daha hızlı (122 m/s), daha uzun menzil, düşmana ~%80, yapıya ~%75, balığa ~%70 daha fazla hasar; küçük canlıyı **delip geçer** (zırh delici mermi 3 canlı), daha parlak/uzun iz ve çarpma ışıması.
+
+**☢ Nükleer torpido** (`U`, dokunmatikte silah düğmesiyle değiştirilir)
+- Diğer torpidolardan **~2,7× iri**, **yavaş (15 m/s)**, kara gövdeli, sarı-kırmızı tehlike şeritli. **95 m sonra silahlanır** — daha yakında çarparsa sönük patlar ve torpido geri alınır. 8 sn yeniden yükleme.
+- Patlama: beyaz flaş, ateş topu, kubbe, devasa şok küresi ve **mantar bulutu**; dalga cephesi merkezden dışa süpürür (yarıçap ≈ akvaryumun kısa kenarının %45'i). Bölgedeki **tüm canlılar, tüm bitkiler ve tüm yapılar yok olur**, düşmanlar ölür (bosslar canının %60'ını kaybeder), deniz tabanı kömürleşir, **akvaryum camları çatlar** (yakınlığa göre büyüyen çatlak çıkartmaları) ve patlamaya yakın oyuncunun kokpit camı çatlar; yakınındaysan sen de gidersin. Gövde sarsıntısı, kulak çınlaması, gövdeyi savuran şok.
+- **4 dakika boyunca bölgede hiçbir şey oluşmaz** (canlılar, bitkiler, düşman yeniden doğuşu); bölge kül ve çamurla dolu, görüş düşer. Sonra **yaşam dıştan içe doğru** geri döner (1 dk içinde bitkiler büyür, canlılar belirir, deniz tabanı rengi geri gelir). Yıkılan yapılar geri gelmez.
+- **Tersane → SİLAHLAR**: 4500 🪙 (en fazla 3). **`KEJDERYA`** kodu (Tersane'de kod alanı) **sınırsız** nükleer torpido verir. Online'da patlama herkeste aynı gerçekleşir; oyuncular yalnızca dost ateşi açıksa zarar görür.
+
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 

@@ -2030,7 +2030,7 @@ const subVel=new THREE.Vector3();let subYaw=Math.PI,subPitch=0,subRoll=0,lightOn
 const spot=new THREE.SpotLight(0xfff4dc,90,55,.42,.55,1.3);spot.position.set(0,-.3,2.2);if(QC.spot){sub.add(spot);sub.add(spot.target);}spot.target.position.set(0,-2,20);
 
 /* ================= Durum ================= */
-let subAir=false,wasAfl=false,surfT=-1e9;
+let subAir=false,wasAfl=false,surfT=-1e9,surfQT=-1e9;
 let running=false,battery=100,camYaw=Math.PI,camPitch=.22,camDist=11,sonarCd=0,foodCd=0,lastT=performance.now(),hudT=0,discT=0,netT=0;
 const keys={},vk={fwd:0,turn:0,up:0,down:0,boost:0,run:0};
 const teamDisc=new Map(),pendingDisc=new Set();

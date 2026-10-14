@@ -677,12 +677,15 @@ const sun=new THREE.DirectionalLight(0xfaffff,2.6);sun.position.set(-30,80,-20);
 const fill=new THREE.DirectionalLight(0x6fd8ff,1.1);fill.position.set(40,-10,30);scene.add(fill);
 
 /* Shader enjeksiyonu: su kostikleri + sallanma animasyonları */
-const U={t:{value:0},cam:{value:new THREE.Vector3()}};
+const U={t:{value:0},cam:{value:new THREE.Vector3()},bend:{value:[new THREE.Vector4(0,0,0,0),new THREE.Vector4(0,0,0,0),new THREE.Vector4(0,0,0,0)]}};
+/* denizaltı (ve yakındaki oyuncular) geçerken yosunlar ve otlar yana eğilir: xyz = dünya konumu, w = etki yarıçapı */
+const BENDV='for(int bi=0;bi<3;bi++){vec4 bq=uBend[bi];if(bq.w>0.){vec3 bd=ip-bq.xyz;float bl=length(bd.xz);float bf=smoothstep(bq.w,0.,bl)*(1.-smoothstep(18.,34.,abs(bd.y)));if(bf>0.){vec2 bu=bd.xz/max(bl,.3);transformed.x+=bu.x*bf*1.1*position.y*position.y;transformed.z+=bu.y*bf*1.1*position.y*position.y;}}}';
 const CAUS=`float causF(vec2 uv){vec2 p=mod(uv*6.28318,6.28318)-250.;vec2 i=p;float c=1.;float inten=.005;for(int n=0;n<4;n++){float t=uT*.32*(1.-(3.5/float(n+1)));i=p+vec2(cos(t-i.x)+sin(t+i.y),sin(t-i.y)+cos(t+i.x));c+=1./length(vec2(p.x/(sin(i.x+t)/inten),p.y/(cos(i.y+t)/inten)));}c/=4.;c=1.17-pow(c,1.4);return pow(abs(c),8.);}\n`;
 function patch(mat,key,{v='',caus=0,fx=''}={}){
   mat.onBeforeCompile=sh=>{
     sh.uniforms.uT=U.t;
-    sh.vertexShader='uniform float uT;\nvarying vec3 vWp;\n'+sh.vertexShader
+    sh.uniforms.uBend=U.bend;
+    sh.vertexShader='uniform float uT;\nuniform vec4 uBend[3];\nvarying vec3 vWp;\n'+sh.vertexShader
       .replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nvec3 ip=instanceMatrix[3].xyz;\n#else\nvec3 ip=vec3(0.);\n#endif\nfloat ph=float(gl_InstanceID)*2.37;\n'+v)
       .replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n{vec4 wq=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nwq=instanceMatrix*wq;\n#endif\nvWp=(modelMatrix*wq).xyz;}');
     sh.fragmentShader='uniform float uT;\nvarying vec3 vWp;\n'+(caus&&!isTouch?CAUS:'')+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n'+(caus?'{float cz='+(isTouch?'pow(.5+.5*sin(vWp.x*.55+uT*.9+sin(vWp.z*.4+uT*.5)*1.6)*sin(vWp.z*.5-uT*.7),3.)':'causF(vWp.xz*.034)')+'*smoothstep(-48.,34.,vWp.y);totalEmissiveRadiance+=diffuseColor.rgb*vec3(.55,.85,1.)*cz*'+caus.toFixed(2)+';}':'')+fx);
@@ -834,7 +837,14 @@ function splash(x,z,v){
   sfx.splash(clamp(.4+k*.6,.3,1));
 }
 const _dcol=new THREE.Color(),_dtint=new THREE.Color();let envDk=0;
+/* Gece-gündüz: 12 dakikalık döngü; gece su yüzeyine yakın ışık söner, gündüz etkin resif balıkları kayalıklara çekilir, denizanaları yüzeye çıkar */
+let NIGHT=0,nightWas=0;
+const DIURNAL=new Set(['clown','tang','angel','butterfly','seahorse','puffer','lion']);
+function nightAt(t){const ph=((t/720)%1+1)%1;return sm(.6,.72,ph)*(1-sm(.93,1,ph));}
 function updateEnv(dt){
+  NIGHT=nightAt(worldTime());
+  if(running&&(NIGHT>.5)!==(nightWas>.5)){toast(NIGHT>.5?'🌙 '+tl('Gece oldu — resif balıkları saklanıyor','Night falls — reef fish take cover'):'🌅 '+tl('Şafak söktü','Dawn breaks'));}
+  nightWas=NIGHT;
   const e=ZENV[zoneAt(camera.position.x,camera.position.z)]||[0x0c7390,.0056,1],k=1-Math.exp(-dt*1.2);
   envCol.lerp(envTgt.setHex(e[0]),k);envD+=(e[1]-envD)*k;envL+=(e[2]-envL)*k;strR=clamp(1.6/(envD*QC.vis),85,250);updateStream();
   const above=camera.position.y>SURF+.15;
@@ -844,10 +854,10 @@ function updateEnv(dt){
   else{
     /* su ışığı derinlikle soğurulur: önce kırmızı, sonra yeşil kaybolur; derinde daha karanlık ve puslu */
     const dk=clamp((SURF-camera.position.y)/80,0,1);_dcol.copy(envCol).multiply(_dtint.setRGB(1-.55*dk,1-.3*dk,1-.08*dk));
-    scene.background.copy(_dcol);scene.fog.color.copy(_dcol);scene.fog.density=envD*QC.vis*(1+.3*dk);envDk=dk;
+    _dcol.multiplyScalar(1-.42*NIGHT*(1-dk));scene.background.copy(_dcol);scene.fog.color.copy(_dcol);scene.fog.density=envD*QC.vis*(1+.3*dk);envDk=dk;
   }
-  hemi.intensity=(2*envL*(1-skyK)+.9*skyK)*(1-.35*envDk*(1-skyK));hemi.color.lerpColors(HC_UNDER,HC_NIGHT,skyK);
-  sun.intensity=(2.6*envL*(1-skyK)+1.3*skyK)*(1-.55*envDk*(1-skyK));sun.color.lerpColors(SUN_UNDER,SUN_NIGHT,skyK);
+  const nl=1-.45*NIGHT*(1-envDk)*(1-skyK);hemi.intensity=(2*envL*(1-skyK)+.9*skyK)*(1-.35*envDk*(1-skyK))*nl;hemi.color.lerpColors(HC_UNDER,HC_NIGHT,skyK);
+  sun.intensity=(2.6*envL*(1-skyK)+1.3*skyK)*(1-.55*envDk*(1-skyK))*nl;sun.color.lerpColors(SUN_UNDER,SUN_NIGHT,skyK);
   surfaceMat.color.lerpColors(SURF_UNDER,SURF_NIGHT,skyK);surfaceMat.opacity=.62+.26*skyK;surfaceMat.emissiveIntensity=.55-.35*skyK;
   sky.position.copy(camera.position);
 }
@@ -894,7 +904,7 @@ function rockGeo(seed){
   const kl=[];const addK=(x,z)=>{const y=floorH(x,z);const h=Math.min(rr(18,46),SURF-3-y);kl.push({x,y,z,ry:rr(0,6),sx:rr(.9,1.4),sy:h,sz:1,c:['#3f8f3a','#5f8f2a','#2f7a45','#7a8f2a'][(R()*4)|0]});};
   for(let i=0;i<DN(260);i++){const [x,z]=zp('kelp');addK(x,z);}
   for(let i=0;i<420*WS;i++){const x=rr(-HX+6,HX-6),z=(R()<.5?-1:1)*rr(HZ-12,HZ-5);addK(x,z);}
-  const sway='float sw=sin(uT*.9+ip.x*.21+ip.z*.17+position.y*2.2)*2.2+sin(uT*1.7+ip.z*.3)*.5;transformed.x+=sw*position.y*position.y;transformed.z+=cos(uT*.7+ip.x*.13+position.y*1.8)*1.3*position.y*position.y;';
+  const sway='float sw=sin(uT*.9+ip.x*.21+ip.z*.17+position.y*2.2)*2.2+sin(uT*1.7+ip.z*.3)*.5;transformed.x+=sw*position.y*position.y;transformed.z+=cos(uT*.7+ip.x*.13+position.y*1.8)*1.3*position.y*position.y;'+BENDV;
   lowCount(regFlora(inst(kelpGeo,stdMat({roughness:.8,side:THREE.DoubleSide},'kelp',{v:sway,caus:.6}),thinOrder(kl),true),kl,4.5,true),1);
   const grassParts=[];for(let k=0;k<3;k++){const g=new THREE.PlaneGeometry(.2,1,1,5);g.translate(rr(-.2,.2),.5,rr(-.2,.2));g.rotateY(k*Math.PI/3);grassParts.push(g);}
   const grassGeo=merge(grassParts);
@@ -1044,7 +1054,7 @@ const TINTS=[null,'#a89c80','#b5d8c8','#c88a6a','#8fb4d8','#cfe6f4','#c8a8ec','#
   /* ---------- bitki / yaşam dağılımı ---------- */
   const scatter=(n,tries,test,out)=>{n=DN(n);tries*=DS;let c=0;for(let t=0;t<tries&&c<n;t++){const x=r2(-HX+8,HX-8),z=r2(-HZ+8,HZ-8);if(test(x,z)){out(x,z);c++;}}};
   const G=['#3f8f3a','#4c9a3c','#6aa23a','#2f7a45','#5fa05a','#8aa83a','#3b8a4a','#4f9f6a'];
-  const swayS='float up=position.y*position.y;transformed.x+=sin(uT*1.2+ip.x*.4+ip.z*.3)*.5*up;transformed.z+=cos(uT*1.0+ip.z*.35+ip.x*.1)*.35*up;';
+  const swayS='float up=position.y*position.y;transformed.x+=sin(uT*1.2+ip.x*.4+ip.z*.3)*.5*up;transformed.z+=cos(uT*1.0+ip.z*.35+ip.x*.1)*.35*up;'+BENDV;
   const dbl=(k,v,caus)=>stdMat({roughness:.85,side:THREE.DoubleSide},k,{v,caus:caus||.6});
   // çayır tutamları (kum üzerindeki yeşil öbekler)
   {const L=[];scatter(3200,90000,(x,z)=>lush(x,z)&&meadowF(x,z)>.5+R2()*.1,(x,z)=>{for(let i=0;i<3;i++){const px=x+r2(-1.8,1.8),pz=z+r2(-1.8,1.8);L.push({x:px,y:floorH(px,pz)-.05,z:pz,ry:r2(0,6),sx:r2(.9,1.7),sy:r2(.9,2.4),sz:r2(.9,1.7),c:pk2(G)});}});
@@ -1315,7 +1325,7 @@ const SPEC_CFG={manta:{s:2.1,a:'ray'},whaleshark:{s:2.3,a:'whale'},mola:{s:1.5,a
 const schools=[],creatures=[];
 function addSchool(sp,n,ax,ay,az,amp,fr,spread,minAlt,opt={}){
   amp=[Math.min(amp[0],HX-6-Math.abs(ax)),Math.min(amp[1],SURF-3-ay),Math.min(amp[2],HZ-6-Math.abs(az))].map(v=>Math.max(v,.5));
-  const s={sp,ax,ay,az,amp,fr,ph:[R()*6.28,R()*6.28,R()*6.28],minAlt,foodie:opt.foodie!==false,c0:new THREE.Vector3(),c1:new THREE.Vector3(),fw:0};
+  const s={sp,ax,ay,az,amp,fr,ph:[R()*6.28,R()*6.28,R()*6.28],minAlt,foodie:opt.foodie!==false,c0:new THREE.Vector3(),c1:new THREE.Vector3(),fw:0,alarm:0,hide:DIURNAL.has(sp)?1:0};
   schools.push(s);
   for(let i=0;i<n;i++)creatures.push({sp,s,r:n>1?rr(spread*.3,spread):0,w:rr(.08,.22)*(R()<.5?-1:1)*(opt.wm||1),a0:R()*6.28,b0:R()*6.28,ya:n>1?rr(.3,1)*(opt.ya||spread*.25):(opt.ya||.3),size:rr(.85,1.15),pos:new THREE.Vector3(),off:new THREE.Vector3(),yaw:0,pitch:0,idx:0});
 }
@@ -1386,12 +1396,13 @@ function addFood(x,y,z,t0,by){
 const _fp=new THREE.Vector3();
 function schoolCenter(s,t,out){
   schoolRaw(s,t,out);let wmax=0;
+  if(NIGHT>.02){if(s.hide){const fy=floorQ(out.x,out.z)+s.minAlt+.5;out.y+=(fy-out.y)*NIGHT*.85;}else if(s.sp==='jelly')out.y=Math.min(SURF-3,out.y+NIGHT*9);}
   for(const f of foods){if(!f.set.has(s))continue;const w=foodW(f,t);if(w<=0)continue;foodPos(f,t,_fp);_fp.x+=Math.sin(t*.9+s.ph[0])*1.2;_fp.z+=Math.cos(t*.8+s.ph[2])*1.2;out.lerp(_fp,w*.93);wmax=Math.max(wmax,w);}
   return wmax;
 }
 let _fhc=0;
 function memberPos(c,center,fw,t,out,reuse){
-  const k=1-.65*fw;
+  const k=(1-.65*fw)*(1-.4*(c.s.alarm||0));
   out.set(center.x+(c.r*Math.cos(c.w*t+c.a0)+Math.sin(t*1.3+c.b0)*.3)*k,center.y+c.ya*Math.sin(c.w*.8*t+c.b0)*k,center.z+(c.r*Math.sin(c.w*t+c.a0)+Math.cos(t*1.1+c.a0)*.3)*k);
   out.x=clamp(out.x,-HX+2.5,HX-2.5);out.z=clamp(out.z,-HZ+2.5,HZ-2.5);
   out.y=clamp(out.y,(reuse?_fhc:(_fhc=floorQ(out.x,out.z)))+c.s.minAlt,SURF-2);return out;
@@ -1412,26 +1423,42 @@ function updateFood(t){
 const _c0=new THREE.Vector3(),_c1=new THREE.Vector3(),_p1=new THREE.Vector3(),_d=new THREE.Vector3();
 const _cp=new THREE.Vector3(),crCnt={};
 const preds=[];
+const _aw=new THREE.Vector3(),CURIOUS=new Set(['dolphin','turtle','manta','ray','mola','clown']),INKERS=new Set(['octopus','cuttle']);let inkN=0;
 function updateCreatures(t,dt,subs){
+  inkN=0;
   const cpx=camera.position.x,cpz=camera.position.z,farD=isTouch?150*150:230*230,fm=isTouch?3:1;
   for(const s of schools){s.fw=schoolCenter(s,t,s.c0);schoolCenter(s,t+.15,s.c1);}
   for(const k in specMesh)crCnt[k]=0;
   preds.length=0;for(const e of enemies){if(e.dead)continue;const dx=e.x-cpx,dz=e.z-cpz;if(dx*dx+dz*dz<farD)preds.push(e);}
+  /* yırtıcı yaklaşınca sürü sıkışır (yem topu); tehdit gidince yavaşça açılır */
+  for(const s of schools){
+    let al=0;const dcx=s.c0.x-cpx,dcz=s.c0.z-cpz;
+    if(dcx*dcx+dcz*dcz<farD){for(const e of preds){const R=e.r*1.4+34,dx=e.x-s.c0.x,dy=e.y-s.c0.y,dz=e.z-s.c0.z,d2=dx*dx+dy*dy+dz*dz;if(d2<R*R)al=Math.max(al,1-Math.sqrt(d2)/R);}
+      const sp0=subs[0],dx=sp0.x-s.c0.x,dy=sp0.y-s.c0.y,dz=sp0.z-s.c0.z,Rn=10+(NOISE.base+NOISE.v)*.9,dd=dx*dx+dy*dy+dz*dz;if(dd<Rn*Rn)al=Math.max(al,(1-Math.sqrt(dd)/Rn)*.7);}
+    s.alarm+=(al-s.alarm)*(1-Math.exp(-dt*(al>s.alarm?3:.6)));}
   for(const c of creatures){
     if(c.deadUntil>t){c.wx=c.wy=c.wz=1e6;continue;}
     let far=false;if(c.wx!==undefined&&c.wx<1e5){const ddx=c.wx-cpx,ddz=c.wz-cpz;far=ddx*ddx+ddz*ddz>farD;}
     if(far&&((frameN+c.k)&7))continue;
     memberPos(c,c.s.c0,c.s.fw,t,c.pos);memberPos(c,c.s.c1,c.s.fw,t+.15,_p1,true);
     _d.subVectors(_p1,c.pos);
-    const skit=SPEC_CFG[c.sp].s<1.2?1:.45;let cap=7;
-    for(const e of preds){const R=(e.r*1.4+9)*skit,dx=c.pos.x+c.off.x-e.x,dy=c.pos.y+c.off.y-e.y,dz=c.pos.z+c.off.z-e.z,d2=dx*dx+dy*dy+dz*dz;if(d2<R*R&&d2>.01){const d=Math.sqrt(d2),k=(R-d)*dt*3.2/d;c.off.x+=dx*k;c.off.y+=dy*k;c.off.z+=dz*k;cap=Math.max(cap,R*.9);}}
-    for(let si=0;si<subs.length;si++){const sp=subs[si],R=si===0?Math.min(46,8+(NOISE.base+NOISE.v)*skit):8,dx=c.pos.x+c.off.x-sp.x,dy=c.pos.y+c.off.y-sp.y,dz=c.pos.z+c.off.z-sp.z,d2=dx*dx+dy*dy+dz*dz;if(d2<R*R&&d2>.01){const d=Math.sqrt(d2),k=(R-d)*dt*2.5/d;c.off.x+=dx*k;c.off.y+=dy*k;c.off.z+=dz*k;if(R>10)cap=Math.max(cap,R*.8);}}
+    const skit=SPEC_CFG[c.sp].s<1.2?1:.45;let cap=7;_aw.set(0,0,0);
+    for(const e of preds){const R=(e.r*1.4+9)*skit,dx=c.pos.x+c.off.x-e.x,dy=c.pos.y+c.off.y-e.y,dz=c.pos.z+c.off.z-e.z,d2=dx*dx+dy*dy+dz*dz;if(d2<R*R&&d2>.01){const d=Math.sqrt(d2),k=(R-d)*dt*3.2/d;c.off.x+=dx*k;c.off.y+=dy*k;c.off.z+=dz*k;cap=Math.max(cap,R*.9);_aw.x+=dx/d;_aw.y+=dy/d;_aw.z+=dz/d;}}
+    for(let si=0;si<subs.length;si++){const sp=subs[si],R=si===0?Math.min(46,8+(NOISE.base+NOISE.v)*skit):8,dx=c.pos.x+c.off.x-sp.x,dy=c.pos.y+c.off.y-sp.y,dz=c.pos.z+c.off.z-sp.z,d2=dx*dx+dy*dy+dz*dz;if(d2<R*R&&d2>.01){const d=Math.sqrt(d2),k=(R-d)*dt*2.5/d;c.off.x+=dx*k;c.off.y+=dy*k;c.off.z+=dz*k;if(R>10)cap=Math.max(cap,R*.8);_aw.x+=dx/d;_aw.y+=dy/d;_aw.z+=dz/d;}}
+    const fr=cap>7;
+    /* merak: sessiz ve yavaş bir denizaltıya bazı yunus, kaplumbağa ve vatozlar yaklaşır */
+    if(!fr&&CURIOUS.has(c.sp)&&(c.k&3)===0&&NOISE.base+NOISE.v<5){const sp0=subs[0],dxs=sp0.x-(c.pos.x+c.off.x),dys=sp0.y-(c.pos.y+c.off.y),dzs=sp0.z-(c.pos.z+c.off.z),d2s=dxs*dxs+dys*dys+dzs*dzs;
+      if(d2s<2025&&d2s>196){const d=Math.sqrt(d2s),k=dt*.5*(d-14)/d;c.off.x+=dxs*k;c.off.y+=dys*k;c.off.z+=dzs*k;cap=26;}}
+    if(fr!==c.fr){c.fr=fr;
+      if(fr&&INKERS.has(c.sp)&&inkN<3&&(c.wx-cpx)**2+(c.wz-cpz)**2<8100){inkN++;const l=_aw.length()||1;_aw.divideScalar(l);
+        addPuff(c.wx,c.wy,c.wz,0x17141f,_aw.x*-.6,_aw.y*-.6,_aw.z*-.6,.7,3.6,.6,5);c.off.addScaledVector(_aw,5);}} /* ahtapot ve mürekkep balığı mürekkep bırakıp tersine fışkırır */
+    if(c.sp==='puffer')c.inf=(c.inf||0)+((fr?1:0)-(c.inf||0))*(1-Math.exp(-dt*(fr?6:.5)));
     c.off.multiplyScalar(Math.exp(-dt*.7));if(c.off.lengthSq()>cap*cap)c.off.setLength(cap);
     const hs=Math.hypot(_d.x,_d.z);
     if(hs>.004){c.yaw=angLerp(c.yaw,Math.atan2(_d.x,_d.z),1-Math.exp(-dt*5));}
     const tp=c.sp==='jelly'?0:c.sp==='seahorse'?0:clamp(-Math.atan2(_d.y,hs+.001),-.55,.55);c.pitch+=(tp-c.pitch)*(1-Math.exp(-dt*4));
     const y=c.sp==='jelly'?t*.12+c.a0:c.yaw;
-    const sc=SPEC_CFG[c.sp].s*c.size*(t<c.deadUntil+3?Math.max(.01,sm(c.deadUntil,c.deadUntil+3,t)):1);c.ry=y;c.sc=sc;
+    const sc=SPEC_CFG[c.sp].s*c.size*(c.sp==='puffer'?1+.75*(c.inf||0):1)*(t<c.deadUntil+3?Math.max(.01,sm(c.deadUntil,c.deadUntil+3,t)):1);c.ry=y;c.sc=sc;
     let px=c.pos.x+c.off.x,pz=c.pos.z+c.off.z,py=Math.max(c.pos.y+c.off.y,floorQ(px,pz)+.6);
     if(c.capN){const n=c.capN;if(!n.mesh||n.done)c.capN=null;else{const kk=sm(c.cap0,c.cap0+.55,t),ns=n.mesh.scale.x/NET_R,w=Math.sin(t*19+c.a0)*.18;px+=(n.mesh.position.x+c.capO.x*ns+w-px)*kk;py+=(n.mesh.position.y+c.capO.y*ns+Math.sin(t*13+c.a0)*.2-py)*kk;pz+=(n.mesh.position.z+c.capO.z*ns+w-pz)*kk;}}
     c.wx=px;c.wy=py;c.wz=pz;
@@ -5255,6 +5282,7 @@ function loop(){
   updateEnv(dt);updateBiomes(t);
   if(running&&!dead&&sub.position.y>SURF-1.4&&Math.hypot(subVel.x,subVel.z)>3&&Math.random()<dt*9)addPuff(sub.position.x+rr(-1.2,1.2),SURF+.3,sub.position.z+rr(-1.2,1.2),0xdff6ff,rr(-.4,.4),rr(.1,.6),rr(-.4,.4),.9,2.6,.35,1.6);
   updateRemotes(dt,now);
+  {const B=U.bend.value,sp0=sub.position;B[0].set(sp0.x,sp0.y,sp0.z,running&&!dead&&sub.visible?5+subSc*3+Math.hypot(subVel.x,subVel.z)*.7:0);let bi=1;for(const o of players.values()){if(bi>2)break;if(o.dead||o.cr)continue;const q=o.sub.g.position;B[bi++].set(q.x,q.y,q.z,7);}for(;bi<3;bi++)B[bi].w=0;}
   const subsPos=[sub.position];for(const o of players.values())subsPos.push(o.sub.g.position);
   ptime('canlılar',()=>updateCreatures(t,dt,subsPos));updateFood(t);updateBubbles(dt,t);
   if(net.mode!=='client'){ptime('düşman YZ',()=>updateEnemiesAI(dt));netEnT+=dt;if(net.mode==='host'&&netEnT>.1){netEnT=0;sendEnemySnap();}}

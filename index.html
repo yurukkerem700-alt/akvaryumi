@@ -439,7 +439,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.14-1',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.14-2',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -2729,7 +2729,7 @@ function updateTorps(dt,wt){
     if(Q.nuke&&hit==='c')hit=null; /* iri başlık küçük balıkların arasından geçer */
     if(Q.nuke){ /* nükleer: silahlanma mesafesi, uzaktakiler patlama mesajını bekler */
       if(!Q.own){if(hit)Q.vel.set(0,0,0);if(Q.age>24){removeTorp(i);continue;}hit=null;}
-      else if(hit||Q.age>18){
+      else if(hit||Q.age>12){
         if(Q.pos.distanceTo(Q.p0)>=NUKE_ARM){runNuke(Q.tid,Q.pos.x,Q.pos.y,Q.pos.z,net.myId);sendNet({t:'nuke',tid:Q.tid,p:r3(Q.pos)});}
         else{ /* silahlanmadı: sönük patlar, torpido geri alınır */
           for(let k=0;k<40;k++)spawnBubble(Q.pos.x+rr(-1,1),Q.pos.y+rr(-1,1),Q.pos.z+rr(-1,1),.08+Math.random()*.2,rr(-3,3),rr(0,4),rr(-3,3));
@@ -3299,7 +3299,7 @@ function updateBlasts(dt){
 /* ================= Nükleer torpido ================= */
 /* Yavaş, iri ve ölümcül: güvenli mesafede (NUKE_ARM) silahlanır, patlayınca dalga cepheleri akvaryumu süpürür.
    Bölgede 4 dakika hiçbir şey oluşmaz; sonra yaşam dıştan içe doğru geri döner. Yapılar bir daha yapılmaz. */
-const NUKE_R=Math.min(HX,HZ)*.45,NUKE_SPEED=15,NUKE_ARM=95,NUKE_COST=4500,NUKE_MAX=3,NUKE_QUIET=240,NUKE_GROW=60,NUKE_CD=8;
+const NUKE_R=Math.min(HX,HZ)*.45,NUKE_SPEED=30,NUKE_ARM=95,NUKE_COST=4500,NUKE_MAX=3,NUKE_QUIET=240,NUKE_GROW=60,NUKE_CD=8;
 const nukeSave=(()=>{const o={n:0,inf:false};try{const j=JSON.parse(store.get('aqua-nuke')||'null');if(j&&typeof j==='object'){o.n=clamp(Math.floor(num(j.n)),0,NUKE_MAX);o.inf=j.inf===true;}}catch{}return o;})();
 const persistNuke=()=>store.set('aqua-nuke',JSON.stringify(nukeSave));
 const nukeOwned=()=>nukeSave.inf||nukeSave.n>0;
@@ -3380,7 +3380,9 @@ function nukeFelt(Z,d,mine){
   nukeFlash(clamp(f*1.6,0,1),1.4+2.4*f);
   sfx.nuke(clamp(.25+f*1.1,.2,1));
   if(d<R*.95)showCockpitCrack(1-d/(R*.95));
-  const p=sub.position,dx=p.x-Z.x,dz=p.z-Z.z,l=Math.hypot(dx,dz)||1;subVel.x+=dx/l*40*f;subVel.z+=dz/l*40*f;subVel.y+=rr(-6,6)*f;
+  const p=sub.position,dx=p.x-Z.x,dz=p.z-Z.z,l=Math.hypot(dx,dz)||1;const pk=mine&&!dead&&!tutOn?.35:1;subVel.x+=dx/l*40*f*pk;subVel.z+=dz/l*40*f*pk;subVel.y+=rr(-6,6)*f*pk;
+  if(mine&&!dead&&!tutOn){ /* otomatik kalkan: kendi başlığımızın şok dalgasına karşı gövde sertleştirilmiş kalkanla sarılır */
+    shieldT=Math.max(shieldT,3.5);shieldHp=Math.max(shieldHp,HULL_MAX*2);shieldFlash=.5;sfx.shield();toast('🛡 '+tl('Otomatik nükleer kalkan devrede','Automatic nuclear shield engaged'));}
   if(!dead&&!tutOn&&!CREW.pilot&&(mine||pvpOK(Z.by))){
     let dmg=0;if(d<R*.38)dmg=HULL_MAX*1.6;else if(d<R*.95)dmg=HULL_MAX*.95*Math.pow(1-(d-R*.38)/(R*.57),1.5);
     if(dmg>1)hurt(dmg,Z.by,false,_bd.set(dx/l,.1,dz/l).multiplyScalar(12));

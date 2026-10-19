@@ -286,6 +286,11 @@ body.crew #cockpit{display:none!important}
 .qi .qt{display:flex;justify-content:space-between;gap:6px}.rq{border:0;background:rgba(255,255,255,.1);color:#cfe6ef;border-radius:6px;font-size:11px;cursor:pointer;padding:1px 6px;flex:none}.rq:hover{background:rgba(255,255,255,.22)}
 @media (orientation:portrait){.touch #musicBtn{display:none}}
 /* v7: ayarlar, temalar, nişangâh, erişilebilirlik */
+#pkP{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);z-index:12;display:none;gap:8px;flex-wrap:wrap;justify-content:center;width:min(640px,calc(100vw - 20px));padding:10px;border-radius:16px;border-color:rgba(255,213,108,.45)}
+.pkC{flex:1 1 170px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff;font:inherit;cursor:pointer}.pkC:hover{border-color:var(--gold);background:rgba(255,213,108,.12)}
+.pkC kbd{font:inherit;font-size:9px;color:var(--muted)}.pkC i{font-style:normal;font-size:26px}.pkC b{font-size:13px}.pkC span{font-size:11px;color:#c6dfe7;text-align:center;line-height:1.35}
+.seaG{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:5px;margin:6px 0}.seaC{position:relative;height:50px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:#fff;font:inherit;cursor:default;padding:0}.seaC i{font-style:normal;font-size:19px}.seaC small{position:absolute;left:4px;top:2px;font-size:9px;color:var(--muted)}
+.seaC.lock{opacity:.4}.seaC.can{border-color:var(--gold);background:rgba(255,213,108,.18);cursor:pointer;animation:nrp 1.2s ease-in-out infinite}.seaC.got{border-color:rgba(126,240,185,.5);background:rgba(126,240,185,.12)}.seaC.got::after{content:"✓";position:absolute;right:4px;bottom:1px;font-size:10px;color:#7ef0b9}
 #ammoTag{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:7;padding:3px 10px;border-radius:8px;font-size:10px;font-weight:900;letter-spacing:1px;pointer-events:none;display:none}
 body.run #ammoTag{display:block}body.inside #ammoTag{display:none}
 #wpn{flex-wrap:wrap;justify-content:center;max-width:min(96vw,960px)}
@@ -2121,8 +2126,8 @@ const refreshGold=()=>document.querySelectorAll('.goldV').forEach(e=>{e.textCont
 
 function applyLoadout(fresh){
   const s=SUBS[MS.eq?2:tierNow()],u=(MS.eq||MS.mode==='ship')?{ammo:0,reload:0,armor:0,motor:0,battery:0}:save.up,oh=HULL_MAX,ot=TORP_MAX,om=MINE_MAX;
-  curSub=s;subSc=s.sc;HULL_MAX=Math.round(s.hull*(1+.12*u.armor));TORP_MAX=s.torp+2*u.ammo;MINE_MAX=s.mine+u.ammo;
-  TORP_RELOAD=4.5*s.rel*(1-.07*u.reload);spdMul=s.spd*(1+.06*u.motor);drainMul=1-.1*u.battery;regenMul=1+.1*u.battery;
+  curSub=s;subSc=s.sc;HULL_MAX=Math.round(s.hull*(1+.12*u.armor)*PK.hullx);TORP_MAX=s.torp+2*u.ammo+PK.torp;MINE_MAX=s.mine+u.ammo;
+  TORP_RELOAD=4.5*s.rel*(1-.07*u.reload)*PK.reload;spdMul=s.spd*(1+.06*u.motor)*PK.spd;drainMul=(1-.1*u.battery)*PK.drain;regenMul=1+.1*u.battery;
   sub.scale.setScalar(subSc);setSubTier(local,tierNow(),MS.mode==='ship'?0:save.skin);setNetPropPos();setFPVisible();renderWpn();
   if(fresh){hull=HULL_MAX;torpAmmo=TORP_MAX;mineAmmo=MINE_MAX;}
   else{hull=Math.min(HULL_MAX,hull+Math.max(0,HULL_MAX-oh));torpAmmo=Math.min(TORP_MAX,torpAmmo+Math.max(0,TORP_MAX-ot));mineAmmo=Math.min(MINE_MAX,mineAmmo+Math.max(0,MINE_MAX-om));}
@@ -2133,7 +2138,7 @@ const SC={fish:5,shark:60,eel:40,squid:50,swarm:30,struct:8,disc:100,pk:150,caug
 const stats={ms:0,fish:{},fishN:0,en:{},enN:0,str:0,disc:0,pk:0,caught:0,mel:0,score:0};
 const addScore=n=>{stats.score+=n;gainXp(n);};
 function statFish(sp){if(curSub.pas==='frenzy')frenzyT=4;comboHit(1);stats.fish[sp]=(stats.fish[sp]||0)+1;stats.fishN++;addScore(SC.fish);if(MS.mode==='hunt'&&MS.phase==='play')myMS++;qEvent('fish',sp);qEvent('sp',sp);}
-function statEnemy(type){if(curSub.pas==='frenzy')frenzyT=4;comboHit(2);hitMark(true);stats.en[type]=(stats.en[type]||0)+1;stats.enN++;addScore(SC[type]||30);let g=gm(({shark:30,eel:20,squid:25,swarm:15})[type]||15);save.gold+=g;if(MS.phase==='play'){if(MS.mode==='hunt')myMS+=3;else if(MS.mode==='survival')myMS++;}persist();refreshGold();qEvent('en',type);return g;}
+function statEnemy(type){if(curSub.pas==='frenzy')frenzyT=4;comboHit(2);hitMark(true);stats.en[type]=(stats.en[type]||0)+1;stats.enN++;addScore(SC[type]||30);let g=gm(({shark:30,eel:20,squid:25,swarm:15})[type]||15);save.gold+=g;if(MS.phase==='play'){if(MS.mode==='hunt')myMS+=3;else if(MS.mode==='survival'||MS.mode==='chal'||MS.mode==='rush')myMS++;}persist();refreshGold();qEvent('en',type);return g;}
 function drawSign(){
   if(!signCv)return;const g=signCv.getContext('2d'),W=1024,H=396,tr=lang==='tr';
   const m=Math.floor(stats.ms/60000),sc=Math.floor(stats.ms/1000)%60,timeS=m+':'+String(sc).padStart(2,'0');
@@ -2824,6 +2829,7 @@ function spawnBullet(p,dir,vel,own,by,k){
   bullets.push({p:p.clone(),px:p.x,py:p.y,pz:p.z,v:dir.clone().multiplyScalar(GUN_SPD*A.spd).add(vel),d:dir.clone(),age:0,own,by,pr:own&&apT>0&&A.pr<3?3:A.pr,last:-1,k:A.id,dr:A.dr,life:A.life});
 }
 function fireGun(){
+  if(MS.mode==='chal'&&chHas('nogun'))return false;
   if(!running||dead||chatOpen()||IN.on||(CREW.pilot&&MS.mode!=='ship')||garageOpen()||gunOver)return false;
   if(!shipCan('gun')){shipDeny('gun');return false;}
   if(MODES[MS.mode].match&&MS.phase==='count')return false;
@@ -2839,7 +2845,7 @@ function fireGun(){
   NOISE.v=Math.max(NOISE.v,kd==='sc'?30:16);subVel.addScaledVector(dir,-.05/subSc);
   for(let i=0;i<3;i++)spawnBubble(p.x+rr(-.1,.1),p.y+rr(-.1,.1),p.z+rr(-.1,.1),.03+Math.random()*.06,dir.x*rr(1,4)+rr(-.4,.4),dir.y*rr(1,4)+rr(0,.8),dir.z*rr(1,4)+rr(-.4,.4));
   gearKick(local,side>0?'gnR':'gnL',GD.gn);
-  gunHeat+=.036*A.heat;if(gunHeat>=1){gunHeat=1;gunOver=true;toast(tl('Namlular aşırı ısındı — soğuyor…','Barrels overheated — cooling…'));sfx.empty();}
+  gunHeat+=.036*A.heat*PK.heat;if(gunHeat>=1){gunHeat=1;gunOver=true;toast(tl('Namlular aşırı ısındı — soğuyor…','Barrels overheated — cooling…'));sfx.empty();}
   noise(.035,2600,900,.045);tone(190,80,.045,'square',.025);shake=Math.max(shake,.04);gpRumble(.1,.35,50);
   sendNet({t:'blt',p:r3(p),d:[+dir.x.toFixed(3),+dir.y.toFixed(3),+dir.z.toFixed(3)],v:r3(subVel),k:(kd==='he'||kd==='sc')?kd:0});
   return true;
@@ -2868,7 +2874,7 @@ function bulletImpact(b,kind){
   if(!b.own){if(kind==='me')hurt(3.8*(b.k==='he'?1.5:b.k==='sc'?.85:1),b.by,false,_bd.copy(b.d).multiplyScalar(1.6));return;}
   if(kind==='s'){const st=structs[HI.si];if(st&&st.alive&&!st.falling)erodeStruct(st,.21*(b.k==='he'?2.1:apT>0?1.8:1)*(.6+.4*clamp(b.v.length()/GUN_SPD,.35,1)),p,b.d);}
   else if(kind==='c'){const c=creatures[HI.i];if(c){hitMark(false);woundCreature(HI.i,c,b);b.last=HI.i;lifeAdd('hits');if(b.k==='he')heSplash(p,null);}}
-  else if(kind==='e'){hitMark(false);const e=enemies[HI.i];if(e&&!e.dead){const ap=(b.k==='he'?1.5:b.k==='sc'?.85:(apT>0?2:1))*(.5+.5*clamp(b.v.length()/(GUN_SPD*(b.k==='sc'?1.65:1)),.35,1));lifeAdd('hits');if(net.mode!=='client')hurtEnemy(e,(e.cfg.boss?.24:.36)*ap,net.myId);else bhQ.set(e.i,(bhQ.get(e.i)||0)+Math.max(1,Math.round(ap)));if(b.k==='he')heSplash(p,e);}}
+  else if(kind==='e'){hitMark(false);const e=enemies[HI.i];if(e&&!e.dead){const ap=(b.k==='he'?1.5:b.k==='sc'?.85:(apT>0?2:1))*(.5+.5*clamp(b.v.length()/(GUN_SPD*(b.k==='sc'?1.65:1)),.35,1));lifeAdd('hits');if(net.mode!=='client')hurtEnemy(e,(e.cfg.boss?.24:.36)*ap,net.myId);else bhQ.set(e.i,(bhQ.get(e.i)||0)+Math.max(1,Math.round(ap*PK.dmg)));if(b.k==='he')heSplash(p,e);}}
   else if(kind==='p')hitMark(false);
 }
 
@@ -3986,7 +3992,7 @@ function applyEnemySnap(list){
 let snapN=0;
 function sendEnemySnap(){const full=(snapN++%20)===0,tg=enemyTargets();broadcast({t:'en',e:enemies.map(e=>{if(e.dead){if((e.ds=(e.ds||0)+1)>4)return 0;}else{e.ds=0;if(!full&&e.st===0&&!e.cfg.boss){let nr=false;for(const a of tg){const dx=a.pos.x-e.x,dz=a.pos.z-e.z;if(dx*dx+dz*dz<90000){nr=true;break;}}if(!nr)return 0;}}const a=[+e.x.toFixed(1),+e.y.toFixed(1),+e.z.toFixed(1),+e.yaw.toFixed(2),+e.pitch.toFixed(2),e.dead?0:Math.ceil(e.hp),e.st];if(e.hpM&&e.hpM!==e.cfg.hp)a.push(e.hpM);return a;})});}
 function hurtEnemy(e,dmg,by){
-  if(e.dead)return;e.hp-=dmg/DIFF().hp;e.flash=.5;if(e.st===0)e.st=1;e.cd=Math.min(e.cd,.6);
+  if(e.dead)return;if(by===net.myId)dmg*=PK.dmg;e.hp-=dmg/(DIFF().hp*(MS.mode==='chal'&&chHas('tough')?1.5:1));e.flash=.5;if(e.st===0)e.st=1;e.cd=Math.min(e.cd,.6);
   if(e.hp<=0){e.respT=e.tmp||e.cfg.final?Infinity:e.cfg.boss?480:rr(70,100);broadcast({t:'edie',i:e.i,by:String(by||''),nk:e.nk?1:0});killEnemyFx(e,by,!!e.nk);}
 }
 /* su altı patlama basıncı yaklaşık 1/r ile düşer: yüzeyden ne kadar uzaksa hasar o kadar azdır */
@@ -4007,6 +4013,7 @@ function enemyShockwave(x,y,z,by){
 function enemyEmp(x,y,z,by){for(const e of enemies){if(e.dead)continue;if(Math.hypot(e.x-x,e.y-y,e.z-z)<30){hurtEnemy(e,e.cfg.boss?2:1,by);if(!e.dead&&!e.cfg.boss)e.stun=4.5;}}}
 function killEnemyFx(e,by,nk){
   e.dead=true;e.hp=0;e.mesh.visible=false;e.nk=false;
+  if(by===net.myId&&PK.vamp&&!dead)hull=Math.min(HULL_MAX,hull+PK.vamp*(e.cfg.boss?4:1));
   if(nk&&e.cfg.boss)spawnRelic(e);
   const center=new THREE.Vector3(e.x,e.y,e.z),q=new THREE.Quaternion().setFromEuler(new THREE.Euler(e.pitch,e.yaw,0,'YXZ'));
   shatter(e.cfg.base||e.type,center,q,e.cfg.sc,center,e.cfg.col,null);
@@ -4084,7 +4091,7 @@ function hurt(d,by,ink,kb){
   if(kb&&kb.isVector3)subVel.add(kb.clampLength(0,20));
   if(ink)inkT=Math.max(inkT,6);
   sfx.hurt(clamp(d/25,.4,1));
-  if(hull<=0)die(by);
+  if(hull<=0){if(PK.rev>0){PK.rev--;hull=HULL_MAX*.5;invuln=3;bigBanner('💫 '+tl('SON NEFES!','LAST BREATH!'),tl('Dirildin','You survive'));}else die(by);}
 }
 function registerKill(vid,k){
   const v=vid===net.myId?me.name:(players.get(vid)||{}).name||'?';
@@ -4324,7 +4331,7 @@ function doShield(){
   if(CREW.pilot&&running&&!chatOpen()){crewAction('sh');return;}
   if(!running||dead||chatOpen()||shieldT>0)return;
   if(shieldCd>0){toast(T.shieldCd);return;}if(battery<20){toast(T.lowBat);return;}
-  battery-=20;shieldT=curSub.pas==='prism'?9.6:6;shieldHp=curSub.pas==='prism'?112:70;shieldCd=16;sfx.shield();toast(T.shieldOn);
+  battery-=20;shieldT=curSub.pas==='prism'?9.6:6;shieldHp=curSub.pas==='prism'?112:70;shieldCd=16*PK.shCd;sfx.shield();toast(T.shieldOn);
 }
 function doRepair(){
   if(running&&!shipCan('eng')){shipDeny('eng');return;}
@@ -4608,6 +4615,7 @@ addEventListener('keydown',e=>{
   if(profOpen()){if(e.key==='Escape'||e.key.toLowerCase()==='k')toggleProfile(false);return;}
   if(e.key==='Escape'&&$('loreCard').style.display==='block'){$('loreCard').style.display='none';return;}
   if(!running)return;
+  if(pkOpen&&(e.key==='1'||e.key==='2'||e.key==='3')){pickPerk(+e.key-1);e.preventDefault();return;}
   let k=e.key.toLowerCase();k=KEYMAP[k]||k;if(e.code==='ShiftLeft'||e.code==='ShiftRight')k='shift';
   if([' ','w','a','s','d','q','e','arrowup','arrowdown'].includes(k)||e.key.startsWith('Arrow'))e.preventDefault();
   if(k==='tab')e.preventDefault();
@@ -5724,7 +5732,7 @@ function tryLandscape(){
     if(fs&&!document.fullscreenElement&&!document.webkitFullscreenElement){const r=fs.call(de);if(r&&r.then)r.then(lock,()=>{});else lock();}else lock();
   }catch{}
 }
-$('soloBtn').onclick=()=>{tryLandscape();readLobby();net.mode='solo';MS.mode=MODES[lobbyMode].solo?lobbyMode:'free';MS.eq=false;enterGame();};
+$('soloBtn').onclick=()=>{tryLandscape();readLobby();net.mode='solo';MS.mode=MODES[lobbyMode].solo?lobbyMode:'free';MS.eq=MS.mode==='chal';enterGame();};
 $('hostBtn').onclick=()=>{tryLandscape();readLobby();MS.mode=lobbyMode;MS.eq=lobbyEq;startHost();};
 $('joinBtn').onclick=()=>{tryLandscape();readLobby();startJoin($('codeIn').value);};
 function qLabel(){$('qBtn').textContent='⚙ '+T.qLbl+': '+T[{low:'qLow',mid:'qMid',high:'qHigh'}[Q]];}
@@ -5888,6 +5896,7 @@ var SKINS=[
   {tr:'Gün Batımı',en:'Sunset',price:1700,hull:0xff8a4a,hull2:0x8a2a5a,tower:0xffc07a,fin:0x5a2a8a,trim:0xffe0b0,prop:0x7a2a5a,sw:'#ff8a4a'},
   {tr:'Karbon',en:'Carbon',price:2000,hull:0x23262b,hull2:0x15171a,tower:0x2c3036,fin:0x4a505a,trim:0x8a94a0,prop:0x1a1c20,met:.7,sw:'#2c3036'},
   {tr:'Kraken Moru',en:'Kraken Purple',price:2200,hull:0x4a2a6a,hull2:0x1a0a2a,tower:0x6a3a8a,fin:0x2affd0,trim:0xd0b0ff,prop:0x2a1040,em:0x180a30,sw:'#6a3a8a'},
+  {tr:'Aurora',en:'Aurora',price:0,ach:'season',hull:0x0a4a52,hull2:0x2a1a6a,tower:0x13806a,fin:0x7aff9a,trim:0xb8f0ff,prop:0x1a3a5a,em:0x0a3a40,sw:'#2affb0'},
   {tr:'Efsane',en:'Legend',price:0,ach:'final',hull:0x2a1450,hull2:0xd9a520,tower:0x1a0a30,fin:0xffd56c,trim:0xfff1a8,prop:0xffd56c,met:.85,em:0x200a40,sw:'#7a3aff'}
 ];
 var TRAILS=[{tr:'Yok',en:'None',price:0,c:null},{tr:'Altın Kıvılcım',en:'Gold Sparks',price:600,c:0xffd56c},{tr:'Buz Pırıltısı',en:'Frost Glitter',price:600,c:0x9fe8ff},{tr:'Ateş',en:'Fire',price:900,c:0xff6a2a},{tr:'Zehir',en:'Toxic',price:900,c:0x7aff5a},{tr:'Gökkuşağı',en:'Rainbow',price:2500,c:-1},{tr:'Biyolüminesans',en:'Bioluminescence',price:700,c:0x3affc8},{tr:'Magma',en:'Magma',price:1000,c:0xff3a10},{tr:'Mor Duman',en:'Violet Smoke',price:800,c:0xb06aff},{tr:'Kalpler',en:'Hearts',price:600,c:0xff6a9a},{tr:'Elektrik',en:'Electric',price:1200,c:0x8ae8ff}];
@@ -5944,19 +5953,20 @@ const GEARS=[
 const GBY=id=>GEARS.find(g=>g.id===id),GW=w=>GEARS.find(g=>g.w===w);
 const hasGear=id=>save.gd.includes(id);
 const WORDER=[0,1,2,3,11,12,13,14,4];
+const PK={dmg:1,hullx:1,torp:0,reload:1,spd:1,drain:1,shCd:1,heat:1,vamp:0,gold:1,rev:0,n:[]};
 const DC={max:4,ammo:4,rel:0,list:[],seq:0,geo:null,mat:null},DY={max:3,ammo:3,rel:0,list:[],seq:0},ZV7=new THREE.Vector3();
 let bubT=0,bubCd=0;
 
 function lifeAdd(k,n=1){save.life[k]=(save.life[k]||0)+n;v4dirty=true;}
 function addGold(n,silent){n=Math.round(n);if(!n)return 0;save.gold+=n;v4dirty=true;refreshGold();if(garageOpen())renderGarage();if(!silent)toast('+'+n+' 🪙');return n;}
-function gm(n){return Math.round(n*(EV&&EV.k==='frenzy'?2:1)*DIFF().rew);}
+function gm(n){return Math.round(n*(EV&&EV.k==='frenzy'?2:1)*DIFF().rew*PK.gold);}
 
 /* ---- Rütbe ---- */
 var RANKS=[['Çaylak Dalgıç','Rookie Diver'],['Dalgıç','Diver'],['Usta Dalgıç','Expert Diver'],['Güverte Eri','Deckhand'],['Denizci','Sailor'],['Usta Denizci','Able Seaman'],['Lostromo','Boatswain'],['Teğmen','Lieutenant'],['Yüzbaşı','Lt. Commander'],['Kaptan','Captain'],['Kıdemli Kaptan','Senior Captain'],['Komodor','Commodore'],['Amiral','Admiral'],['Büyük Amiral','Grand Admiral'],['Deniz Efsanesi','Sea Legend']];
 function lvlInfo(xp){let l=0,base=0;for(;;){const n=300+l*250;if(xp<base+n)return {l,cur:xp-base,next:n};base+=n;l++;}}
 const rankName=l=>{const r=RANKS[Math.min(l,RANKS.length-1)];return (lang==='tr'?r[0]:r[1])+(l>=RANKS.length?' +'+(l-RANKS.length+1):'');};
 function gainXp(n){
-  if(!(n>0)||!Number.isFinite(n))return;n*=DIFF().rew;const a=lvlInfo(save.xp).l;save.xp+=Math.round(n);const b=lvlInfo(save.xp).l;v4dirty=true;
+  if(!(n>0)||!Number.isFinite(n))return;n*=DIFF().rew;const a=lvlInfo(save.xp).l;save.xp+=Math.round(n);seasonSync();save.sea.x+=Math.round(n);const b=lvlInfo(save.xp).l;v4dirty=true;
   if(b>a){const g=150*b;save.gold+=g;refreshGold();persist();bigBanner('⭐ '+tl('RÜTBE ATLADIN!','RANK UP!'),rankName(b)+' · '+tl('Seviye ','Level ')+(b+1)+' · +'+g+' 🪙');[523,659,784,1046,1318].forEach((f,i)=>tone(f,f,.4,'triangle',.16,i*.09));}
   xpUI();
 }
@@ -6092,7 +6102,10 @@ var MODES={
   grab:{ic:'🔮',tr:'Hazine Kapmaca',en:'Treasure Grab',pvp:'team',match:1,teams:1,dur:480,goal:5,d:['Ortadaki Akvaryum İncisi\'ni kap, kendi üssüne götür. Taşıyan yavaşlar; batarsa inci düşer. 5 sayı alan kazanır.','Grab the Aquarium Pearl in the middle and bring it to your base. The carrier is slower and drops it when sunk. First to 5 wins.']},
   race:{ic:'🏁',tr:'Yarış',en:'Race',pvp:'none',match:1,dur:300,solo:1,d:['13 halkadan sırayla geç. Silahlar kapalı, batarya yavaş biter. Tek başına rekor denemesi.','Pass 13 rings in order. Weapons off, battery drains slower. Solo: time trial.']},
   ship:{ic:'⚓',tr:'Komuta Seferi',en:'Command Voyage',pvp:'none',solo:1,d:['Hepiniz aynı askeri denizaltının içindesiniz: kaptan sürer, silahçı top ve torpido kullanır, sonarcı tarar, mühendis onarır, torpido ustası yükler. Roller oyuncu sayısına göre dağıtılır; birlikte akvaryumu keşfedin ve yaratıklarla savaşın.','Everyone is inside the same military submarine: the captain drives, the gunner fires guns and torpedoes, the sonar officer scans, the engineer repairs, the loader reloads. Roles are assigned by player count; explore the aquarium and fight creatures together.']},
-  hunt:{ic:'🎣',tr:'Av Turnuvası',en:'Hunt Cup',pvp:'none',match:1,dur:300,solo:1,d:['5 dakikada en çok puan: balık +1, düşman +3, ağdaki canlı +1, yeni tür +5.','Most points in 5 minutes: fish +1, enemy +3, netted +1, new species +5.']}
+  hunt:{ic:'🎣',tr:'Av Turnuvası',en:'Hunt Cup',pvp:'none',match:1,dur:300,solo:1,d:['5 dakikada en çok puan: balık +1, düşman +3, ağdaki canlı +1, yeni tür +5.','Most points in 5 minutes: fish +1, enemy +3, netted +1, new species +5.']},
+  koth:{ic:'👑',tr:'Tepe Hakimi',en:'King of the Hill',pvp:'all',match:1,dur:420,solo:1,d:['Haritada beliren halkaya gir ve içinde TEK başına kal: her saniye 1 puan. Halka 50 sn\'de bir yer değiştirir; birden fazla oyuncu içerideyse kimse puan almaz. 7 dakika. Tek başına: halka düşman dalgalarıyla savunulur.','Enter the ring that appears on the map and stay ALONE inside: 1 point per second. The ring moves every 50 s; nobody scores while contested. 7 minutes. Solo: enemy waves attack the ring.']},
+  rush:{ic:'💀',tr:'Muhafız Akını',en:'Warden Rush',pvp:'none',match:1,dur:1500,solo:1,d:['6 devasa muhafızı (Kraken, Magma, Buz, Kristal, Leviatan, Megalodon) sırayla yen. Her galibiyette perk seç, gövde dolar. Tek başına ya da ekiple. 25 dk.','Defeat 6 colossal wardens in sequence (Kraken, Magma, Frost, Crystal, Leviathan, Megalodon). Pick a perk after each win. Solo or co-op. 25 min.']},
+  chal:{ic:'📅',tr:'Günlük Meydan Okuma',en:'Daily Challenge',pvp:'none',match:1,dur:0,solo:1,d:['Her gün herkeste aynı 2 değiştirici (Cam Gövde, Sürü, Karanlık Sular…) ve eşit denizaltı. Dalgalara dayan, perk topla, günün puanını kır.','Every day the same 2 modifiers for everyone (Glass Hull, Horde, Dark Waters…) with equal submarines. Survive waves, collect perks, beat today\'s score.']}
 };
 
 /* ================= Komuta Seferi: ortak askeri denizaltı, oyuncu sayısına göre roller ================= */
@@ -6461,7 +6474,7 @@ function msApply(m){
   if(MS.id!==oId&&MODES[MS.mode].match)onMatchStart();
   if(MS.phase==='end'&&oPh!=='end')onMatchEnd();
   if(MS.phase==='play'&&oPh==='count')goBanner();
-  if(MS.mode==='survival')survLocal(oLeft,oWave);
+  if(waveMode())survLocal(oLeft,oWave);
   if(MS.mode==='team'&&(MS.ts[0]!==oTs[0]||MS.ts[1]!==oTs[1])&&MS.id===oId)tone(880,880,.12,'square',.06);
   renderPlayers();
 }
@@ -6485,22 +6498,22 @@ function onMatchStart(){
   if(dead){dead=false;$('deadV').style.display='none';sub.visible=true;sendNet({t:'resp'});}
   hull=HULL_MAX;torpAmmo=TORP_MAX;mineAmmo=MINE_MAX;battery=100;invuln=2.5;kits=3;
   const sp=spawnPoint();sub.position.copy(sp.p);subYaw=camYaw=sp.yaw;subVel.set(0,0,0);
-  const M=MODES[MS.mode],t=teamOf(net.myId);
+  v7ModeStart();const M=MODES[MS.mode],t=teamOf(net.myId);
   bigBanner(M.ic+' '+mname().toLocaleUpperCase(lang==='tr'?'tr':'en')+(t>=0?' · '+teamName(t)+tl(' TAKIM',' TEAM'):''),M.d[lang==='tr'?0:1]);
   renderPlayers();
 }
 function goBanner(){bigBanner(tl('BAŞLA!','GO!'),MODES[MS.mode].ic+' '+mname());[523,523,1046].forEach((f,i)=>tone(f,f,.25,'square',.08,i*.12));}
 const raceScore=(r,f)=>f>0?1e6-f*100:(r|0)*1000;
 function matchTick(dt){
-  const M=MODES[MS.mode];if(!M.match)return;const now=worldTime();
+  const M=MODES[MS.mode];if(!M.match)return;const now=worldTime();v7ModeTick(dt);
   if(MS.phase==='count'&&now>=MS.t0){MS.phase='play';msDirty=1;goBanner();}
   if(MS.phase==='play'){
-    if(MS.mode==='hunt'||MS.mode==='survival'){MS.score[net.myId]=myMS;for(const p of players.values())MS.score[p.id]=p.ms|0;}
+    if(MS.mode==='hunt'||waveMode()||MS.mode==='koth'){const rb=MS.mode==='rush'?100*Math.max(0,MS.wave-(MS.left?1:0)):0;MS.score[net.myId]=myMS+rb;for(const p of players.values())MS.score[p.id]=(p.ms|0)+rb;}
     if(MS.mode==='race'){MS.score[net.myId]=raceScore(RACE.rings,RACE.fin);for(const p of players.values())MS.score[p.id]=raceScore(p.rc,p.rf);}
     let over=MS.dur>0&&now>MS.t0+MS.dur;
     if((MS.mode==='team'||MS.mode==='grab')&&Math.max(MS.ts[0],MS.ts[1])>=M.goal)over=true;
     if(MS.mode==='race'&&RACE.fin>0&&[...players.values()].every(p=>p.rf>0))over=true;
-    if(MS.mode==='survival'){const ol=MS.left,ow=MS.wave;survTick(dt);if(MS.left!==ol||MS.wave!==ow){msDirty=1;survLocal(ol,ow);}
+    if(waveMode()){const ol=MS.left,ow=MS.wave;(MS.mode==='rush'?rushTick:survTick)(dt);if(MS.left!==ol||MS.wave!==ow){msDirty=1;survLocal(ol,ow);}
       const alive=(!dead||CREW.pilot)||[...players.values()].some(p=>!p.dead);if(!alive&&MS.wave>0)over=true;}
     if(MS.mode==='grab')grabTick(dt);
     if(over)endMatch();
@@ -6516,17 +6529,19 @@ function endMatch(){
   if(net.mode==='host')broadcast({t:'ms',m:msPack()});onMatchEnd();
 }
 function onMatchEnd(){
-  if(rewardedId===MS.id||!MS.res)return;rewardedId=MS.id;
+  if(rewardedId===MS.id||!MS.res)return;rewardedId=MS.id;v7ModeEnd();
   const res=MS.res,mine=res.findIndex(r=>r.id===net.myId),M=MODES[MS.mode],solo=net.mode==='solo'||res.length<2,myT=teamOf(net.myId);
   let title='',sub2='',win=false,gold=100,rec=false;
   if(M.teams){const w=MS.ts[0]===MS.ts[1]?-1:MS.ts[0]>MS.ts[1]?0:1;title=w<0?tl('🤝 BERABERE','🤝 DRAW'):(w===0?'🔵 ':'🔴 ')+teamName(w)+tl(' TAKIM KAZANDI!',' TEAM WINS!');sub2=`🔵 ${MS.ts[0]} — ${MS.ts[1]} 🔴`;win=w>=0&&w===myT;if(win)gold+=250;}
+  else if(MS.mode==='koth'||MS.mode==='chal'||MS.mode==='rush'){const r0=v7EndMode(res,mine,solo);title=r0.title;sub2=r0.sub;gold+=r0.gold;win=r0.win;rec=r0.rec;}
   else if(MS.mode==='survival'){const w=Math.max(0,MS.wave-1);title='🛡 '+tl(w+' dalga atlatıldı!','Survived '+w+' waves!');gold+=60*w;if(w>(save.best.surv||0)){save.best.surv=w;rec=true;}sub2=tl('En iyi: ','Best: ')+(save.best.surv||0)+tl(' dalga',' waves');}
   else{const top=res[0];title=solo?(M.ic+' '+mname()):'🏆 '+tl('Kazanan: ','Winner: ')+top.n;win=!solo&&mine===0;if(win)gold+=250;else if(mine===1)gold+=120;
     if(MS.mode==='race'){if(RACE.fin>0){const b=save.best.race;if(!b||RACE.fin<b){save.best.race=RACE.fin;rec=true;}sub2=tl('Süren: ','Your time: ')+fmtT(RACE.fin)+' · '+tl('Rekor: ','Record: ')+fmtT(save.best.race);}else sub2=tl('Yarışı bitiremedin','You did not finish');}
     if(MS.mode==='hunt'){if(myMS>(save.best.hunt||0)){save.best.hunt=myMS;rec=true;}sub2=tl('Puanın: ','Your score: ')+myMS+' · '+tl('Rekor: ','Record: ')+(save.best.hunt||0);}}
   if(rec){gold+=300;sub2+=' · 🎉 '+tl('YENİ REKOR!','NEW RECORD!');}
+  {const dEl=v7Rate(res,mine,win,M,solo);if(dEl)sub2+=' · 🏅 '+(dEl>0?'+':'')+dEl+' ('+ratingName()+')';}
   if(win)lifeAdd('win');addGold(gold,true);gainXp(win?400:150);persist();
-  const mvp=M.teams&&res.length>1?res[0]:null,unit=MS.mode==='team'?tl('batırma','sinks'):MS.mode==='grab'?tl('sayı','caps'):MS.mode==='survival'?tl('düşman','kills'):MS.mode==='hunt'?tl('puan','pts'):'';
+  const mvp=M.teams&&res.length>1?res[0]:null,unit=MS.mode==='team'?tl('batırma','sinks'):MS.mode==='grab'?tl('sayı','caps'):MS.mode==='survival'?tl('düşman','kills'):MS.mode==='hunt'||MS.mode==='chal'||MS.mode==='rush'?tl('puan','pts'):MS.mode==='koth'?tl('sn','s'):'';
   const rowsH=res.map((r,i)=>`<div class="sbR ${r.id===net.myId?'me':''}"><span>${i+1}.</span><i style="background:${r.tm>=0?TEAMC[r.tm]:'#9fb6c0'}"></i>${esc(r.n)}<b>${MS.mode==='race'?esc(r.x):r.s+' '+esc(unit)}</b></div>`).join('');
   const host=net.mode!=='client';
   $('endC').innerHTML=`<div class="eyebrow">${esc(M.ic+' '+mname().toLocaleUpperCase(lang==='tr'?'tr':'en')+tl(' · MAÇ SONU',' · MATCH OVER'))}</div><div class="endT">${esc(title)}</div><div class="endS">${esc(sub2)}${mvp?' · ⭐ MVP: '+esc(mvp.n):''}</div>${rowsH}
@@ -6596,7 +6611,7 @@ function survTick(dt){
   SURV.prevLeft=MS.left;
 }
 function spawnWave(){
-  MS.wave++;const w=MS.wave,n=Math.min(3+w*2,26);
+  MS.wave++;const w=MS.wave,n=Math.min(Math.round((3+w*2)*(MS.mode==='chal'&&chHas('horde')?1.4:1)),32);
   const tg=enemyTargets().filter(a=>!a.dc);let cx=0,cz=0;for(const a of tg){cx+=a.pos.x;cz+=a.pos.z;}if(tg.length){cx/=tg.length;cz/=tg.length;}
   const types=['swarm','shark'];if(w>=2)types.push('eel');if(w>=3)types.push('squid');
   let made=0;
@@ -6608,9 +6623,13 @@ function spawnWave(){
 }
 function survLocal(oLeft,oWave){
   if(MS.phase!=='play')return;
-  if(MS.wave>oWave)bigBanner('🌊 '+tl('DALGA ','WAVE ')+MS.wave,MS.left+tl(' düşman geliyor!',' enemies incoming!')+(MS.wave%5===0?tl(' · ALFA KÖPEKBALIKLARI!',' · ALPHA SHARKS!'):''));
-  else if(oLeft>0&&MS.left===0){const g=addGold(gm(50*MS.wave),true);toast('✅ '+tl('Dalga ','Wave ')+MS.wave+tl(' temizlendi! +',' cleared! +')+g+' 🪙 · '+tl('sonraki dalga 10 sn','next wave in 10 s'));
-    if(dead&&deadT===Infinity)respawn();else{hull=Math.min(HULL_MAX,hull+HULL_MAX*.35);torpAmmo=TORP_MAX;}}
+  const rush=MS.mode==='rush';
+  if(MS.wave>oWave){
+    if(rush){const c=ETYPE[RUSH.seq[Math.min(MS.wave-1,RUSH.seq.length-1)]];bigBanner('💀 '+tl('MUHAFIZ ','WARDEN ')+MS.wave+'/'+RUSH.seq.length,c[lang]+' · '+tl('uyandı!','awakens!'));}
+    else bigBanner('🌊 '+tl('DALGA ','WAVE ')+MS.wave,MS.left+tl(' düşman geliyor!',' enemies incoming!')+(MS.wave%5===0?tl(' · ALFA KÖPEKBALIKLARI!',' · ALPHA SHARKS!'):''));}
+  else if(oLeft>0&&MS.left===0){const g=addGold(gm((rush?260:50)*MS.wave),true);toast('✅ '+(rush?tl('Muhafız ','Warden ')+MS.wave+tl(' yenildi! +',' down! +'):tl('Dalga ','Wave ')+MS.wave+tl(' temizlendi! +',' cleared! +'))+g+' 🪙 · '+tl('sonraki: ','next: ')+(rush?'9':'10')+tl(' sn',' s'));
+    if(dead&&deadT===Infinity)respawn();else{hull=Math.min(HULL_MAX,hull+HULL_MAX*(rush?.5:.35));torpAmmo=TORP_MAX;}
+    if(!dead&&!(rush&&MS.wave>=RUSH.seq.length))setTimeout(offerPerks,900);}
 }
 
 /* ---- İşaretler (ping) ---- */
@@ -6641,7 +6660,7 @@ function pingsUpdate(dt){
 
 /* ---- Kurtarma, izleyici ---- */
 const revMode=()=>net.mode!=='solo'&&MS.mode!=='free'&&MS.mode!=='race';
-function deathDelay(){if(MS.mode==='race')return 2;if(MS.mode==='survival'&&MS.phase==='play')return Infinity;if(revMode())return 9;return 4.5;}
+function deathDelay(){if(MS.mode==='race')return 2;if(waveMode()&&MS.phase==='play')return Infinity;if(revMode())return 9;return 4.5;}
 let revAcc={},revCd=0;
 function reviveUpdate(dt){
   revCd=Math.max(0,revCd-dt);let show='';
@@ -6759,7 +6778,9 @@ function v4UI(){
         if(MS.mode==='grab'){const c=ORB.by;s+=' · 🔮 '+(c?(c===net.myId?tl('SENDE → üs ','YOU → base ')+dirArrow(GBASE[t].x,GBASE[t].z):((players.get(c)||{}).name||'?')):tl('serbest ','free ')+dirArrow(ORB.p.x,ORB.p.z));}}
       else if(MS.mode==='race'){const r=RINGS[RACE.rings];h=`🏁 ${RACE.rings}/${RINGS.length}`+(RACE.fin?' · '+fmtT(RACE.fin):' · '+fmtT(now-MS.t0))+tm;s=RACE.fin?tl('Bitirdin! Diğerleri bekleniyor','Finished! Waiting for others'):r?tl('Sonraki halka ','Next ring ')+dirArrow(r.p.x,r.p.z):'';}
       else if(MS.mode==='hunt'){const top=Object.entries(MS.score).sort((a,b)=>b[1]-a[1])[0];h=`🎣 ${tl('Puanın','Score')}: ${myMS}${tm}`;if(top&&net.mode!=='solo'){const nm=top[0]===net.myId?tl('sen','you'):(players.get(top[0])||{}).name||'?';s=tl('Lider: ','Leader: ')+esc(nm)+' '+Math.round(top[1]);}else s=tl('Rekor: ','Record: ')+(save.best.hunt||0);}
-      else if(MS.mode==='survival'){h=`🛡 ${tl('Dalga','Wave')} ${MS.wave} · ☠ ${MS.left}`;s=MS.left?tl('Kalan düşmanları yok et','Destroy the remaining enemies'):tl('Sonraki dalga geliyor…','Next wave incoming…');}}
+      else if(MS.mode==='koth'){const P=KOTH.p;h=`👑 ${tl('Puanın','Score')}: ${Math.floor(myMS)}${tm}`;s=(KOTH.cont?'⚠ '+tl('Çekişmeli — puan yok!','Contested — no points!'):KOTH.in?'✅ '+tl('Halkadasın: puan kazanıyorsun','In the ring: scoring'):tl('Halkaya git ','Head for the ring ')+dirArrow(P.x,P.z));}
+      else if(MS.mode==='rush'){const t=RUSH.seq[Math.max(0,MS.wave-1)],b=MS.wave>0?bossOf(t):null;h=`💀 ${tl('Muhafız','Warden')} ${Math.min(MS.wave,RUSH.seq.length)}/${RUSH.seq.length}${tm}`;s=b&&!b.dead?ETYPE[t][lang]+' '+dirArrow(b.x,b.z):tl('Sıradaki muhafız uyanıyor…','Next warden awakens…');}
+      else if(waveMode()){h=`${MS.mode==='chal'?'📅':'🛡'} ${tl('Dalga','Wave')} ${MS.wave} · ☠ ${MS.left}`;s=(MS.mode==='chal'?chMods().map(m=>m.ic).join('')+' ':'')+(MS.left?tl('Kalan düşmanları yok et','Destroy the remaining enemies'):tl('Sonraki dalga geliyor…','Next wave incoming…'));}}
     const html=h+(s?`<small>${s}</small>`:'');if(mb.dataset.h!==html){mb.dataset.h=html;mb.innerHTML=html;}mb.style.display='block';}
   else mb.style.display='none';
   // olay şeridi
@@ -6793,11 +6814,11 @@ function renderProfile(){
   const photoH=SPECIES.map(s=>{const f=save.photos.includes(s.id);return `<div class="chip ${f?'found':''}"><i style="background:${f?s.col:'#2a4450'}"></i>${f?'📷 '+esc(s[lang]):'???'}</div>`;}).join('');
   const bossH=[...BOSSES,'lord'].map(b=>{const f=save.bosses.includes(b),c=ETYPE[b];return `<div class="chip ${f?'found':''}"><i style="background:${f?c.col:'#2a4450'}"></i>💀 ${esc(c[lang])}${f?' ✓':''}</div>`;}).join('');
   const loreH=LORE.map((p,k)=>save.lore.includes(k)?`<div class="lp" data-l="${k}">📜 ${k+1}. ${esc(p[tr?0:1][0])}</div>`:`<div class="lp no">📜 ${k+1}. ???</div>`).join('');
-  const best=`🏁 ${save.best.race?fmtT(save.best.race):'—'} · 🛡 ${save.best.surv||0} ${tl('dalga','waves')} · 🎣 ${save.best.hunt||0}`;
+  const best=`🏁 ${save.best.race?fmtT(save.best.race):'—'} · 🛡 ${save.best.surv||0} ${tl('dalga','waves')} · 🎣 ${save.best.hunt||0} · 👑 ${save.best.koth||0} · 💀 ${save.best.rush||0} · 📅 ${save.best.chal||0}`;
   $('profC').innerHTML=`<div class="garTop"><div><div class="eyebrow">🏆 ${esc(tl('KAPTAN PROFİLİ','CAPTAIN PROFILE'))}</div><div class="inTitle">${esc(me.name)}${save.title?' · «'+esc(titleOf(save.title))+'»':''}</div>
     <div class="garSub">⭐ ${esc(tl('Seviye ','Level ')+(i.l+1)+' · '+rankName(i.l))} · ${i.cur}/${i.next} XP · 🔥 ${save.streak.n} · ${esc(tl('Rekorlar: ','Records: '))}${best}</div>
     <div class="xpb" style="margin-top:6px;height:6px"><i style="width:${i.cur/i.next*100}%"></i></div></div><div class="garGold">🪙 <b class="goldV">${save.gold}</b></div><button class="btn" id="profX">${esc(T.close)}</button></div>
-    ${profStatsHTML()}<div class="k">${esc(tl('UNVAN (diğer oyuncular görür)','TITLE (other players see it)'))}</div><div class="row" style="margin:6px 0 12px"><select class="txt" id="titleSel" style="min-width:220px"><option value="">${esc(tl('— Unvan yok —','— No title —'))}</option>${titles.map(a=>`<option value="${a.id}" ${save.title===a.id?'selected':''}>${esc(a.ti[tr?0:1])}</option>`).join('')}</select></div>
+    ${profStatsHTML()}${seasonHTML()}<div class="k">${esc(tl('UNVAN (diğer oyuncular görür)','TITLE (other players see it)'))}</div><div class="row" style="margin:6px 0 12px"><select class="txt" id="titleSel" style="min-width:220px"><option value="">${esc(tl('— Unvan yok —','— No title —'))}</option>${titles.map(a=>`<option value="${a.id}" ${save.title===a.id?'selected':''}>${esc(a.ti[tr?0:1])}</option>`).join('')}</select></div>
     <div class="k">${esc(tl('BAŞARIMLAR ','ACHIEVEMENTS ')+save.ach.length+'/'+ACH.length)}</div><div class="achG">${achH}</div>
     <div class="k">💀 ${esc(tl('MUHAFIZLAR','WARDENS'))}</div><div class="catalog" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:12px">${bossH}</div>
     <div class="k">📜 ${esc(tl('KAPTANIN GÜNLÜĞÜ ','CAPTAIN\'S LOG ')+save.lore.length+'/'+LORE.length)}</div><div style="margin-bottom:12px">${loreH}</div>
@@ -6805,6 +6826,7 @@ function renderProfile(){
   $('profX').onclick=()=>toggleProfile(false);
   $('titleSel').onchange=e=>{save.title=e.target.value;persist();};
   $('profC').querySelectorAll('[data-l]').forEach(el=>el.onclick=()=>showLore(+el.dataset.l));
+  $('profC').querySelectorAll('[data-sea]').forEach(el=>el.onclick=()=>seasonClaim(+el.dataset.sea));
   $('profC').querySelectorAll('[data-em]').forEach(el=>el.onclick=()=>{const i=+el.dataset.em;if(!emOK(i)){toast('🔒 '+tl('Daha yüksek seviye gerekli','Higher level required'));return;}CFG.em=i;cfgSave();renderProfile();});
 }
 $('profM').addEventListener('click',e=>{if(e.target===$('profM'))toggleProfile(false);});
@@ -6822,7 +6844,7 @@ function renderGarage4(){
   $('modList').innerHTML=Object.keys(MODS).map(k=>{const m=MODS[k],own=save.mods.includes(k),auto=!own&&(SUBS[save.tier].rk>=m.tier||(SUBS[save.tier].mods||[]).includes(k));
     const b=own||auto?`<button class="btn" disabled>${esc(own?tl('TAKILI','FITTED'):tl('GÖVDEDE VAR','BUILT-IN'))}</button>`:`<button class="btn gold" data-a="mod" data-k="${k}"${save.gold<m.price?' style="opacity:.55"':''}>${esc(T.buy)} · ${m.price} 🪙</button>`;
     return `<div class="modR"><b>${m.ic} ${esc(tl(m.tr,m.en))}<small>${esc((sb=>tl(m.ztr+' için · '+sb.tr+' ve üstünde dahili',m.zen+' · built into '+sb.en+' and above'))(SUBS.find(x=>x.rk===m.tier)||SUBS[0]))}</small></b>${b}</div>`;}).join('');
-  $('skinGrid').innerHTML=SKINS.map((s,i)=>{const own=save.skins.includes(i),sel=save.skin===i;if(s.ach&&!own)return `<div class="subC"><div class="skC"><i style="background:${s.sw}"></i><b>${esc(tl(s.tr,s.en))}</b></div>🔒 ${esc(tl('Derinlerin Efendisi\'ni yen','Defeat the Lord of the Deep'))}</div>`;
+  $('skinGrid').innerHTML=SKINS.map((s,i)=>{const own=save.skins.includes(i),sel=save.skin===i;if(s.ach&&!own)return `<div class="subC"><div class="skC"><i style="background:${s.sw}"></i><b>${esc(tl(s.tr,s.en))}</b></div>🔒 ${esc(s.ach==='season'?tl('Sezon Yolu 30. kademe','Season Path tier 30'):tl('Derinlerin Efendisi\'ni yen','Defeat the Lord of the Deep'))}</div>`;
     const b=sel?`<button class="btn" disabled>${esc(T.equipped)}</button>`:own?`<button class="btn primary" data-a="skin" data-s="${i}">${esc(T.equip)}</button>`:`<button class="btn gold" data-a="skin" data-s="${i}"${save.gold<s.price?' style="opacity:.55"':''}>${esc(T.buy)} · ${s.price} 🪙</button>`;
     return `<div class="subC ${sel?'on':''}"><div class="skC"><i style="background:${s.sw}"></i><b>${esc(tl(s.tr,s.en))}</b></div>${b}</div>`;}).join('');
   $('trailGrid').innerHTML=TRAILS.map((s,i)=>{const own=save.trails.includes(i),sel=save.trail===i,col=s.c==null?'#2a4450':s.c===-1?'linear-gradient(90deg,#f55,#fd5,#5f8,#5cf,#c6f)':'#'+s.c.toString(16).padStart(6,'0');
@@ -6867,7 +6889,7 @@ function v4Update(dt,now,t){
   if(net.mode!=='client'){matchTick(dt);evTick(dt);}
   evLocal(dt,t);ringsUpdate(dt,t);grabUpdate(dt,t);pingsUpdate(dt);hazardUpdate(dt,now);bossPush();crewPilotBuff(dt);reviveUpdate(dt);trailUpdate(dt,t);
   for(const e of enemies)if(e.warnT>0){e.warnT-=dt;}
-  if(dead&&deadT===Infinity&&!(MS.mode==='survival'&&MS.phase==='play'))deadT=3;
+  if(dead&&deadT===Infinity&&!(waveMode()&&MS.phase==='play'))deadT=3;
   comboTick();
   v4uiT+=dt;if(v4uiT>.2){v4uiT=0;v4UI();}
 }
@@ -6912,7 +6934,7 @@ function musNote(f,t,dur,type,vol,att){const o=ac.createOscillator(),g=ac.create
 function musHit(t,vol,f0,f1,dur){const s=noiseSrc(dur);const f=ac.createBiquadFilter();f.type='bandpass';f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+dur);const g=ac.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f).connect(g).connect(mus.out);s.start(t,Math.random()*Math.max(0,_nb.duration-dur-.1),dur+.05);}
 function musLevel(){
   if(!running||dead)return 0;
-  if(MS.mode==='survival'&&MS.phase==='play'&&MS.left>0)return 2;
+  if(waveMode()&&MS.phase==='play'&&MS.left>0)return 2;
   for(const e of enemies){if(e.dead||e.st===0)continue;const d=Math.hypot(e.x-sub.position.x,e.y-sub.position.y,e.z-sub.position.z);if(e.cfg.boss&&d<150)return 2;if(d<45)return 1;}
   if(MODES[MS.mode].match&&MS.phase==='play')return 1;
   return 0;
@@ -7760,6 +7782,172 @@ function v7GarageClick(a,b){
   if(a==='gear'){const g=GBY(id);if(!g||hasGear(id))return;if(save.gold<g.price){toast(T.needGold);return;}save.gold-=g.price;save.gd.push(id);toast(g.ic+' '+tl(g.tr,g.en)+tl(' satın alındı',' purchased'));sfx.shield();renderWpn();}
   else if(a==='ammo'){const A=AMMO[id];if(!A||!A.price||save.am.includes(id))return;if(save.gold<A.price){toast(T.needGold);return;}save.gold-=A.price;save.am.push(id);ammoSel=id;store.set('aqua-ammo',id);toast('🔫 '+tl(A.tr,A.en)+tl(' mühimmat alındı',' ammo purchased'));sfx.shield();}
   persist();renderGear();
+}
+/* ================= v7.0 (3/n): yeni modlar (Tepe Hakimi, Muhafız Akını, Günlük Meydan Okuma), perk seçimi, rekabet derecesi, sezon yolu ================= */
+const waveMode=()=>MS.mode==='survival'||MS.mode==='chal'||MS.mode==='rush';
+/* ---- Perkler: dalga/akın modlarında her temizlenen dalgadan sonra 3 seçenekten 1'i ---- */
+const PERKS=[
+  {id:'dmg',ic:'💥',tr:'Ağır Mermi',en:'Heavy Rounds',d:['Verdiğin hasar +%20','Damage dealt +20%'],f:()=>{PK.dmg*=1.2;}},
+  {id:'hull',ic:'🛡',tr:'Takviyeli Gövde',en:'Reinforced Hull',d:['En yüksek gövde +%20 (ve onarır)','Max hull +20% (and repairs)'],f:()=>{PK.hullx*=1.2;applyLoadout(false);hull=Math.min(HULL_MAX,hull+HULL_MAX*.25);}},
+  {id:'reload',ic:'⚙',tr:'Hızlı Yükleme',en:'Fast Loader',d:['Torpido yükleme %30 hızlı','Torpedo reload 30% faster'],f:()=>{PK.reload*=.7;applyLoadout(false);}},
+  {id:'torp',ic:'🚀',tr:'Geniş Depo',en:'Bigger Magazine',d:['+3 torpido kapasitesi (ve doldurur)','+3 torpedo capacity (and refills)'],f:()=>{PK.torp+=3;applyLoadout(false);torpAmmo=TORP_MAX;}},
+  {id:'spd',ic:'💨',tr:'Güçlü Pervane',en:'Strong Propeller',d:['Hız +%10','Speed +10%'],f:()=>{PK.spd*=1.1;applyLoadout(false);}},
+  {id:'drain',ic:'🔋',tr:'Verimli Batarya',en:'Efficient Battery',d:['Batarya tüketimi -%30','Battery drain -30%'],f:()=>{PK.drain*=.7;applyLoadout(false);}},
+  {id:'shield',ic:'🔰',tr:'Kalkan Ustası',en:'Shield Master',d:['Kalkan bekleme süresi yarıya iner','Shield cooldown halved'],f:()=>{PK.shCd*=.5;}},
+  {id:'heat',ic:'❄',tr:'Soğutucu Namlu',en:'Cooled Barrels',d:['Makineli top %30 az ısınır','Machine gun heats 30% slower'],f:()=>{PK.heat*=.7;}},
+  {id:'vamp',ic:'🩸',tr:'Kan Emici',en:'Bloodthirst',d:['Her düşman öldürmede +8 gövde','+8 hull for every enemy killed'],f:()=>{PK.vamp+=8;}},
+  {id:'gold',ic:'🧲',tr:'Altın Mıknatısı',en:'Gold Magnet',d:['Altın kazancı +%40','Gold earned +40%'],f:()=>{PK.gold*=1.4;}},
+  {id:'rev',ic:'💫',tr:'Son Nefes',en:'Last Breath',d:['Bir kez batmadan dirilirsin (%50 gövde)','Survive one fatal hit (50% hull)'],f:()=>{PK.rev++;},rare:1}
+];
+let pkOpen=false,pkT=0,pkCh=[];
+function pkReset(){PK.dmg=PK.hullx=PK.reload=PK.spd=PK.drain=PK.shCd=PK.heat=PK.gold=1;PK.torp=0;PK.vamp=0;PK.rev=0;PK.n=[];closePerks();}
+function offerPerks(){
+  if(pkOpen||dead)return;
+  const pool=PERKS.filter(p=>!(p.rare&&Math.random()>.35)).sort(()=>Math.random()-.5);pkCh=pool.slice(0,3);pkOpen=true;pkT=16;
+  const el=$('pkP');el.style.display='flex';
+  el.innerHTML=`<div class="k" style="width:100%;text-align:center">⭐ ${esc(tl('PERK SEÇ','CHOOSE A PERK'))} <span id="pkTm"></span></div>`+pkCh.map((p,i)=>`<button class="pkC" data-p="${i}"><kbd>${i+1}</kbd><i>${p.ic}</i><b>${esc(tl(p.tr,p.en))}</b><span>${esc(p.d[lang==='tr'?0:1])}</span></button>`).join('');
+}
+function closePerks(){pkOpen=false;const el=$('pkP');if(el)el.style.display='none';}
+function pickPerk(i){
+  if(!pkOpen||!pkCh[i])return;const p=pkCh[i];p.f();PK.n.push(p.id);closePerks();sfx.shield();
+  toast(p.ic+' '+tl(p.tr,p.en)+' ✓');
+}
+{const d=document.createElement('div');d.id='pkP';d.className='glass';d.style.display='none';document.body.appendChild(d);
+ d.addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(b)pickPerk(+b.dataset.p);});}
+function perkTick(dt){if(!pkOpen)return;pkT-=dt;const t=$('pkTm');if(t)t.textContent='· '+Math.ceil(pkT);if(pkT<=0)pickPerk((Math.random()*pkCh.length)|0);}
+/* ---- Günlük Meydan Okuma: tarihe göre herkeste aynı değiştiriciler ---- */
+const CHMODS=[
+  {id:'glass',ic:'🥚',tr:'Cam Gövde',en:'Glass Hull',d:['Gövde ×0,45','Hull ×0.45']},
+  {id:'horde',ic:'👥',tr:'Sürü',en:'Horde',d:['Dalgalar %40 kalabalık','Waves 40% bigger']},
+  {id:'tough',ic:'🪨',tr:'Sert Düşman',en:'Tough Foes',d:['Düşman canı ×1,5','Enemy health ×1.5']},
+  {id:'nogun',ic:'🚫',tr:'Torpido Çağı',en:'Torpedo Age',d:['Makineli top kapalı, torpido +4','Machine gun off, +4 torpedoes']},
+  {id:'rich',ic:'💰',tr:'Altın Çağı',en:'Gold Rush',d:['Skor ×1,5','Score ×1.5']},
+  {id:'dark',ic:'🌑',tr:'Karanlık Sular',en:'Dark Waters',d:['Görüş çok kısa','Very short visibility']}
+];
+const chMods=()=>{const r=mulberry32(hashStr('chal'+dayKey())),a=CHMODS.slice().sort(()=>r()-.5);return a.slice(0,2);};
+const chHas=id=>MS.mode==='chal'&&chMods().some(m=>m.id===id);
+/* ---- Tepe Hakimi ---- */
+const KOTH={R:32,slot:-1,p:new THREE.Vector3(),acc:0,in:false,cont:false,m:null,pr:0};
+function kothInit(){
+  if(KOTH.m)return;const g=new THREE.Group(),rm=new THREE.MeshBasicMaterial({color:0xffd56c,transparent:true,opacity:.7,fog:false,depthWrite:false,blending:THREE.AdditiveBlending});
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(KOTH.R,.7,8,64),rm);ring.rotation.x=Math.PI/2;g.add(ring);
+  const wall=new THREE.Mesh(new THREE.CylinderGeometry(KOTH.R,KOTH.R,160,40,1,true),new THREE.MeshBasicMaterial({color:0xffd56c,transparent:true,opacity:.07,fog:false,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));g.add(wall);
+  g.visible=false;g.renderOrder=8;scene.add(g);KOTH.m={g,ring,wall,rm};
+}
+function kothPos(){
+  const k=Math.floor(Math.max(0,worldTime()-MS.t0)/50);
+  if(k!==KOTH.slot){KOTH.slot=k;const r=mulberry32(hashStr('koth'+MS.id+':'+k));const x=(r()*2-1)*(HX-130),z=(r()*2-1)*(HZ-130);KOTH.p.set(x,clamp(floorH(x,z)+26,-26,SURF-26),z);
+    if(MS.phase==='play'&&k>0){toast('👑 '+tl('Halka yer değiştirdi!','The ring moved!'));tone(440,880,.3,'triangle',.12);}}
+}
+function kothTick(dt){
+  kothInit();kothPos();const P=KOTH.p,R=KOTH.R;
+  const inZ=q=>Math.hypot(q.x-P.x,q.z-P.z)<R&&Math.abs(q.y-P.y)<70;
+  let mine=!dead&&!CREW.pilot&&inZ(sub.position),others=0;
+  for(const o of players.values())if(!o.dead&&!o.cr&&inZ(o.pos))others++;
+  KOTH.in=mine;KOTH.cont=mine&&others>0;
+  if(MS.phase==='play'&&mine&&!others){KOTH.acc+=dt;if(KOTH.acc>=1){const n=Math.floor(KOTH.acc);KOTH.acc-=n;myMS+=n;}}
+  // solo/ekip baskısı: halkada beklerken düşman dalgaları gelir
+  if(net.mode==='solo'&&MS.phase==='play'&&net.mode!=='client'){KOTH.pr+=dt;if(KOTH.pr>24){KOTH.pr=0;kothPressure();}}
+  const c=KOTH.cont?0xff5a4a:KOTH.in?0x7ef0b9:0xffd56c;if(KOTH.m.rm.userData.c!==c){KOTH.m.rm.userData.c=c;KOTH.m.rm.color.setHex(c);KOTH.m.wall.material.color.setHex(c);}
+  KOTH.m.g.position.copy(P);KOTH.m.g.visible=MS.phase==='play'||MS.phase==='count';KOTH.m.ring.rotation.z+=dt*.4;KOTH.m.rm.opacity=.55+.25*Math.sin(performance.now()*.004);
+}
+function kothPressure(){
+  const n=2+Math.min(4,(KOTH.slot|0)),types=['shark','swarm','eel'];
+  for(let k=0;k<n;k++){const e=freeSlot('wave',types[k%types.length]);if(!e)continue;const a=Math.random()*6.28,d=rr(KOTH.R+30,KOTH.R+70);
+    const x=clamp(KOTH.p.x+Math.sin(a)*d,-HX+20,HX-20),z=clamp(KOTH.p.z+Math.cos(a)*d,-HZ+20,HZ-20);activateSlot(e,x,clamp(KOTH.p.y+rr(-8,8),floorQ(x,z)+4,SURF-6),z,{ag:9999,hp:1});}
+}
+/* ---- Muhafız Akını ---- */
+const RUSH={seq:['kraken','magma','frost','crystal','leviathan','megalodon'],brk:6,homes:{}};
+function spawnRushBoss(){
+  const idx=MS.wave;if(idx>=RUSH.seq.length){endMatch();return;}
+  const type=RUSH.seq[idx],e=bossOf(type);if(!e)return;
+  if(!RUSH.homes[type])RUSH.homes[type]={x:e.home.x,y:e.home.y,z:e.home.z};
+  const tg=enemyTargets().filter(a=>!a.dc);let cx=0,cz=0;for(const a of tg){cx+=a.pos.x;cz+=a.pos.z;}if(tg.length){cx/=tg.length;cz/=tg.length;}
+  const a=Math.random()*6.28,d=rr(150,190),x=clamp(cx+Math.sin(a)*d,-HX+60,HX-60),z=clamp(cz+Math.cos(a)*d,-HZ+60,HZ-60),c=e.cfg;
+  activateSlot(e,x,clamp(rr(-14,-6),floorQ(x,z)+c.r*.6,SURF-c.r*.5-4),z,{ag:9999,hp:1+idx*.07});
+  MS.wave++;MS.left=1;SURV.prevLeft=1;msDirty=1;
+}
+function rushTick(dt){
+  const t=RUSH.seq[Math.max(0,MS.wave-1)],b=MS.wave>0?bossOf(t):null;
+  MS.left=b&&!b.dead?1:0;
+  if(MS.left===0){if(SURV.prevLeft>0)RUSH.brk=9;RUSH.brk-=dt;if(RUSH.brk<=0){RUSH.brk=9;spawnRushBoss();}}
+  SURV.prevLeft=MS.left;
+}
+function rushRestore(){for(const t in RUSH.homes){const e=bossOf(t),h=RUSH.homes[t];if(!e)continue;e.home={x:h.x,y:h.y,z:h.z};if(!e.dead){e.x=e.nx=h.x;e.y=e.ny=h.y;e.z=e.nz=h.z;e.ag=0;e.st=0;}else if(e.respT===Infinity&&!e.cfg.final)e.respT=20;}RUSH.homes={};}
+/* ---- Mod başlangıç / bitiş kancaları ---- */
+function v7ModeStart(){
+  pkReset();KOTH.slot=-1;KOTH.acc=0;KOTH.pr=0;RUSH.brk=6;
+  if(MS.mode==='rush'||MS.mode==='koth'||MS.mode==='chal'){SURV.brk=4;SURV.prevLeft=0;}
+  if(KOTH.m)KOTH.m.g.visible=false;
+  if(MS.mode==='chal'){const ms=chMods();setTimeout(()=>bigBanner('📅 '+tl('GÜNLÜK MEYDAN OKUMA','DAILY CHALLENGE'),ms.map(m=>m.ic+' '+tl(m.tr,m.en)).join('  ·  ')),3500);
+    if(chHas('glass')){PK.hullx*=.45;applyLoadout(false);hull=HULL_MAX;}if(chHas('nogun')){PK.torp+=4;applyLoadout(false);torpAmmo=TORP_MAX;}}
+  applyChalFog();
+}
+function applyChalFog(){scene.fog.density=.0056*QC.vis*(chHas('dark')&&MS.phase!=='end'?2.4:1);}
+function v7ModeEnd(){
+  if(MS.mode==='rush')rushRestore();
+  if(KOTH.m)KOTH.m.g.visible=false;closePerks();
+  scene.fog.density=.0056*QC.vis;
+}
+function v7ModeTick(dt){
+  if(!MODES[MS.mode]||!MODES[MS.mode].match)return;
+  if(MS.mode==='koth')kothTick(dt);
+  if(waveMode())perkTick(dt);
+}
+function v7EndMode(res,mine,solo){
+  const tr=lang==='tr',o={title:'',sub:'',gold:0,win:false,rec:false},M=MODES[MS.mode];
+  if(MS.mode==='koth'){
+    const top=res[0];o.title=solo?'👑 '+tl('Tepe Hakimi','King of the Hill'):'🏆 '+tl('Kazanan: ','Winner: ')+top.n;o.win=!solo&&mine===0;if(o.win)o.gold+=250;else if(mine===1)o.gold+=120;
+    o.gold+=Math.min(400,Math.round(myMS*1.5));if(myMS>(save.best.koth||0)){save.best.koth=myMS;o.rec=true;}o.sub=tl('Halkada: ','Time in ring: ')+myMS+tl(' sn',' s')+' · '+tl('Rekor: ','Record: ')+(save.best.koth||0);
+  }else if(MS.mode==='rush'){
+    const cl=Math.max(0,MS.wave-(MS.left?1:0)),all=cl>=RUSH.seq.length;o.title=(all?'👑 ':'💀 ')+tl(cl+' muhafız yenildi'+(all?' — HEPSİ!':''),cl+' wardens defeated'+(all?' — ALL OF THEM!':''));
+    o.gold+=cl*250+(all?1500:0);o.win=all;if(cl>(save.best.rush||0)){save.best.rush=cl;o.rec=true;}o.sub=tl('En iyi: ','Best: ')+(save.best.rush||0)+tl(' muhafız',' wardens')+(PK.n.length?' · '+PK.n.map(id=>PERKS.find(p=>p.id===id).ic).join(''):'');
+  }else{ // chal
+    const w=Math.max(0,MS.wave-1),sc=Math.round((w*40+myMS*6)*(chHas('rich')?1.5:1)),first=save.ch.d!==dayKey();
+    o.title='📅 '+tl(w+' dalga · '+sc+' puan',w+' waves · '+sc+' points');o.gold+=40*w+(first?300:0);
+    if(first){save.ch={d:dayKey(),b:sc,n:1};}else{save.ch.n++;if(sc>save.ch.b)save.ch.b=sc;}
+    if(sc>(save.best.chal||0)){save.best.chal=sc;o.rec=true;}o.sub=tl('Bugünün en iyisi: ','Today\'s best: ')+save.ch.b+' · '+tl('Rekor: ','Record: ')+(save.best.chal||0)+(first?' · +300 🪙 '+tl('günlük bonus','daily bonus'):'');
+    myMS=sc;
+  }
+  return o;
+}
+/* ---- Rekabet derecesi (yalnızca online rekabetçi maçlar) ---- */
+function v7Rate(res,mine,win,M,solo){
+  if(solo||!M.match||!['team','grab','hunt','race','koth'].includes(MS.mode)||mine<0)return 0;
+  let d=0;
+  if(M.teams){const w=MS.ts[0]===MS.ts[1]?-1:MS.ts[0]>MS.ts[1]?0:1,t=teamOf(net.myId);d=w<0?0:(w===t?22:-14);if(win&&res[0].id===net.myId)d+=4;}
+  else{const n=res.length,s=n>1?(n-1-mine)/(n-1):.5;d=Math.round((s-.5)*40);}
+  const before=save.elo;save.elo=clamp(save.elo+d,0,5000);d=save.elo-before;
+  if(d>0)save.rk.w++;else if(d<0)save.rk.l++;
+  return d;
+}
+/* ---- Sezon yolu (aylık): her XP sezon ilerlemesidir ---- */
+const SEASON_STEP=900,SEASON_TIERS=30;
+const seasonId=()=>dayKey().slice(0,7);
+function seasonSync(){if(save.sea.id!==seasonId()){save.sea={id:seasonId(),x:0,cl:[]};v4dirty=true;}}
+const seasonTier=()=>Math.min(SEASON_TIERS,Math.floor(save.sea.x/SEASON_STEP));
+function seasonReward(t){ // t: 1..30
+  const sk=(n)=>SKINS.findIndex(s=>s.en===n),tr=(n)=>TRAILS.findIndex(s=>s.en===n);
+  if(t===30)return {k:'skin',i:sk('Aurora'),ic:'🌌',tr:'Aurora boyası (özel)',en:'Aurora paint (exclusive)'};
+  if(t===25)return {k:'gold',n:3000,ic:'💎',tr:'3000 altın',en:'3000 gold'};
+  if(t===20)return {k:'skin',i:sk('Kraken Purple'),ic:'🎨',tr:'Kraken Moru boyası',en:'Kraken Purple paint'};
+  if(t===15)return {k:'trail',i:tr('Electric'),ic:'⚡',tr:'Elektrik pervane izi',en:'Electric trail'};
+  if(t===10)return {k:'skin',i:sk('Carbon'),ic:'🎨',tr:'Karbon boyası',en:'Carbon paint'};
+  if(t===5)return {k:'trail',i:tr('Hearts'),ic:'💗',tr:'Kalpler pervane izi',en:'Hearts trail'};
+  return {k:'gold',n:150+t*30,ic:'🪙',tr:(150+t*30)+' altın',en:(150+t*30)+' gold'};
+}
+function seasonClaim(t){
+  seasonSync();if(t>seasonTier()||save.sea.cl.includes(t))return;const r=seasonReward(t);
+  if(r.k==='gold')save.gold+=r.n;else if(r.k==='skin'&&r.i>=0&&!save.skins.includes(r.i))save.skins.push(r.i);else if(r.k==='trail'&&r.i>=0&&!save.trails.includes(r.i))save.trails.push(r.i);
+  save.sea.cl.push(t);persist();refreshGold();sfx.disc();toast(r.ic+' '+tl(r.tr,r.en)+' ✓');if(profOpen())renderProfile();
+}
+function seasonHTML(){
+  seasonSync();const t=seasonTier(),x=save.sea.x,cur=x-t*SEASON_STEP,now=new Date(),left=Math.ceil((new Date(now.getFullYear(),now.getMonth()+1,1)-now)/864e5);
+  const cells=[];for(let i=1;i<=SEASON_TIERS;i++){const r=seasonReward(i),got=save.sea.cl.includes(i),can=i<=t&&!got;
+    cells.push(`<button class="seaC ${got?'got':can?'can':i<=t?'':'lock'}" data-sea="${i}" title="${esc(tl(r.tr,r.en))}"><small>${i}</small><i>${r.ic}</i></button>`);}
+  return `<div class="k">🌊 ${esc(tl('SEZON YOLU · ','SEASON PATH · ')+seasonId())} · ${esc(tl('Kademe ','Tier ')+t+'/'+SEASON_TIERS)} · ${esc(tl(left+' gün kaldı',left+' days left'))}</div>
+  <div class="xpb" style="margin:6px 0 8px;height:6px"><i style="width:${t>=SEASON_TIERS?100:cur/SEASON_STEP*100}%"></i></div>
+  <div class="seaG">${cells.join('')}</div><div class="foot" style="margin:4px 0 12px">${esc(tl('Her kazandığın XP sezon yoluna işler. Kazanılan kademeye dokun: ödülü al. Sezon ayın sonunda sıfırlanır; 30. kademe özel boya verir.','Every XP you earn advances the path. Tap an unlocked tier to claim. The season resets monthly; tier 30 gives an exclusive paint.'))}</div>`;
 }
 /*V7-APPEND*/
 requestAnimationFrame(loop);

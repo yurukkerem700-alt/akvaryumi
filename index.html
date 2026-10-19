@@ -286,9 +286,11 @@ body.crew #cockpit{display:none!important}
 .qi .qt{display:flex;justify-content:space-between;gap:6px}.rq{border:0;background:rgba(255,255,255,.1);color:#cfe6ef;border-radius:6px;font-size:11px;cursor:pointer;padding:1px 6px;flex:none}.rq:hover{background:rgba(255,255,255,.22)}
 @media (orientation:portrait){.touch #musicBtn{display:none}}
 /* v7: ayarlar, temalar, nişangâh, erişilebilirlik */
-#pkP{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);z-index:12;display:none;gap:8px;flex-wrap:wrap;justify-content:center;width:min(640px,calc(100vw - 20px));padding:10px;border-radius:16px;border-color:rgba(255,213,108,.45)}
-.pkC{flex:1 1 170px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff;font:inherit;cursor:pointer}.pkC:hover{border-color:var(--gold);background:rgba(255,213,108,.12)}
-.pkC kbd{font:inherit;font-size:9px;color:var(--muted)}.pkC i{font-style:normal;font-size:26px}.pkC b{font-size:13px}.pkC span{font-size:11px;color:#c6dfe7;text-align:center;line-height:1.35}
+#pkP{position:fixed;left:50%;bottom:168px;transform:translateX(-50%);z-index:8;display:none;gap:6px;flex-wrap:nowrap;justify-content:center;width:min(520px,calc(100vw - 20px));padding:6px 8px;border-radius:12px;border-color:rgba(255,213,108,.35);opacity:.92}
+#qsNote{position:fixed;left:12px;bottom:230px;z-index:6;max-width:300px;padding:8px 11px;border-radius:10px;font-size:11px;line-height:1.45;pointer-events:none;transition:opacity .8s}#qsNote b{display:block;color:var(--cyan);font-size:10px;letter-spacing:1px;margin-bottom:2px}
+.touch #pkP{bottom:auto;top:96px}
+.pkC{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 5px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff;font:inherit;cursor:pointer}.pkC:hover{border-color:var(--gold);background:rgba(255,213,108,.12)}
+.pkC kbd{font:inherit;font-size:9px;color:var(--muted)}.pkC i{font-style:normal;font-size:18px}.pkC b{font-size:11px}.pkC span{font-size:9.5px;color:#c6dfe7;text-align:center;line-height:1.35}
 .seaG{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:5px;margin:6px 0}.seaC{position:relative;height:50px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:#fff;font:inherit;cursor:default;padding:0}.seaC i{font-style:normal;font-size:19px}.seaC small{position:absolute;left:4px;top:2px;font-size:9px;color:var(--muted)}
 .seaC.lock{opacity:.4}.seaC.can{border-color:var(--gold);background:rgba(255,213,108,.18);cursor:pointer;animation:nrp 1.2s ease-in-out infinite}.seaC.got{border-color:rgba(126,240,185,.5);background:rgba(126,240,185,.12)}.seaC.got::after{content:"✓";position:absolute;right:4px;bottom:1px;font-size:10px;color:#7ef0b9}
 #ammoTag{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:7;padding:3px 10px;border-radius:8px;font-size:10px;font-weight:900;letter-spacing:1px;pointer-events:none;display:none}
@@ -1564,7 +1566,10 @@ const TPAL=[
   {hull:0x241c1a,hull2:0x4a2a1e,tower:0x2f2622,fin:0xe8560e,trim:0xffa030,prop:0x3a2a22},                 /* 9 Lav Yakıcı: kömür/magma */
   {hull:0x4a2a78,hull2:0x1d1030,tower:0x2e1a4a,fin:0x25e0b8,trim:0x7af0d8,prop:0x14102a},                 /* 10 Kraken Pençe: mor/turkuaz */
   {hull:0xd8c6f0,hull2:0x7a6aa8,tower:0xf2e8ff,fin:0x58e8ff,trim:0xff7ad8,prop:0x8a7ab0,flat:1},          /* 11 Prizma: kristal */
-  {hull:0x3d454c,hull2:0x2b3238,tower:0x353c43,fin:0x2c3238,trim:0x6a747e,prop:0xb08a4a}                    /* 12 Komuta: gerçek nükleer saldırı denizaltısı (gri-siyah, mat) */
+  {hull:0x3d454c,hull2:0x2b3238,tower:0x353c43,fin:0x2c3238,trim:0x6a747e,prop:0xb08a4a},                   /* 12 Komuta: gerçek nükleer saldırı denizaltısı (gri-siyah, mat) */
+  {hull:0xe6eaec,hull2:0xc4541e,tower:0xf1f2f0,fin:0xc4541e,trim:0x6d7c86,prop:0x2f3a42},                   /* 13 Derin Dalgıç: beyaz gövde, turuncu işaret (Alvin tipi) */
+  {hull:0x1d2227,hull2:0x2a3138,tower:0x1a1f24,fin:0x20262b,trim:0x56626b,prop:0x30373c,flat:1},           /* 14 Barakuda: ses emici kaplama, koyu gri */
+  {hull:0x1a1e22,hull2:0x2e353b,tower:0x22272c,fin:0x1a1e22,trim:0x7a828a,prop:0x3a3f44}                  /* 15 Titan: balistik füze denizaltısı, kömür siyahı */
 ];
 /* Gerçekçi donanma paletleri: mat boya, gri/zeytin/lacivert tonlar; renk yalnızca küçük işaretlerde */
 [
@@ -1595,7 +1600,10 @@ const SD=[
   {R:1.5,top:1.5,bot:-1.5,nose:4.7,tail:-4.4,sp:[0,3.0,2.1]},
   {R:1.5,top:2.3,bot:-1.3,nose:5.0,tail:-4.2,sp:[0,0,5.4],nt:[1.12,3.0]},
   {R:1.2,top:1.2,bot:-1.2,nose:5.4,tail:-3.6,sp:[0,0,5.5],nt:[.9,2.7]},
-  {R:1.7,top:1.7,bot:-1.7,nose:7.7,tail:-7.7,nt:[1.7,3.0]}
+  {R:1.7,top:1.7,bot:-1.7,nose:7.7,tail:-7.7,nt:[1.7,3.0]},
+  {R:1.15,top:1.45,bot:-1.35,nose:3.1,tail:-2.9,sp:[0,.35,3.1]},
+  {R:1.3,top:1.3,bot:-1.3,nose:5.2,tail:-5.3},
+  {R:2.0,top:2.1,bot:-2.0,nose:6.4,tail:-6.6,sp:[0,2.4,-2.6]}
 ];
 /* Ateşleme noktaları (denizaltı yerel uzayı):
    tp = torpido tüpü [x, y, ağız z] (sağ/sol yan yana, namlu gövdenin dışına uzanır), tl = namlu boyu
@@ -1965,6 +1973,67 @@ function setSubTier(s,tier,skin){
     lamp(.0,.35,6.55,.07);sph(.06,d.red,-1.55,.2,-1.0);sph(.06,d.cyan,1.55,.2,-1.0);
     for(const sx of [-1,1])box(.5,.06,1.1,c.hull2,sx*1.0,-R*.52,3.2,0,0,sx*-.4);
   }
+  else if(tier===13){ /* DERİN DALGIÇ: Alvin tipi derin dalış aracı — beyaz fiberglas gövde, turuncu yüzdürme bloğu, ön sepet, manipülatör kollar, yüksek güçlü projektörler */
+    const bd=add(new THREE.CapsuleGeometry(1.0,2.4,8,24),c.hull,0,0,-.1,Math.PI/2);bd.scale.set(1.12,1,1);
+    box(2.0,.55,3.7,c.hull2,0,.98,-.3);box(2.06,.1,3.76,c.trim,0,1.28,-.3);
+    for(const z of [-.9,.5])cyl(1.1,1.1,.34,c.hull2,0,0,z,Math.PI/2,0,0,28).scale.set(1.12,1,1);
+    const sail=cyl(.45,.55,.8,c.tower,0,1.62,-1.15,0,0,0,18);sail.scale.set(1,1,1.5);cyl(.03,.03,1.3,d.black,.15,2.4,-1.25,0,0,0,6);sph(.07,d.red,.15,3.05,-1.25);
+    for(const sx of [-1,1]){sph(.34,d.glass,sx*.55,.2,2.55,1,1,.9);tor(.34,.05,c.trim,sx*.55,.2,2.55,0,0,0);}
+    sph(.24,d.glass,0,-.35,2.7,1,1,.9);
+    /* ön sepet (turuncu çerçeve) ve manipülatör kollar */
+    for(const sx of [-1,1]){cyl(.06,.06,1.5,c.fin,sx*.95,-.95,2.75,Math.PI/2,0,0,8);cyl(.06,.06,.7,c.fin,sx*.95,-.6,3.45,0,0,0,8);}
+    box(1.9,.06,1.3,c.fin,0,-.98,3.1);box(1.9,.06,.06,c.fin,0,-.55,3.62);
+    for(const sx of [-1,1]){const ax=sx*.72;sph(.16,d.dark,ax,-.45,2.25);cyl(.075,.075,1.0,c.trim,ax,-.5,2.8,Math.PI/2+.25,0,0,8);sph(.1,d.dark,ax,-.62,3.3);cyl(.06,.06,.8,c.trim,ax,-.75,3.62,Math.PI/2-.55,0,0,8);for(const o of [-1,1])cone(.045,.34,d.bone,ax+o*.07,-.92,4.0,Math.PI/2,0,0,6);}
+    /* projektörler */
+    const lights=[];for(const x of [-.7,-.23,.23,.7]){box(.2,.2,.3,d.dark,x,.85,2.8);lights.push(lamp(x,.85,2.97,.17));}
+    s.hw.flareL=lights;
+    /* iticiler: kıçta kanallı pervane, yanlarda yatay iticiler, tepede dikey itici */
+    cyl(.5,.5,.9,c.hull2,0,0,-2.65,Math.PI/2,0,0,22);tor(.52,.09,c.trim,0,0,-3.05);prop(0,0,-2.95,.42,4,c.prop);
+    cyl(.22,.22,2.6,d.dark,0,.1,-.7,0,0,Math.PI/2,14);tor(.24,.05,c.trim,1.3,.1,-.7,0,Math.PI/2,0);tor(.24,.05,c.trim,-1.3,.1,-.7,0,Math.PI/2,0);
+    cyl(.22,.22,1.2,d.dark,0,.45,.9,0,0,0,14);
+    /* kızaklar */
+    for(const sx of [-1,1]){cyl(.07,.07,3.9,d.dark,sx*.85,-1.2,-.3,Math.PI/2,0,0,8);for(const z of [-1.7,1.2])cyl(.05,.05,.4,d.dark,sx*.85,-1.0,z,0,0,0,6);}
+    lamp(-.25,-1.1,-2.4,.1);
+    s.hw.spcAnim=k=>{for(const l of lights)l.scale.setScalar(1+Math.sin(k*Math.PI)*3);};
+  }
+  else if(tier===14){ /* BARAKUDA: av denizaltısı (SSN) — ince gözyaşı gövde, ses emici kaplama, yelken planları, çapraz kıç dümeni, pompa-jet */
+    const LN=10.6,R=1.3,TL=.13,NS=.26;
+    add(hullGeo(LN,R,44,TL,NS),c.hull);
+    for(let z=-3.8;z<=4.2;z+=.62){const r=hullR(z,LN,R,TL,NS);tor(r+.012,.016,c.hull2,0,0,z);}
+    const sail=add(new THREE.CylinderGeometry(1,1,1,28),c.tower,0,R+.78,.9);sail.scale.set(.5,1.4,1.9);
+    const cap=add(new THREE.CylinderGeometry(1,1,1,28),c.hull2,0,R+1.5,.9);cap.scale.set(.52,.05,1.95);
+    for(const sx of [-1,1]){box(1.3,.06,.75,c.fin,sx*.95,R+.95,1.9,0,0,sx*.03);box(.02,.32,.9,d.white,sx*.52,R+1.0,.9);}
+    cyl(.06,.06,1.4,d.black,.15,R+2.1,1.3,0,0,0,8);cyl(.045,.045,1.1,d.black,-.18,R+2.0,.5,0,0,0,8);cyl(.03,.03,1.6,d.black,0,R+2.15,-.1,0,0,0,6);sph(.07,d.red,0,R+2.95,-.1);
+    /* çapraz (X) kıç dümenleri ve pompa-jet */
+    const sz=-4.2;for(const a of [Math.PI/4,-Math.PI/4])box(.12,3.0,1.35,c.fin,0,0,sz,0,0,a);
+    tor(.78,.17,c.trim,0,0,-5.3);prop(0,0,-5.15,.62,7,c.prop);for(const a of [0,Math.PI/2])box(.07,1.3,.4,c.hull2,0,0,-5.1,0,0,a);cone(.3,1.0,c.hull2,0,0,-5.75,-Math.PI/2,0,0,12);
+    /* güverte kapakları, çekili dizi kılıfı */
+    for(let i=0;i<5;i++){const z=-1.6-i*.7,y=Math.sqrt(Math.max(0,Math.pow(hullR(z,LN,R,TL,NS),2)-.1))+.01;cyl(.2,.2,.04,d.black,0,y,z,0,0,0,14);}
+    cyl(.07,.07,3.4,c.hull2,.0,hullR(-4.1,LN,R,TL,NS)+.07,-4.1,Math.PI/2,0,0,8);
+    sph(.05,d.red,-1.2,.1,-2.2);sph(.05,d.cyan,1.2,.1,-2.2);lamp(0,.2,4.9,.07);
+    s.hw.sp=[0,.1,5.2];
+  }
+  else if(tier===15){ /* TİTAN: balistik füze denizaltısı (SSBN) — uzun füze güvertesi, iki sıra silo kapağı, geniş yelken, çapraz kıç */
+    const LN=13.6,R=2.0,TL=.12,NS=.2;
+    add(hullGeo(LN,R,48,TL,NS),c.hull);
+    for(let z=-5.4;z<=5.6;z+=.9){const r=hullR(z,LN,R,TL,NS);tor(r+.014,.022,c.hull2,0,0,z);}
+    /* füze güvertesi: yükseltilmiş kovan ve sekiz çift silo kapağı */
+    box(2.5,.62,7.2,c.hull2,0,R-.22,-2.6);box(2.56,.08,7.26,c.trim,0,R+.1,-2.6);
+    for(let i=0;i<8;i++)for(const sx of [-1,1]){const z=-5.9+i*.9;cyl(.34,.34,.07,d.black,sx*.62,R+.17,z,0,0,0,18);cyl(.24,.24,.08,c.trim,sx*.62,R+.18,z,0,0,0,18);cyl(.06,.06,.1,d.red,sx*.62,R+.2,z,0,0,0,8);}
+    s.hw.silos=[];
+    /* yelken */
+    const sail=add(new THREE.CylinderGeometry(1,1,1,32),c.tower,0,R+.9,3.3);sail.scale.set(.72,1.8,2.3);
+    const cap=add(new THREE.CylinderGeometry(1,1,1,32),c.hull2,0,R+1.82,3.3);cap.scale.set(.74,.06,2.35);
+    for(const sx of [-1,1]){box(1.7,.08,1.0,c.fin,sx*1.4,R+1.2,4.2,0,0,sx*.04);cyl(.06,.06,.5,c.trim,sx*.7,R+1.2,4.2,0,0,Math.PI/2);}
+    cyl(.08,.08,1.8,d.black,.25,R+2.8,3.9,0,0,0,8);cyl(.06,.06,1.4,d.black,-.25,R+2.6,3.2,0,0,0,8);cyl(.035,.035,2.0,d.black,0,R+2.9,2.5,0,0,0,6);sph(.09,d.red,0,R+3.9,2.5);
+    /* çapraz kıç dümenleri ve pompa-jet */
+    const sz=-5.8;box(.18,3.8,2.0,c.fin,0,0,sz);box(5.6,.18,2.0,c.fin,0,0,sz);
+    tor(1.1,.24,c.trim,0,0,-7.15);prop(0,0,-7.0,.95,7,c.prop);for(const a of [0,Math.PI/2])box(.1,2.0,.55,c.hull2,0,0,-6.95,0,0,a);cone(.5,1.4,c.hull2,0,0,-7.8,-Math.PI/2,0,0,14);
+    for(const sx of [-1,1])box(.6,.06,1.3,c.hull2,sx*1.25,-R*.5,4.4,0,0,sx*-.4);
+    sph(.07,d.red,-1.9,.3,-1.5);sph(.07,d.cyan,1.9,.3,-1.5);lamp(0,.4,6.2,.08);
+    const sil=[];for(const sx of [-1,1])for(let i=0;i<8;i++)sil.push({x:sx*.62,z:-5.9+i*.9});
+    s.hw.siloPos=sil;
+  }
 /* ---- Saldırı donanımları: her silahın görünür aygıtı (EMP çanağı, mayın kapağı, şok plakası, ağ mortarı, pençeler, onarım kolu, sonar kubbesi, kalkan düğümleri) ---- */
   {const D=SD[tier],hw=s.hw,R=D.R,G=new THREE.Group();body.add(G);
    const k=Math.max(.7,Math.min(1.35,R/1.3));
@@ -2105,7 +2174,13 @@ const SUBS=[
     spc:'tent',sn:['Dokunaç Kapanı','Tentacle Trap'],sd:['6 mekanik dokunaç öne uzanıp yakalar: balıkları ezer, düşmanları sersemletip kendine çeker.','Six mechanical tentacles lash out: crush fish, stun and drag enemies in.'],ic:'🐙',sk:12,sb:28},
   {tr:'Prizma',en:'Prism',sc:1.9,hull:600,torp:10,mine:5,spd:1.3,rel:.8,price:3800,rk:3.2,mods:['res'],pas:'prism',pn:['Prizma Kalkanı','Prism Shield'],pd:['Kalkan %60 daha uzun sürer ve daha dayanıklıdır. Kristal Rezonatör dahili.','Shield lasts 60% longer and is tougher. Crystal Resonator built in.'],
     spc:'laser',sn:['Prizma Işını','Prism Beam'],sd:['Burundaki mercekten delip geçen gökkuşağı ışını; hattaki her şeyi vurur.','A piercing rainbow beam from the nose lens; hits everything in line.'],ic:'🌈',sk:7,sb:22},
-  {tr:'Komuta Denizaltısı',en:'Command Submarine',ship:1,sc:1.9,hull:1900,torp:24,mine:12,spd:1.1,rel:.5,price:999999,rk:9,pas:'plate',pn:['Çelik Gövde','Hardened Hull'],pd:['Aldığın tüm hasar %12 azalır. Yalnızca Komuta Seferi modunda kullanılır.','All damage taken is reduced by 12%. Used only in Command Voyage mode.']}
+  {tr:'Komuta Denizaltısı',en:'Command Submarine',ship:1,sc:1.9,hull:1900,torp:24,mine:12,spd:1.1,rel:.5,price:999999,rk:9,pas:'plate',pn:['Çelik Gövde','Hardened Hull'],pd:['Aldığın tüm hasar %12 azalır. Yalnızca Komuta Seferi modunda kullanılır.','All damage taken is reduced by 12%. Used only in Command Voyage mode.']},
+  {tr:'Derin Dalgıç',en:'Deep Diver',sc:1.2,hull:700,torp:6,mine:5,spd:1.05,rel:.9,price:3000,rk:3,mods:['press'],pas:'survey',pn:['Araştırma Sonarı','Survey Sonar'],pd:['18 sn’de bir kendiliğinden sonar atar; 85 m içindeki hazineleri gösterir. Basınç Gövdesi dahili.','Pings a free sonar every 18 s, revealing treasure within 85 m. Pressure Hull built in.'],
+    spc:'flare',sn:['Strobe Işığı','Strobe Flash'],sd:['Güçlü projektörler yanıp söner: önündeki düşmanlar 4 sn şaşırıp sersemler, 80 m içindeki hazineler görünür.','The floodlights strobe: enemies ahead are dazed for 4 s and treasure within 80 m is revealed.'],ic:'💡',sk:14,sb:15},
+  {tr:'Barakuda',en:'Barracuda',sc:2.3,hull:1000,torp:22,mine:8,spd:1.62,rel:.58,price:10500,rk:4.8,pas:'quiet',pn:['Sessiz Pompa-Jet','Silent Pump-Jet'],pd:['Sesi bastırılmış pompa-jet: hızlanırken bile düşmanlar seni geç fark eder. Torpido yükleme çok hızlı.','A muffled pump-jet: enemies notice you late even when boosting. Very fast torpedo reload.'],
+    spc:'sonic',sn:['Aktif Sonar Darbesi','Active Sonar Pulse'],sd:['Pruvadan yüksek güçlü ses darbesi: konideki düşmanlar 3,6 sn sersemler, balıklar dağılır.','A high-power sound pulse from the bow: enemies in the cone are stunned for 3.6 s and fish scatter.'],ic:'📡',sk:13,sb:25},
+  {tr:'Titan',en:'Titan',sc:3.0,hull:2600,torp:28,mine:14,spd:.95,rel:.7,price:19000,rk:6.5,pas:'bulk',pn:['Çift Cidarlı Gövde','Double Hull'],pd:['Aldığın tüm hasar %25 azalır. Tüm tehlikeli bölge modülleri dahili.','All damage taken is reduced by 25%. All hazard-zone modules built in.'],
+    spc:'volley',sn:['Balistik Füze Salvosu','Ballistic Salvo'],sd:['Dikey silolardan 4 füze fırlar, hedef bölgeye kavisle düşüp patlar.','Four missiles leave the vertical silos, arc over and detonate around the target area.'],ic:'🚀',sk:20,sb:40}
 ];
 let curSub=SUBS[0],spcCd=0,frenzyT=0,coffeeT=0,genT=0;
 const UPG_MAX=5,UPG={ammo:{base:150},reload:{base:200},armor:{base:250},motor:{base:250},battery:{base:180}};
@@ -4080,7 +4155,7 @@ function hurt(d,by,ink,kb){
   if(dead||invuln>0||tutOn||CREW.pilot||!(d>0))return;
   if(!by||by==='haz'||by==='rock'||ETYPE[by])d*=DIFF().dmg;
   if(CFG.haptic&&navigator.vibrate)try{navigator.vibrate(Math.min(180,20+d*4));}catch{}
-  if(curSub.pas==='plate')d*=.88;else if(curSub.pas==='frost'){d*=.82;frostBurst();}
+  if(curSub.pas==='plate')d*=.88;else if(curSub.pas==='bulk')d*=.75;else if(curSub.pas==='frost'){d*=.82;frostBurst();}
   if(shieldT>0){
     const a=Math.min(shieldHp,d);shieldHp-=a;d-=a;shieldFlash=.35;sfx.shieldHit();shake=Math.max(shake,.12);
     if(kb&&kb.isVector3)subVel.add(kb.clampLength(0,20).multiplyScalar(.3));
@@ -4342,7 +4417,7 @@ function doRepair(){
 }
 const WPN_ICON=['🚀','🚀','💣','⚡','☢'];
 function renderWpn(){
-  const names=[T.w1,T.w2,T.w3,T.w4,T.w5,T.w6,T.w7,T.w8,T.w9,curSub&&curSub.spc?tl(curSub.sn[0],curSub.sn[1]).toUpperCase():null,nukeOwned()?tl('NÜKLEER','NUCLEAR'):null,...GEARS.map(g=>(hasGear(g.id)?'':'🔒 ')+g.ic+' '+tl(g.sh[0],g.sh[1]))];
+  const names=[T.w1,T.w2,T.w3,T.w4,T.w5,T.w6,T.w7,T.w8,T.w9,curSub&&curSub.spc?tl(curSub.sn[0],curSub.sn[1]).toUpperCase():null,nukeOwned()?tl('NÜKLEER','NUCLEAR'):null,...GEARS.map(g=>hasGear(g.id)?g.ic+' '+tl(g.sh[0],g.sh[1]):null)];
   $('wpn').innerHTML=names.map((n,i)=>n==null?'':`<div class="slot ${((i===weapon||(i===10&&weapon===4))&&!netArmed&&i!==4)||(i===7&&netArmed)?'on':''}${i===10?' nk':''}" data-w="${i}"><kbd>${i===9?0:i===10?'U':i>10?'·':i+1}</kbd><span>${esc(n)}</span><b id="wc${i}">–</b></div>`).join('');
   updateWpnHUD();
 }
@@ -5053,7 +5128,10 @@ const IPROF=[
   {hw:2.5,wall:'#2b2220',ws:'panel',line:'#ff6a1a',floor:'#1c1412',fl2:'#3a2a26',fs:'lava',ceil:'#241a18',bulk:'#3a2a26',navy:'#241816',gray:'#4a3a35',accent:'#ff6a1a',accent2:'#ffa030',mat:'#5a2a1e',lampW:'#ffe0b0',lampC:'#ffd0a0',neon:'#ff6a1a',kind:'lava'},
   {hw:3.0,wall:'#3a2a5c',ws:'rib',line:'#25e0b8',floor:'#1d1236',fl2:'#25e0b8',fs:'hex',ceil:'#2a1d48',bulk:'#4a3578',navy:'#1d1236',gray:'#5a4890',accent:'#25e0b8',accent2:'#7af0d8',mat:'#4a2a78',lampW:'#d8fff4',lampC:'#d0fff0',neon:'#25e0b8',kind:'kraken'},
   {hw:2.7,wall:'#e6dcf6',ws:'crystal',line:'#b8a8dc',floor:'#cfc2ea',fl2:'#ece4fb',fs:'tile',ceil:'#f4eefc',bulk:'#efe6fb',navy:'#7a6aa8',gray:'#b8a8dc',accent:'#ff7ad8',accent2:'#58e8ff',mat:'#8a7ab0',lampW:'#fff2fb',lampC:'#f6f0ff',neon:'#ff7ad8',kind:'prism'},
-  {hw:2.6,wall:'#6b727a',ws:'panel',line:'#c0392b',floor:'#2d3236',fl2:'#454c52',fs:'plate',ceil:'#4a5056',bulk:'#7a828a',navy:'#2a3138',gray:'#59616a',accent:'#c0392b',accent2:'#e0b040',mat:'#3a4a3a',lampW:'#ffd8b8',lampC:'#ffb8a8',neon:'#ff3b2a',kind:'navy'}
+  {hw:2.6,wall:'#6b727a',ws:'panel',line:'#c0392b',floor:'#2d3236',fl2:'#454c52',fs:'plate',ceil:'#4a5056',bulk:'#7a828a',navy:'#2a3138',gray:'#59616a',accent:'#c0392b',accent2:'#e0b040',mat:'#3a4a3a',lampW:'#ffd8b8',lampC:'#ffb8a8',neon:'#ff3b2a',kind:'navy'},
+  {hw:1.9,wall:'#e8eef0',ws:'tile',line:'#9fb4bd',floor:'#6f7e86',fl2:'#9aa9b0',fs:'plate',ceil:'#f2f6f7',bulk:'#dfe7ea',navy:'#2a4658',gray:'#9fb4bd',accent:'#c4541e',accent2:'#2a8aaa',mat:'#c4541e',lampW:'#ffffff',lampC:'#e8f6ff',neon:'#ffb070',kind:'dsv'},
+  {hw:2.2,wall:'#2f363c',ws:'panel',line:'#4a5a66',floor:'#1c2126',fl2:'#2d343a',fs:'plate',ceil:'#262c32',bulk:'#3a444c',navy:'#171c21',gray:'#56626b',accent:'#3a8ad0',accent2:'#8fb4d0',mat:'#27425a',lampW:'#d8e8ff',lampC:'#bcd8f4',neon:'#4aa8ff',kind:'navy'},
+  {hw:3.1,wall:'#4a5056',ws:'panel',line:'#8a2a24',floor:'#25292d',fl2:'#3a4046',fs:'plate',ceil:'#3a4046',bulk:'#5a6168',navy:'#1d2328',gray:'#6a727a',accent:'#a8281f',accent2:'#d8b34a',mat:'#33403a',lampW:'#ffe8d0',lampC:'#ffc8b8',neon:'#ff4a3a',kind:'dread'}
 ];
 function ipWallTex(P){
   return inTex(512,512,(x,w,h)=>{
@@ -7015,7 +7093,7 @@ function gearAnim(s,dt,o){
   if(hw.lensR)hw.lensR[0].rotation.z+=dt*.9;
 }
 /* --- Yardımcılar --- */
-const stealthOn=()=>(curSub.pas==='stealth'&&!(keys.shift||vk.boost))||silentRun;
+const stealthOn=()=>(curSub.pas==='stealth'&&!(keys.shift||vk.boost))||curSub.pas==='quiet'||silentRun;
 function toggleSilent(){if(!running||dead)return;silentRun=!silentRun;toast(silentRun?'🤫 '+tl('Sessiz seyir AÇIK — yavaşsın ama düşmanlar seni geç fark eder','Silent running ON — slow, but enemies notice you late'):'🔊 '+tl('Sessiz seyir kapalı','Silent running off'));}
 function muzzleW(s,tier,out){const sp=(SD[tier]&&SD[tier].sp)||[0,0,SD[tier].nose];s.g.updateMatrixWorld(true);return out.set(sp[0],sp[1],sp[2]).applyMatrix4(s.g.matrixWorld);}
 const _mz=new THREE.Vector3(),_sd=new THREE.Vector3();
@@ -7194,11 +7272,11 @@ function doSpecial(){
       let best=null,bd=1e9;for(const t of spScan(_tmp.set(cur.x,cur.y,cur.z),null,22,-1)){if(used.has(t.k+t.i))continue;if(t.d<bd){bd=t.d;best=t;}}cur=best;}
     local.g.updateMatrixWorld(true);o.tips=(local.hw.tips||[]).map(t=>t.getWorldPosition(new THREE.Vector3()));
   }
-  else if(k==='cryo'){
+  else if(k==='cryo'||k==='sonic'||k==='flare'){
     for(const t of spScan(org,d,40,.8))if(t.k==='e')o.ei.push(t.i);
   }
-  else if(k==='magma'){
-    const dist=clamp(org.distanceTo(q),16,75);o.q=org.clone().addScaledVector(d,dist);
+  else if(k==='magma'||k==='volley'){
+    const dist=clamp(org.distanceTo(q),k==='volley'?30:16,k==='volley'?110:75);o.q=org.clone().addScaledVector(d,dist);
     if(aim.dist<dist+5||aim.ci>=0||aim.ei>=0)o.q.copy(q);
     o.q.x=clamp(o.q.x,-HX+4,HX-4);o.q.z=clamp(o.q.z,-HZ+4,HZ-4);o.q.y=clamp(o.q.y,floorQ(o.q.x,o.q.z)+1.5,SURF-2);
     for(const t of spScan(o.q,null,15,-1)){(t.k==='c'?o.ci:o.ei).push(t.i);}
@@ -7238,7 +7316,7 @@ function updatePassives(dt,now){
   const P=curSub.pas;frostCd=Math.max(0,frostCd-dt);frenzyT=Math.max(0,frenzyT-dt);spcCd=Math.max(0,spcCd-dt);
   if(!P||dead||tutOn||CREW.pilot)return;
   if(P==='last'){lastCd=Math.max(0,lastCd-dt);if(lastCd<=0&&hull<HULL_MAX*.2&&shieldT<=0){lastCd=90;shieldT=5;shieldHp=60;sfx.shield();toast(tl('🛡 Son Şans kalkanı!','🛡 Last Chance shield!'));}}
-  else if(P==='radar'){radarT-=dt;if(radarT<=0){radarT=30;const n=revealTreasures(sub.position,70);sonarEffect(sub.position.x,sub.position.y,sub.position.z,0x7ef0b9);if(n)toast('📡 '+tl('Mercan Radarı: '+n+' hazine!','Coral Radar: '+n+' treasure!'));}}
+  else if(P==='radar'||P==='survey'){radarT-=dt;if(radarT<=0){radarT=P==='survey'?18:30;const n=revealTreasures(sub.position,P==='survey'?85:70);sonarEffect(sub.position.x,sub.position.y,sub.position.z,0x7ef0b9);if(n)toast('📡 '+tl('Mercan Radarı: '+n+' hazine!','Coral Radar: '+n+' treasure!'));}}
   else if(P==='ink'){inkT=Math.min(inkT,.05);}
   else if(P==='static'){zapT-=dt;if(zapT<=0){zapT=2.4;const l=spScan(sub.position,null,16,-1).filter(t=>t.k==='e').sort((a,b)=>a.d-b.d).slice(0,2);if(l.length)autoPassiveSend('zap',l,0x7fe8ff);}}
   else if(P==='aura'){burnT-=dt;if(burnT<=0){burnT=1;const l=spScan(sub.position,null,11,-1).filter(t=>t.k==='e');if(l.length)autoPassiveSend('burn',l,0xff8a2a);}}
@@ -7609,11 +7687,10 @@ function v7Track(dt){
 /* ---- PC hızlı başlangıç kartı (ilk açılışta bir kez) ---- */
 function v7QuickStart(){
   if(isTouch||tutOn||store.get('aqua-qs')||net.mode!=='solo')return;store.set('aqua-qs','1');
-  const d=document.createElement('div');d.className='modal';d.style.zIndex=25;
-  const rows=[['W A S D','Sür / dön','Drive / turn'],['Fare','Etrafa bak (oyuna tıkla)','Look around (click the game)'],['Sol tık','Makineli top','Machine gun'],['Sağ tık','Torpido / seçili silah','Torpedo / selected weapon'],['[ ] veya 1-4','Silah değiştir','Switch weapon'],['SHIFT','Hızlan','Boost'],['Q / E','Alçal / yüksel','Dive / rise'],['SPACE','Sonar (hazine ve yapıları gösterir)','Sonar (shows treasure & structures)'],['I','Denizaltının içinde yürü','Walk inside the sub'],[',','Ayarlar','Settings']];
-  d.innerHTML=`<div class="card" style="width:min(560px,100%)"><div class="eyebrow">⚓ ${esc(tl('HIZLI BAŞLANGIÇ','QUICK START'))}</div><h1 style="font-size:26px">${esc(tl('Hoş geldin, Kaptan!','Welcome aboard, Captain!'))}</h1><div class="keyT" style="grid-template-columns:1fr">${rows.map(r=>`<div><kbd>${esc(r[0])}</kbd><span>${esc(tl(r[1],r[2]))}</span></div>`).join('')}</div><p style="margin:14px 0 4px;font-size:12px">${esc(tl('İpucu: Ayarlar\'dan zorluğu, nişan yardımını ve otomatik ateşi açabilirsin. Görevler seni yönlendirir.','Tip: In Settings you can change difficulty, aim assist and auto-fire. Quests will guide you.'))}</p><div class="row" style="margin:12px 0 0"><button class="btn primary" id="qsGo">${esc(tl('YOLA ÇIK','SET SAIL'))}</button><button class="btn" id="qsCfg">⚙ ${esc(tl('AYARLAR','SETTINGS'))}</button></div></div>`;
-  document.body.appendChild(d);
-  const close=()=>d.remove();$('qsGo').onclick=close;$('qsCfg').onclick=()=>{close();toggleCfg(true);};
+  /* oyunu bölmez: tıklamaları geçirir, köşede küçük bir not olarak durur ve kendiliğinden kaybolur */
+  const d=document.createElement('div');d.id='qsNote';d.className='glass';
+  d.innerHTML=`<b>⚓ ${esc(tl('Kısa kılavuz','Quick guide'))}</b><span>${esc(tl('WASD sür · Fare bak · Sol tık top · Sağ tık torpido · [ ] silah · , ayarlar','WASD drive · Mouse look · LMB gun · RMB torpedo · [ ] weapon · , settings'))}</span>`;
+  document.body.appendChild(d);setTimeout(()=>{d.style.opacity='0';setTimeout(()=>d.remove(),900);},12000);
 }
 /* ================= v7.0 (2/n): yeni silahlar ve mühimmat ================= */
 /* Mühimmat türleri (makineli top). spd: namlu hızı çarpanı · dr: su sürtünmesi · life: ömür (sn) · pr: delme · heat/cd: ısınma ve atış aralığı çarpanı */
@@ -7762,6 +7839,7 @@ function v7Weapons(dt,now){
       const a=Q.wl.geometry.attributes.position.array;_tmp.set(0,0,-SD[tierNow()].nose*0).applyQuaternion(sub.quaternion).add(sub.position);a[0]=_tmp.x;a[1]=_tmp.y;a[2]=_tmp.z;a[3]=Q.pos.x;a[4]=Q.pos.y;a[5]=Q.pos.z;Q.wl.geometry.attributes.position.needsUpdate=true;
     }else if(Q.wl&&(Q.cut||!Q.own)){scene.remove(Q.wl);Q.wl.geometry.dispose();Q.wl=null;}
   }
+  if(V7.updExtra)V7.updExtra(dt);
   if(running)ammoUI();
 }
 /* ---- Tersane: teçhizat ve mühimmat bölümü ---- */
@@ -7801,9 +7879,11 @@ const PERKS=[
 ];
 let pkOpen=false,pkT=0,pkCh=[];
 function pkReset(){PK.dmg=PK.hullx=PK.reload=PK.spd=PK.drain=PK.shCd=PK.heat=PK.gold=1;PK.torp=0;PK.vamp=0;PK.rev=0;PK.n=[];closePerks();}
-function offerPerks(){
+function offerPerks(n=0){
   if(pkOpen||dead)return;
-  const pool=PERKS.filter(p=>!(p.rare&&Math.random()>.35)).sort(()=>Math.random()-.5);pkCh=pool.slice(0,3);pkOpen=true;pkT=16;
+  /* çatışmanın ortasında çıkıp dikkat dağıtmasın: yakında düşman varsa biraz bekle */
+  if(n<5&&enemies.some(e=>!e.dead&&Math.hypot(e.x-sub.position.x,e.y-sub.position.y,e.z-sub.position.z)<90+e.r)){setTimeout(()=>offerPerks(n+1),3000);return;}
+  const pool=PERKS.filter(p=>!(p.rare&&Math.random()>.35)).sort(()=>Math.random()-.5);pkCh=pool.slice(0,3);pkOpen=true;pkT=12;
   const el=$('pkP');el.style.display='flex';
   el.innerHTML=`<div class="k" style="width:100%;text-align:center">⭐ ${esc(tl('PERK SEÇ','CHOOSE A PERK'))} <span id="pkTm"></span></div>`+pkCh.map((p,i)=>`<button class="pkC" data-p="${i}"><kbd>${i+1}</kbd><i>${p.ic}</i><b>${esc(tl(p.tr,p.en))}</b><span>${esc(p.d[lang==='tr'?0:1])}</span></button>`).join('');
 }
@@ -7949,6 +8029,48 @@ function seasonHTML(){
   <div class="xpb" style="margin:6px 0 8px;height:6px"><i style="width:${t>=SEASON_TIERS?100:cur/SEASON_STEP*100}%"></i></div>
   <div class="seaG">${cells.join('')}</div><div class="foot" style="margin:4px 0 12px">${esc(tl('Her kazandığın XP sezon yoluna işler. Kazanılan kademeye dokun: ödülü al. Sezon ayın sonunda sıfırlanır; 30. kademe özel boya verir.','Every XP you earn advances the path. Tap an unlocked tier to claim. The season resets monthly; tier 30 gives an exclusive paint.'))}</div>`;
 }
+/* ================= v7.0 (4/n): yeni özel silahlar (strobe, sonar darbesi, balistik salvo) ================= */
+SPFX.sonic=(o,mine)=>{
+  sfx.sonar(clamp(1.2-o.p.distanceTo(camera.position)/130,.1,.9));tone(170,55,.9,'sawtooth',.14*clamp(1.2-o.p.distanceTo(camera.position)/130,.1,1));
+  for(let j=0;j<6;j++){const d=5+j*7;setTimeout(()=>sonarEffect(o.p.x+o.d.x*d,o.p.y+o.d.y*d,o.p.z+o.d.z*d,0xd8ecff),j*80);}
+  for(let i=0;i<60;i++){_v.set(o.d.x+rr(-.5,.5),o.d.y+rr(-.4,.4),o.d.z+rr(-.5,.5)).normalize().multiplyScalar(rr(8,24));spawnBubble(o.p.x+o.d.x*rr(0,4),o.p.y+o.d.y*rr(0,4),o.p.z+o.d.z*rr(0,4),.05+Math.random()*.15,_v.x,_v.y,_v.z);}
+  for(const c of creatures){const dx=c.wx-o.p.x,dy=c.wy-o.p.y,dz=c.wz-o.p.z,d2=dx*dx+dy*dy+dz*dz;if(d2<1600&&d2>.01){const d=Math.sqrt(d2);if((dx*o.d.x+dy*o.d.y+dz*o.d.z)/d>.78){const k=(40-d)/d*.9;c.off.x+=dx*k;c.off.y+=dy*k;c.off.z+=dz*k;}}}
+  spHit({...o,ci:[],si:[]},mine,.9,3.6);
+  if(!mine){const dx=sub.position.x-o.p.x,dy=sub.position.y-o.p.y,dz=sub.position.z-o.p.z,d=Math.hypot(dx,dy,dz);if(d<40&&d>.1&&(dx*o.d.x+dy*o.d.y+dz*o.d.z)/d>.8)spSelfHit(6,o.by,2.2);}
+};
+SPFX.flare=(o,mine)=>{
+  tone(2400,1700,.3,'sine',.07);noise(.25,9000,2000,.16);
+  for(let j=0;j<3;j++)spFlash(_tmp.copy(o.p).addScaledVector(o.d,4+j*9),0xffffff,20+j*6,.5);
+  for(const c of creatures){const dx=c.wx-o.p.x,dy=c.wy-o.p.y,dz=c.wz-o.p.z,d2=dx*dx+dy*dy+dz*dz;if(d2<1600&&d2>.01){const d=Math.sqrt(d2);if((dx*o.d.x+dy*o.d.y+dz*o.d.z)/d>.78){const k=(40-d)/d*.4;c.off.x+=dx*k;c.off.y+=dy*k;c.off.z+=dz*k;}}}
+  spHit({...o,ci:[],si:[]},mine,.3,4);
+  if(mine){const n=revealTreasures(sub.position,80);sonarEffect(sub.position.x,sub.position.y,sub.position.z,0xfff0b0);if(n)toast('💡 '+tl(n+' hazine görünür oldu!',n+' treasure revealed!'));}
+  if(!mine){const dx=sub.position.x-o.p.x,dy=sub.position.y-o.p.y,dz=sub.position.z-o.p.z,d=Math.hypot(dx,dy,dz);if(d<40&&d>.1&&(dx*o.d.x+dy*o.d.y+dz*o.d.z)/d>.8)spSelfHit(0,o.by,1.5);}
+};
+const VOLS=[];let vlSeq=0;
+const volGeo=(()=>{const g=new THREE.CylinderGeometry(.16,.2,1.8,8);g.rotateX(Math.PI/2);return g;})(),volMat=new THREE.MeshStandardMaterial({color:0xb8bcc0,roughness:.4,metalness:.7});
+SPFX.volley=(o,mine)=>{
+  sfx.launch(clamp(1.2-o.p.distanceTo(camera.position)/140,.05,1));
+  const r=mulberry32(hashStr(o.by+':'+Math.round(o.q.x*4)+':'+Math.round(o.q.z*4)));
+  const sil=[];{const src=local.hw&&local.hw.siloPos;for(let i=0;i<4;i++){sil.push(src?src[(i*3+1)%src.length]:{x:0,z:-2.6});}}
+  for(let i=0;i<4;i++){
+    const m=new THREE.Mesh(volGeo,volMat);const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xffd9a0,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.9}));sp.scale.setScalar(2.4);sp.position.z=-1.1;m.add(sp);
+    const to=o.q.clone().add(_v.set((r()*2-1)*11,0,(r()*2-1)*11));to.x=clamp(to.x,-HX+4,HX-4);to.z=clamp(to.z,-HZ+4,HZ-4);to.y=Math.max(floorQ(to.x,to.z)+1.2,Math.min(o.q.y,SURF-3));
+    const from=o.p.clone();m.position.copy(from);scene.add(m);
+    VOLS.push({m,sp,from,to,age:-i*.28,dur:Math.max(1.1,from.distanceTo(to)/55),h:22+rr(0,10),mine,o,i,tid:'vl:'+o.by+':'+(++vlSeq)});
+  }
+  while(VOLS.length>16){const v=VOLS.shift();scene.remove(v.m);v.sp.material.dispose();}
+};
+function updateVols(dt){
+  for(let i=VOLS.length-1;i>=0;i--){const V=VOLS[i];V.age+=dt;if(V.age<0){V.m.visible=false;continue;}V.m.visible=true;
+    const k=Math.min(1,V.age/V.dur);_tmp.lerpVectors(V.from,V.to,k);_tmp.y+=Math.sin(k*Math.PI)*V.h;
+    _fwd.copy(_tmp).sub(V.m.position);if(_fwd.lengthSq()>1e-6)V.m.quaternion.setFromUnitVectors(_bz,_fwd.normalize());V.m.position.copy(_tmp);
+    if(Math.random()<.9)spawnBubble(_tmp.x,_tmp.y,_tmp.z,.07+Math.random()*.1,rr(-.8,.8),rr(0,1.2),rr(-.8,.8));
+    if(k>=1){const q=V.to,o=V.o;
+      explode(q.x,q.y,q.z,-1,V.tid);applyBlast({x:q.x,y:q.y,z:q.z,si:-1,ei:-1,tid:V.tid,own:V.mine,by:o.by});
+      if(V.i===0)spHit({...o,ci:[],si:o.si.slice(0,3)},V.mine,1.2,.8);
+      scene.remove(V.m);V.sp.material.dispose();VOLS.splice(i,1);}}
+}
+V7.updExtra=dt=>{updateVols(dt);};
 /*V7-APPEND*/
 requestAnimationFrame(loop);
 </script>

@@ -763,14 +763,14 @@ const U={t:{value:0},cam:{value:new THREE.Vector3()},bend:{value:[new THREE.Vect
 /* denizaltı (ve yakındaki oyuncular) geçerken yosunlar ve otlar yana eğilir: xyz = dünya konumu, w = etki yarıçapı */
 const BENDV='for(int bi=0;bi<3;bi++){vec4 bq=uBend[bi];if(bq.w>0.){vec3 bd=ip-bq.xyz;float bl=length(bd.xz);float bf=smoothstep(bq.w,0.,bl)*(1.-smoothstep(18.,34.,abs(bd.y)));if(bf>0.){vec2 bu=bd.xz/max(bl,.3);transformed.x+=bu.x*bf*1.1*position.y*position.y;transformed.z+=bu.y*bf*1.1*position.y*position.y;}}}';
 const CAUS=`float causF(vec2 uv){vec2 p=mod(uv*6.28318,6.28318)-250.;vec2 i=p;float c=1.;float inten=.005;for(int n=0;n<4;n++){float t=uT*.32*(1.-(3.5/float(n+1)));i=p+vec2(cos(t-i.x)+sin(t+i.y),sin(t-i.y)+cos(t+i.x));c+=1./length(vec2(p.x/(sin(i.x+t)/inten),p.y/(cos(i.y+t)/inten)));}c/=4.;c=1.17-pow(c,1.4);return pow(abs(c),8.);}\n`;
-function patch(mat,key,{v='',caus=0,fx=''}={}){
+function patch(mat,key,{v='',caus=0,fx='',skin=0}={}){
   mat.onBeforeCompile=sh=>{
     sh.uniforms.uT=U.t;
     sh.uniforms.uBend=U.bend;
-    sh.vertexShader='uniform float uT;\nuniform vec4 uBend[3];\nvarying vec3 vWp;\n'+sh.vertexShader
-      .replace('#include <begin_vertex>','#include <begin_vertex>\n#ifdef USE_INSTANCING\nvec3 ip=instanceMatrix[3].xyz;\n#else\nvec3 ip=vec3(0.);\n#endif\nfloat ph=float(gl_InstanceID)*2.37;\n'+v)
+    sh.vertexShader='uniform float uT;\nuniform vec4 uBend[3];\nvarying vec3 vWp;\n'+(skin?'attribute float aF;varying vec3 vOp;varying vec3 vOn;varying float vF;\n':'')+sh.vertexShader
+      .replace('#include <begin_vertex>','#include <begin_vertex>\n'+(skin?'vOp=position;vOn=normal;vF=aF;\n':'')+'#ifdef USE_INSTANCING\nvec3 ip=instanceMatrix[3].xyz;\n#else\nvec3 ip=vec3(0.);\n#endif\nfloat ph=float(gl_InstanceID)*2.37;\n'+v)
       .replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n{vec4 wq=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nwq=instanceMatrix*wq;\n#endif\nvWp=(modelMatrix*wq).xyz;}');
-    sh.fragmentShader='uniform float uT;\nvarying vec3 vWp;\n'+(caus&&!isTouch?CAUS:'')+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n'+(caus?'{float cz='+(isTouch?'pow(.5+.5*sin(vWp.x*.55+uT*.9+sin(vWp.z*.4+uT*.5)*1.6)*sin(vWp.z*.5-uT*.7),3.)':'causF(vWp.xz*.034)')+'*smoothstep(-48.,34.,vWp.y);totalEmissiveRadiance+=diffuseColor.rgb*vec3(.55,.85,1.)*cz*'+caus.toFixed(2)+';}':'')+fx);
+    sh.fragmentShader='uniform float uT;\nvarying vec3 vWp;\n'+(skin?SKIN_H:'')+(caus&&!isTouch?CAUS:'')+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n'+(caus?'{float cz='+(isTouch?'pow(.5+.5*sin(vWp.x*.55+uT*.9+sin(vWp.z*.4+uT*.5)*1.6)*sin(vWp.z*.5-uT*.7),3.)':'causF(vWp.xz*.034)')+'*smoothstep(-48.,34.,vWp.y);totalEmissiveRadiance+=diffuseColor.rgb*vec3(.55,.85,1.)*cz*'+caus.toFixed(2)+';}':'')+fx);
   };
   mat.customProgramCacheKey=()=>key;
   return mat;
@@ -1298,7 +1298,127 @@ function fishBase(body,tail,fin,eyeS=1){
     P(new THREE.SphereGeometry(.07*eyeS,8,6),'#081018',[.37,.18,.75]),P(new THREE.SphereGeometry(.07*eyeS,8,6),'#081018',[-.37,.18,.75])];
 }
 const band=(z,hex,w=.16,sx=.42,sy=.75)=>{const f=Math.sqrt(Math.max(.05,1-(z/1.1)**2))*1.04;return P(new THREE.CylinderGeometry(1,1,w,18),hex,[0,0,z],[Math.PI/2,0,0],[sx*f,1,sy*f]);};
-const GEO={
+/* ---- Gerçekçi canlı yapı taşları: loft gövde, zarlı yüzgeç, değişken yarıçaplı tüp, gerçek oranlı göz ---- */
+const _kc=new THREE.Color(),_kc2=new THREE.Color();
+const shade=(hex,k)=>'#'+_kc.set(hex).multiplyScalar(k).getHexString();
+const mixc=(a,b,t)=>'#'+_kc.set(a).lerp(_kc2.set(b),t).getHexString();
+function gfin(pos,col,idx,fin){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();const n=g.toNonIndexed();const nv=n.attributes.position.count;n.setAttribute('uv',new THREE.BufferAttribute(new Float32Array(nv*2),2));n.setAttribute('aF',new THREE.BufferAttribute(new Float32Array(nv).fill(fin?1:0),1));return n;}
+function mergeS(a){return mergeGeometries(a.map(g=>{g=g.index?g.toNonIndexed():g;if(!g.attributes.aF)g.setAttribute('aF',new THREE.BufferAttribute(new Float32Array(g.attributes.position.count),1));return g;}),false);}
+/* st: [z,yarıGenişlik,yarıYükseklik,merkezY,kare(2=elips,>2=kutumsu)] burundan kuyruğa */
+function loft(st,n,hex,cf){
+  const m=st.length,pos=[],col=[],idx=[],c0=new THREE.Color(hex),cc=new THREE.Color();
+  for(let i=0;i<m;i++){const s=st[i],e=2/(s[4]||2.3);
+    for(let j=0;j<n;j++){const a=j/n*Math.PI*2,ca=Math.cos(a),sa=Math.sin(a);
+      pos.push(Math.sign(ca)*Math.pow(Math.abs(ca),e)*s[1],(s[3]||0)+Math.sign(sa)*Math.pow(Math.abs(sa),e)*s[2],s[0]);
+      if(cf)cc.set(cf(i/(m-1),a,s[0]));else cc.copy(c0);col.push(cc.r,cc.g,cc.b);}}
+  for(let i=0;i<m-1;i++)for(let j=0;j<n;j++){const a=i*n+j,b=i*n+(j+1)%n,c=(i+1)*n+j,d=(i+1)*n+(j+1)%n;idx.push(a,c,b,b,c,d);}
+  for(const k of [0,m-1]){const ci=pos.length/3;pos.push(0,st[k][3]||0,st[k][0]);const q=k*n*3;col.push(col[q],col[q+1],col[q+2]);
+    for(let j=0;j<n;j++){const a=k*n+j,b=k*n+(j+1)%n;if(k===0)idx.push(ci,a,b);else idx.push(ci,b,a);}}
+  return gfin(pos,col,idx);
+}
+/* pts: [t,genişlikK,yükseklikK,yK] (t=0 burun, 1 kuyruk) → loft istasyonları (Catmull-Rom ile yumuşatılmış) */
+function prof(L,H,W,pts,N=16){
+  const A=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(p[0],p[1],p[2])),false,'centripetal'),B=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(p[0],p[3]||0,0)),false,'centripetal'),out=[];
+  for(let i=0;i<N;i++){const u=i/(N-1),a=A.getPoint(u),b=B.getPoint(u);out.push([L/2-clamp(a.x,0,1)*L,Math.max(.006,a.y*W),Math.max(.006,a.z*H),b.y*H]);}
+  return out;
+}
+function bodyAt(st,z){
+  for(let i=0;i<st.length-1;i++){const a=st[i],b=st[i+1];if(z<=a[0]&&z>=b[0]){const k=(a[0]-z)/Math.max(1e-6,a[0]-b[0]);return [a[1]+(b[1]-a[1])*k,a[2]+(b[2]-a[2])*k,(a[3]||0)+((b[3]||0)-(a[3]||0))*k];}}
+  const e=z>st[0][0]?st[0]:st[st.length-1];return [e[1],e[2],e[3]||0];
+}
+/* zar: kök noktaları ile uç noktaları arasında ince levha; rib=1 ise uçlarda ışın çizgileri */
+function sheet(root,tip,c1,c2,rib){
+  const K=root.length,pos=[],col=[],idx=[],a=new THREE.Color(c1),b=new THREE.Color(c2),b2=new THREE.Color(c2).multiplyScalar(.62);
+  for(let i=0;i<K;i++){pos.push(...root[i]);col.push(a.r,a.g,a.b);}
+  for(let i=0;i<K;i++){pos.push(...tip[i]);const q=rib&&i%2?b2:b;col.push(q.r,q.g,q.b);}
+  for(let i=0;i<K-1;i++)idx.push(i,K+i,i+1,i+1,K+i,K+i+1);
+  return gfin(pos,col,idx,1);
+}
+/* değişken yarıçaplı tüp (kol, kuyruk, yılanbalığı gövdesi, deniz atı…) */
+function tubeV(pts,rad,hex,seg=8,ns=26,cf){
+  const cv=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p))),fr=cv.computeFrenetFrames(ns,false),RC=new THREE.CatmullRomCurve3(rad.map((r,i)=>new THREE.Vector3(i/Math.max(1,rad.length-1),r,0)));
+  const pos=[],col=[],idx=[],c0=new THREE.Color(hex),cc=new THREE.Color();
+  for(let i=0;i<=ns;i++){const u=i/ns,p=cv.getPointAt(u),r=Math.max(.004,RC.getPoint(u).y),N=fr.normals[i],Bn=fr.binormals[i];
+    for(let j=0;j<seg;j++){const a=j/seg*Math.PI*2,ca=Math.cos(a),sa=Math.sin(a);pos.push(p.x+(N.x*ca+Bn.x*sa)*r,p.y+(N.y*ca+Bn.y*sa)*r,p.z+(N.z*ca+Bn.z*sa)*r);
+      if(cf)cc.set(cf(u,a));else cc.copy(c0);col.push(cc.r,cc.g,cc.b);}}
+  for(let i=0;i<ns;i++)for(let j=0;j<seg;j++){const a=i*seg+j,b=i*seg+(j+1)%seg,c=(i+1)*seg+j,d=(i+1)*seg+(j+1)%seg;idx.push(a,b,c,b,d,c);}
+  for(const k of [0,ns]){const ci=pos.length/3,p=cv.getPointAt(k/ns);pos.push(p.x,p.y,p.z);const q=k*seg*3;col.push(col[q],col[q+1],col[q+2]);for(let j=0;j<seg;j++){const a=k*seg+j,b=k*seg+(j+1)%seg;if(k===0)idx.push(ci,b,a);else idx.push(ci,a,b);}}
+  return gfin(pos,col,idx);
+}
+/* göz: gövdeye gömük küre; iris + göz bebeği, iki yanda */
+function eyePair(x,y,z,r,iris,pup='#04070a',look=0){
+  const o=[];for(const sd of [1,-1]){o.push(P(new THREE.SphereGeometry(r,10,8),iris,[sd*x,y,z]),P(new THREE.SphereGeometry(r*.62,8,6),pup,[sd*(x+r*.5),y,z+r*.1*look]));}
+  return o;
+}
+const FSH={sail:u=>Math.pow(Math.sin(Math.PI*u),.75),rear:u=>.45+.55*Math.sin(Math.PI*(u*.75+.1)),front:u=>Math.pow(1-u,.6)*.92+.08*Math.sin(Math.PI*u),tri:u=>Math.pow(Math.max(0,1-Math.abs(u-.35)/.65),.9),flat:u=>.55+.45*Math.sin(Math.PI*u),streamer:u=>Math.pow(Math.sin(Math.PI*Math.min(1,u*.5+.0)),.6)*(.5+.5*u)};
+/* sırt/karın yüzgeci: gövdenin üst/alt çizgisi boyunca kök, 'h' yükseklik, 'sl' geriye eğim */
+function fin(st,L,o){
+  const K=o.K||10,root=[],tip=[],sg=o.k==='bot'?-1:1;
+  for(let i=0;i<K;i++){const u=i/(K-1),t=o.t0+(o.t1-o.t0)*u,z=L/2-t*L,b=bodyAt(st,z),y=b[2]+sg*b[1]*.9,sh=(FSH[o.shape||'sail'])(u);
+    root.push([0,y,z]);tip.push([0,y+sg*o.h*sh,z-(o.sl||.2)*o.h*sh]);}
+  return sheet(root,tip,o.c1,o.c2,o.rib!==0);
+}
+function tailFin(st,L,o){
+  const K=o.K||9,zt=-L/2+.02,b=bodyAt(st,zt+.05),root=[],tip=[],ph=Math.max(.02,b[1]*.9);
+  for(let i=0;i<K;i++){const k=i/(K-1)*2-1,a=Math.abs(k),zz=zt-o.len*((o.fork||0)*(1-a*a)*0+(1-(o.fork||0))*(1-.35*k*k)+(o.fork||0)*(.3+.7*Math.pow(a,o.p||1.4)));
+    root.push([0,b[2]+k*ph,zt]);tip.push([0,b[2]+k*o.span+(o.dy||0),zz]);}
+  return sheet(root,tip,o.c1,o.c2,true);
+}
+function pectFin(st,L,o){
+  const out=[],K=5;
+  for(const sd of [1,-1]){const root=[],tip=[],z0=L/2-o.t*L;
+    for(let i=0;i<K;i++){const u=i/(K-1),z=z0-u*(o.base||.12),b=bodyAt(st,z),ry=b[2]+(o.y===undefined?-.2:o.y)*b[1],sh=Math.sin(Math.PI*(u*.8+.1));
+      root.push([sd*b[0]*.92,ry,z]);tip.push([sd*(b[0]+o.span*sh*(.6+.4*(1-u))),ry-o.drop*sh,z-o.len*(.4+.6*u)]);}
+    out.push(sheet(root,tip,o.c1,o.c2,true));}
+  return out;
+}
+/* ortak balık fabrikası */
+const FP=[[0,.05,.05,-.02],[.03,.4,.42,-.03],[.12,.78,.82,0],[.3,1,1,0],[.5,.9,.92,.02],[.7,.55,.56,.03],[.86,.28,.3,.03],[1,.13,.17,.03]];
+function fishGeo(o){
+  const L=o.L||2.2,H=o.H||.7,W=o.W||.4,st=prof(L,H,W,o.pr||FP,o.N||16),P0=[loft(st,o.n||14,o.col,o.cf)];
+  for(const f of o.fins||[])P0.push(fin(st,L,f));
+  if(o.tail)P0.push(tailFin(st,L,o.tail));
+  if(o.pect)P0.push(...pectFin(st,L,{...o.pect,span:o.pect.span*1.4,len:o.pect.len*1.35,base:o.pect.base||.2}));
+  if(o.eye){const e=o.eye,b=bodyAt(st,L/2-e.t*L);P0.push(...eyePair(b[0]*.9,b[2]+b[1]*(e.y===undefined?.18:e.y),L/2-e.t*L,e.r,e.iris||'#b9a465',e.pup,0));}
+  if(o.extra)P0.push(...o.extra(st,L));
+  return mergeS(P0);
+}
+const SKIN_PRE='float bm=1.-vF;';
+const skinFx=c=>{const b=c.belly||[.86,.89,.9];return '{'+SKIN_PRE+'float upk=normalize(vOn).y;float cs=smoothstep(-.45,.5,upk);vec3 b0=diffuseColor.rgb;vec3 bl=mix(b0,vec3('+b.map(v=>v.toFixed(2)).join(',')+'),'+(c.bk===undefined?.55:c.bk).toFixed(2)+');diffuseColor.rgb=mix(b0,mix(bl,b0*'+(c.dk===undefined?.82:c.dk).toFixed(2)+',cs),bm);\n'+(c.pat||'')+'\nroughnessFactor='+(c.rough===undefined?.36:c.rough).toFixed(2)+'*(.75+.5*n21(vOp.zy*26.+vOp.x*9.));}';};
+const SKIN={
+  clown:{belly:[.95,.55,.28],bk:.25,dk:.9,pat:'float t1=vOp.z-.52+vOp.y*.12,t2=vOp.z+.18-vOp.y*.10,t3=vOp.z+.92;float ow=max(max(1.-smoothstep(.13,.19,abs(t1)),1.-smoothstep(.13,.19,abs(t2))),1.-smoothstep(.06,.1,abs(t3)));float wh=max(max(1.-smoothstep(.09,.13,abs(t1)),1.-smoothstep(.09,.13,abs(t2))),1.-smoothstep(.035,.06,abs(t3)));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.04,.03,.03),ow*.92);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.92,.92,.88)*(.8+.2*cs),wh);'},
+  tang:{belly:[.3,.5,.85],bk:.2,dk:.9,pat:'float y0=.2+.2*sin((vOp.z+.9)*2.1);float pal=(1.-smoothstep(.06,.11,abs(vOp.y-y0)))*step(-.98,vOp.z)*smoothstep(.62,.5,vOp.z)*bm;float pl=smoothstep(.0,.25,vOp.z+.7);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.02,.03,.09),pal*.95);'},
+  angel:{belly:[.95,.85,.4],bk:.35,dk:.88,pat:'float sb=smoothstep(.62,.85,sin(vOp.z*17.-vOp.y*4.))*bm;diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.16,.3,.7),sb*.8);float mk=1.-smoothstep(.07,.12,abs(vOp.z-.62));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.04,.05,.12),mk*bm);'},
+  puffer:{belly:[.95,.93,.82],bk:.8,dk:.78,rough:.5,pat:'float sp=vor(vec2(vOp.z,vOp.x*.8+vOp.y)*7.).x;diffuseColor.rgb*=1.-.4*smoothstep(.3,.2,sp)*cs;diffuseColor.rgb*=.9+.2*n21(vOp.zy*9.);'},
+  seahorse:{belly:[.9,.7,.4],bk:.35,dk:.85,rough:.5,pat:'diffuseColor.rgb*=.85+.3*n21(vOp.yx*12.);'},
+  butterfly:{belly:[.98,.95,.7],bk:.4,dk:.95,pat:'float eb=1.-smoothstep(.05,.09,abs(vOp.z-.64+vOp.y*.05));float rp=smoothstep(.22,.1,length(vec2(vOp.z+.62,vOp.y-.28)));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.03),max(eb,rp*.9)*bm);diffuseColor.rgb*=.93+.07*sin(vOp.z*40.+vOp.y*30.);'},
+  lion:{belly:[.9,.8,.65],bk:.4,dk:.85,pat:'float bnd=smoothstep(-.15,.15,sin(vOp.z*13.));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.92,.84,.72),bnd*.75*bm);'},
+  mola:{belly:[.8,.84,.86],bk:.4,dk:.9,rough:.6,pat:'diffuseColor.rgb*=.78+.4*n21(vOp.xy*16.+vOp.z*6.)*n21(vOp.zy*5.+3.);'},
+  sardine:{belly:[.92,.95,.97],bk:.8,dk:.75,rough:.25,pat:'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.1,.27,.4),cs*.75*bm);float d=length(vec2(fract(vOp.z*6.)-.5,(vOp.y-.07)*8.));diffuseColor.rgb*=1.-.5*smoothstep(.32,.18,d)*bm*step(-.8,vOp.z)*step(vOp.z,.6);'},
+  barracuda:{belly:[.9,.93,.92],bk:.7,dk:.75,rough:.3,pat:'float br=smoothstep(.3,.5,sin(vOp.z*9.))*cs;diffuseColor.rgb*=1.-.4*br*bm;'}
+};
+var SKIN_H='varying vec3 vOp;varying vec3 vOn;varying float vF;\nfloat h21(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}\nfloat n21(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i),h21(i+vec2(1.,0.)),f.x),mix(h21(i+vec2(0.,1.)),h21(i+vec2(1.,1.)),f.x),f.y);}\nvec2 vor(vec2 p){vec2 i=floor(p),f=fract(p);float d=8.,d2=8.;for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 g=vec2(float(x),float(y));vec2 o=vec2(h21(i+g),h21(i+g+17.3));vec2 r=g+o-f;float dd=dot(r,r);if(dd<d){d2=d;d=dd;}else if(dd<d2)d2=dd;}return vec2(sqrt(d),sqrt(d2));}\n';
+Object.assign(SKIN,{
+  dolphin:{belly:[.9,.92,.93],bk:.9,dk:.72,rough:.2,pat:'float cape=smoothstep(.0,.35,vOn.y+.1-.25*sin(vOp.z*1.2));diffuseColor.rgb*=.95+.05*n21(vOp.zy*8.);'},
+  hammerhead:{belly:[.93,.95,.96],bk:.95,dk:.8,rough:.3,pat:'float sl=0.;for(int i=0;i<5;i++){sl=max(sl,1.-smoothstep(.01,.03,abs(vOp.z-(1.25-float(i)*.09))));}diffuseColor.rgb*=1.-.45*sl*bm*smoothstep(.15,.35,abs(vOp.x))*step(vOp.z,1.4);'},
+  swordfish:{belly:[.88,.9,.92],bk:.85,dk:.7,rough:.25},
+  moray:{belly:[.7,.62,.34],bk:.3,dk:.9,rough:.45,pat:'float sp=smoothstep(.55,.62,n21(vOp.zy*vec2(3.,5.)+vOp.x*4.)+.2*n21(vOp.zx*14.));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.16,.11,.04),sp*.85);'},
+  octopus:{belly:[.9,.65,.5],bk:.55,dk:.8,rough:.5,pat:'float m=n21(vOp.xz*5.+vOp.y*3.)*.6+n21(vOp.xz*17.)*.4;diffuseColor.rgb*=.7+.6*m;'},
+  cuttle:{belly:[.85,.78,.62],bk:.5,dk:.85,rough:.5,pat:'float z=sin(vOp.x*13.+n21(vOp.zx*4.)*5.);diffuseColor.rgb*=.78+.35*smoothstep(-.3,.5,z)*cs+.12*n21(vOp.zx*22.);'},
+  seadragon:{belly:[.8,.65,.3],bk:.3,dk:.9,rough:.5},
+  blobfish:{belly:[.95,.78,.75],bk:.4,dk:.9,rough:.18,pat:'diffuseColor.rgb*=.88+.24*n21(vOp.xy*5.+vOp.z*3.);'},
+  turtle:{belly:[.88,.8,.55],bk:.8,dk:.9,rough:.5,pat:'vec2 v=vor(vec2(vOp.x,vOp.z)*3.2);float ed=smoothstep(.0,.07,v.y-v.x);float sc=step(.3,vOn.y)*bm;diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.45,(1.-ed)*sc);diffuseColor.rgb*=1.-.15*sc*n21(vOp.xz*7.+v*3.);'},
+  ray:{belly:[.93,.9,.84],bk:.95,dk:.9,rough:.5,pat:'float m=n21(vOp.xz*4.)*.55+n21(vOp.xz*13.)*.45;diffuseColor.rgb*=.7+.55*m*cs+.3*(1.-cs);'},
+  manta:{belly:[.95,.96,.96],bk:.95,dk:.75,rough:.4,pat:'float a=smoothstep(.9,.4,abs(vOp.x))*smoothstep(-.8,.4,vOp.z)*cs;diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.8,.84,.86),a*.55*smoothstep(.55,.4,abs(vOp.x))*.8);'},
+  whaleshark:{belly:[.93,.95,.95],bk:.95,dk:.85,rough:.4,pat:'vec2 g=vec2(vOp.z*1.7,vOp.y*2.5+vOp.x*1.4);vec2 id=floor(g);vec2 f=fract(g)-.5;float dots=smoothstep(.2,.12,length(f-(vec2(h21(id),h21(id+3.7))-.5)*.4))*step(.45,h21(id+9.1));float lines=smoothstep(.97,1.,sin(vOp.z*3.2+vOp.y*.5))*.5;diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.88,.92,.9),max(dots,lines*.5)*cs*bm*.85);'},
+  narwhal:{belly:[.93,.94,.93],bk:.9,dk:.8,rough:.3,pat:'float mt=smoothstep(.45,.62,n21(vOp.zx*vec2(3.,8.)+vOp.y*3.))*cs;diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.3,.34,.4),mt*.7*bm);'},
+  oarfish:{belly:[.85,.9,.93],bk:.4,dk:.9,rough:.18,pat:'float d=smoothstep(.55,.62,n21(vOp.zy*vec2(4.,12.)))*bm;diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.12,.14,.18),d*.55);diffuseColor.rgb*=1.+.15*sin(vOp.z*30.)*bm;'},
+  nautilus:{belly:[.95,.9,.8],bk:.2,dk:.95,rough:.35,pat:'float st=smoothstep(.3,.6,sin(atan(vOp.z+.45,vOp.y)*12.+length(vec2(vOp.y,vOp.z+.45))*14.));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.55,.28,.1),st*.6*step(vOp.z,.55)*bm);'},
+  angler:{belly:[.35,.28,.22],bk:.3,dk:.9,rough:.6,pat:'diffuseColor.rgb*=.75+.5*n21(vOp.xy*10.+vOp.z*4.);'},
+  jelly:{belly:[.85,.95,1.],bk:.3,dk:1.,rough:.15,pat:'float rc=smoothstep(.93,1.,abs(sin(atan(vOp.z,vOp.x)*8.)))*smoothstep(.0,.6,vOp.y);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.95,.7,.95),rc*.35);float fr=pow(1.-abs(dot(normalize(vNormal),normalize(vViewPosition))),2.2);totalEmissiveRadiance+=vec3(.2,.55,.75)*fr*.8;'}
+});
+
+const GEO_OLD={
   clown:()=>merge([...fishBase('#ff6a1a','#ff6a1a','#ff7a2e'),band(.42,'#ffffff'),band(-.35,'#ffffff'),band(-1.02,'#111111',.08)]),
   tang:()=>{const a=fishBase('#1f5fd6','#ffd23a','#12254f');a[0]=P(new THREE.SphereGeometry(1,18,12),'#1f5fd6',[0,0,0],[0,0,0],[.36,.9,1.05]);return merge([...a,P(new THREE.SphereGeometry(1,12,8),'#0b1a3a',[0,.25,-.1],[0,0,0],[.37,.3,.7])]);},
   angel:()=>{const a=fishBase('#f5d23a','#f5d23a','#f5d23a');a[0]=P(new THREE.SphereGeometry(1,18,12),'#f5d23a',[0,0,0],[0,0,0],[.28,1.1,.9]);a[2]=P(new THREE.ConeGeometry(.5,1.7,4),'#3b3a52',[0,1.3,-.45],[-.75,0,0],[.08,1,1]);a[3]=P(new THREE.ConeGeometry(.5,1.7,4),'#3b3a52',[0,-1.3,-.45],[Math.PI+.75,0,0],[.08,1,1]);
@@ -1405,9 +1525,149 @@ const GEO={
     P(new THREE.SphereGeometry(1,12,8),'#7f9a5e',[.9,0,-1.3],[0,-.6,0],[.55,.07,.28]),P(new THREE.SphereGeometry(1,12,8),'#7f9a5e',[-.9,0,-1.3],[0,.6,0],[.55,.07,.28]),P(new THREE.ConeGeometry(.15,.5,6),'#7f9a5e',[0,0,-1.65],[-Math.PI/2,0,0]),
     P(new THREE.SphereGeometry(.07,8,6),'#081018',[.24,.2,2.05]),P(new THREE.SphereGeometry(.07,8,6),'#081018',[-.24,.2,2.05])])
 };
+const xf=(g,p=[0,0,0],r=[0,0,0],s=[1,1,1])=>{_m.compose(_v.set(...p),_q.setFromEuler(_e.set(...r)),_s.set(...s));g.applyMatrix4(_m);return g;};
+const dk=(h,k)=>shade(h,k);
+/* iki yüzeyli kanat gövdesi: vatoz/manta (S: yarı kanat açıklığı, C: gövde derinliği, T: kalınlık) */
+function winged(S,C,T,hex,hex2,o={}){
+  const NX=34,NZ=12,pos=[],col=[],idx=[],c1=new THREE.Color(hex),c2=new THREE.Color(hex2);
+  for(const side of [1,-1]){const b0=pos.length/3;
+    for(let i=0;i<=NX;i++){const s=i/NX*2-1,a=Math.abs(s),zc=C*(o.nz===undefined?.05:o.nz)-C*(o.sw||.3)*Math.pow(a,o.sp||1.8),hz=C*.5*Math.pow(Math.max(0,1-Math.pow(a,o.pw||1.8)),o.cw||.7)+C*.012;
+      for(let j=0;j<=NZ;j++){const w=j/NZ*2-1,h=T*Math.pow(Math.max(0,1-Math.pow(a,o.tp||2)),.8)*Math.pow(Math.max(0,1-w*w),.55)*(side>0?1:.5);
+        pos.push(s*S,side*h-(o.droop||0)*a*a,zc+w*hz);const c=side>0?c1:c2;col.push(c.r,c.g,c.b);}}
+    for(let i=0;i<NX;i++)for(let j=0;j<NZ;j++){const a=b0+i*(NZ+1)+j,b=a+1,c=a+NZ+1,d=c+1;if(side>0)idx.push(a,b,c,b,d,c);else idx.push(a,c,b,b,c,d);}}
+  return gfin(pos,col,idx);
+}
+/* dönel gövde (medüz çanı vb.): profil [yarıçap,y] yukarıdan aşağı */
+function lathe(pr,seg,hex,mod,cf){
+  const pos=[],col=[],idx=[],c0=new THREE.Color(hex),cc=new THREE.Color(),n=pr.length;
+  for(let i=0;i<n;i++)for(let j=0;j<seg;j++){const a=j/seg*Math.PI*2,r=pr[i][0]*(mod?mod(i/(n-1),a):1);pos.push(Math.cos(a)*r,pr[i][1],Math.sin(a)*r);if(cf)cc.set(cf(i/(n-1),a));else cc.copy(c0);col.push(cc.r,cc.g,cc.b);}
+  for(let i=0;i<n-1;i++)for(let j=0;j<seg;j++){const a=i*seg+j,b=i*seg+(j+1)%seg,c=(i+1)*seg+j,d=(i+1)*seg+(j+1)%seg;idx.push(a,b,c,b,d,c);}
+  return gfin(pos,col,idx);
+}
+const mir=(f)=>[f(1),f(-1)];
+const GEO_NEW={
+  clown:()=>fishGeo({L:2.1,H:.62,W:.4,col:'#dd5d1a',pr:[[0,.05,.05,-.02],[.04,.45,.48,-.03],[.14,.85,.92,0],[.34,1,1,.02],[.55,.9,.9,.02],[.75,.58,.55,.03],[.9,.34,.3,.03],[1,.24,.24,.03]],
+    fins:[{k:'top',t0:.2,t1:.8,h:.5,shape:'rear',c1:'#cf5518',c2:'#ee7428',sl:.15},{k:'bot',t0:.62,t1:.82,h:.3,shape:'sail',c1:'#cf5518',c2:'#ee7428'},{k:'bot',t0:.3,t1:.4,h:.36,shape:'tri',c1:'#cf5518',c2:'#ee7428',sl:.5}],
+    tail:{len:.62,span:.5,fork:0,c1:'#cf5518',c2:'#ee7428'},pect:{t:.3,len:.28,span:.3,drop:.1,c1:'#e0702a',c2:'#f08a3a'},eye:{t:.11,r:.072,iris:'#c89a48'}}),
+  tang:()=>fishGeo({L:2.1,H:.92,W:.26,col:'#1d5fcf',pr:[[0,.05,.05],[.05,.35,.4,-.02],[.16,.75,.85,-.01],[.38,1,1],[.6,.92,.95,.02],[.8,.55,.6,.03],[.92,.26,.3,.02],[1,.17,.2,.02]],
+    fins:[{k:'top',t0:.22,t1:.86,h:.5,shape:'flat',c1:'#143f9a',c2:'#0b1c4c',sl:.1},{k:'bot',t0:.5,t1:.86,h:.38,shape:'flat',c1:'#143f9a',c2:'#0b1c4c',sl:.1}],
+    tail:{len:.7,span:.62,fork:.8,c1:'#f0c82a',c2:'#d9a010'},pect:{t:.27,len:.3,span:.28,drop:.15,c1:'#e9c72e',c2:'#f4d84a'},eye:{t:.13,r:.075,iris:'#d8b84a'}}),
+  angel:()=>fishGeo({L:1.9,H:1.1,W:.22,col:'#e1b92a',pr:[[0,.05,.04],[.05,.4,.4],[.16,.78,.8],[.38,1,1],[.6,.9,.95],[.78,.6,.65],[.9,.3,.34],[1,.2,.22]],
+    fins:[{k:'top',t0:.3,t1:.92,h:1.2,shape:'streamer',c1:'#7a8cc0',c2:'#2a3f8a',sl:1.0},{k:'bot',t0:.4,t1:.92,h:1.1,shape:'streamer',c1:'#7a8cc0',c2:'#2a3f8a',sl:1.0}],
+    tail:{len:.6,span:.5,fork:.1,c1:'#e8d070',c2:'#f2e090'},pect:{t:.28,len:.25,span:.25,drop:.1,c1:'#dcc070',c2:'#ecd890'},eye:{t:.12,r:.07,iris:'#d9c060'}}),
+  puffer:()=>fishGeo({L:1.9,H:.74,W:.7,col:'#b8a868',pr:[[0,.06,.06],[.06,.55,.6,-.02],[.2,.95,.95],[.45,1,1],[.7,.82,.82],[.88,.42,.42],[1,.2,.22]],
+    fins:[{k:'top',t0:.66,t1:.82,h:.26,shape:'sail',c1:'#a89a5c',c2:'#c8bc80',sl:.3},{k:'bot',t0:.66,t1:.82,h:.22,shape:'sail',c1:'#a89a5c',c2:'#c8bc80',sl:.3}],
+    tail:{len:.55,span:.42,fork:0,c1:'#a89a5c',c2:'#c8bc80'},pect:{t:.3,len:.3,span:.35,drop:.1,c1:'#cfc690',c2:'#e0d8a8'},eye:{t:.14,r:.12,iris:'#c8a850',y:.3},
+    extra:(st,L)=>[P(new THREE.SphereGeometry(.1,8,6),'#efe6cf',[0,-.18,L/2-.02],[0,0,0],[1.4,.5,.9])]}),
+  seahorse:()=>{const body=tubeV([[0,-1.3,.3],[0,-1.6,.02],[0,-1.3,-.25],[0,-.55,-.18],[0,.2,-.05],[0,.85,.08],[0,1.1,.12]],[.04,.06,.09,.2,.27,.19,.11],'#c98a3a',10,30,(u,a)=>(Math.floor(u*34)%2)?'#b87830':'#cf9444');
+    const fn=(g)=>g;
+    return mergeS([body,xf(tubeV([[0,1.1,.12],[0,1.18,.4],[0,1.08,.72]],[.1,.075,.05],'#c98a3a',8,8),[0,0,0]),
+P(new THREE.ConeGeometry(.07,.28,5),'#b87830',[0,1.42,.02],[-.3,0,0]),
+      sheet([[0,.7,-.08],[0,.45,-.14],[0,.2,-.18],[0,-.05,-.18],[0,-.3,-.16]],[[0,.8,-.4],[0,.52,-.52],[0,.24,-.54],[0,-.02,-.5],[0,-.26,-.4]],'#b8782e','#e0b070',true),
+      ...eyePair(.13,1.24,.26,.05,'#d0b060'),P(new THREE.ConeGeometry(.06,.3,5),'#a56a28',[.14,.52,.0],[0,0,-1.2]),P(new THREE.ConeGeometry(.06,.3,5),'#a56a28',[-.14,.52,.0],[0,0,1.2])]);},
+  butterfly:()=>fishGeo({L:1.9,H:.86,W:.22,col:'#f0d83c',pr:[[0,.03,.03],[.1,.1,.16,-.04],[.2,.4,.55],[.36,.85,.9],[.5,1,1],[.7,.82,.86],[.88,.42,.46],[1,.2,.26]],
+    fins:[{k:'top',t0:.34,t1:.86,h:.42,shape:'flat',c1:'#f0d83c',c2:'#f8ec80',sl:.1},{k:'bot',t0:.46,t1:.86,h:.36,shape:'flat',c1:'#f0d83c',c2:'#f8ec80',sl:.1}],
+    tail:{len:.5,span:.36,fork:0,c1:'#f0d83c',c2:'#f8ec80'},pect:{t:.28,len:.25,span:.22,drop:.1,c1:'#f4e060',c2:'#faf0a0'},eye:{t:.2,r:.065,iris:'#10100c'}}),
+  lion:()=>{const st=prof(2.1,.7,.4,FP,16),out=[fishGeo({L:2.1,H:.7,W:.4,col:'#a8452a',fins:[{k:'top',t0:.22,t1:.62,h:.95,shape:'front',c1:'#e8dcc8',c2:'#8a2a18',sl:.5},{k:'top',t0:.62,t1:.78,h:.4,shape:'flat',c1:'#cfa090',c2:'#8a2a18',sl:.2},{k:'bot',t0:.58,t1:.78,h:.34,shape:'flat',c1:'#cfa090',c2:'#8a2a18'}],
+      tail:{len:.7,span:.55,fork:0,c1:'#b8a090',c2:'#8a2a18'},eye:{t:.12,r:.085,iris:'#c0a050'}})];
+    for(const sd of [1,-1]){const root=[],tip=[];for(let i=0;i<15;i++){const u=i/14,an=-1.2+u*2.4,R=1.15*(.78+.22*Math.sin(u*3.14));root.push([sd*.4,-.1,.5-(u-.5)*.06]);tip.push([sd*(.46+.18*u),-.1+Math.sin(an)*R*.75,.5-Math.cos(an)*R]);}
+      out.push(sheet(root,tip,'#cdb9a4','#7a2414',true));}
+    return mergeS(out);},
+  mola:()=>fishGeo({L:2.0,H:1.15,W:.4,col:'#8e9ba3',pr:[[0,.1,.08],[.05,.5,.5],[.2,.9,.95],[.5,1,1],[.8,.8,.9],[.95,.4,.6],[1,.15,.3]],
+    fins:[{k:'top',t0:.5,t1:.96,h:1.25,shape:'tri',c1:'#7a8890',c2:'#5a6870',sl:.9},{k:'bot',t0:.5,t1:.96,h:1.25,shape:'tri',c1:'#7a8890',c2:'#5a6870',sl:.9}],
+    tail:{len:.5,span:.95,fork:0,c1:'#7a8890',c2:'#5a6870'},pect:{t:.25,len:.3,span:.32,drop:.0,y:.5,c1:'#7a8890',c2:'#6a7880'},eye:{t:.12,r:.09,iris:'#3a3a30',y:.15}}),
+  sardine:()=>fishGeo({L:2.3,H:.46,W:.24,col:'#c4d3dc',pr:[[0,.05,.05],[.04,.4,.45],[.14,.8,.85],[.35,1,1],[.55,.88,.9],[.75,.5,.52],[.9,.22,.26],[1,.14,.2]],
+    fins:[{k:'top',t0:.4,t1:.5,h:.26,shape:'sail',c1:'#7f95a4',c2:'#5a7284',sl:.5},{k:'bot',t0:.7,t1:.8,h:.16,shape:'sail',c1:'#9fb2bf',c2:'#8aa0ae'}],
+    tail:{len:.55,span:.42,fork:.85,c1:'#7f95a4',c2:'#5a7284'},eye:{t:.1,r:.07,iris:'#d8dcd0'}}),
+  barracuda:()=>fishGeo({L:4.6,H:.42,W:.28,col:'#7e8f98',pr:[[0,.03,.03],[.05,.22,.2,-.1],[.14,.5,.45,-.04],[.28,.85,.85],[.5,1,1],[.7,.82,.82],[.88,.42,.42],[1,.2,.26]],
+    fins:[{k:'top',t0:.44,t1:.5,h:.22,shape:'tri',c1:'#5a6870',c2:'#46555e',sl:.5},{k:'top',t0:.72,t1:.78,h:.22,shape:'tri',c1:'#5a6870',c2:'#46555e',sl:.5},{k:'bot',t0:.72,t1:.78,h:.2,shape:'tri',c1:'#5a6870',c2:'#46555e',sl:.5}],
+    tail:{len:.75,span:.55,fork:.55,c1:'#5a6870',c2:'#3a4850'},pect:{t:.2,len:.35,span:.3,drop:.1,c1:'#6a7880',c2:'#7a8890'},eye:{t:.1,r:.07,iris:'#d8c070'},
+    extra:(st,L)=>{const o=[],z0=L/2-.18;for(let i=0;i<10;i++){const z=z0-i*.04;for(const sd of [1,-1])o.push(P(new THREE.ConeGeometry(.012,.07,4),'#f1eee0',[sd*.07,-.09,z],[Math.PI,0,0]));}return o;}}),
+};
+Object.assign(GEO_NEW,{
+  dolphin:()=>{const L=3.7,st=prof(L,.62,.52,[[0,.03,.03,-.1],[.03,.14,.12,-.1],[.1,.22,.2,-.1],[.18,.5,.6,-.02],[.3,.88,.95,.03],[.5,1,1,.03],[.72,.65,.68,.03],[.9,.3,.32,.03],[1,.16,.16,.03]],18),o=[loft(st,16,'#6d8699')];
+    o.push(fin(st,L,{k:'top',t0:.44,t1:.58,h:.62,shape:'tri',sl:1.1,c1:'#5a7288',c2:'#4a6176',rib:0}));
+    for(const sd of [1,-1]){const z0=L/2-.3*L,rt=[],tp=[];for(let i=0;i<5;i++){const u=i/4,z=z0-u*.35,b=bodyAt(st,z);rt.push([sd*b[0]*.9,b[2]-b[1]*.35,z]);tp.push([sd*(b[0]+.55*Math.sin(Math.PI*(u*.8+.1))),b[2]-b[1]*.35-.42*Math.sin(Math.PI*(u*.8+.1)),z-.55-.2*u]);}o.push(sheet(rt,tp,'#5a7288','#4a6176'));
+      const zt=-L/2+.05,fr=[],ft=[];for(let i=0;i<9;i++){const k=i/8*2-1,a=Math.abs(k);fr.push([k*.1,.03,zt]);ft.push([k*.95,.03,zt-.2-.5*Math.pow(a,1.5)*(.6+.4*a)+.28*(1-a*a)*.0]);}if(sd===1)o.push(sheet(fr,ft,'#5a7288','#4a6176'));}
+    o.push(...eyePair(.4,.1,L/2-.2*L,.05,'#3a2c20','#05080a'));return mergeS(o);},
+  hammerhead:()=>{const L=5.2,st=prof(L,.62,.62,[[0,.2,.12,-.02],[.04,.55,.5],[.14,.9,.95],[.32,1,1],[.55,.8,.8],[.78,.4,.4],[.93,.18,.2],[1,.1,.14]],18),zc=L/2-.1,
+      hd=loft([[zc+.3,.04,.03],[zc+.2,1.1,.07],[zc,1.5,.09],[zc-.25,1.3,.075],[zc-.5,.6,.07],[zc-.6,.12,.05]],18,'#7a8892',null),o=[loft(st,16,'#7a8892'),hd];
+    o.push(fin(st,L,{k:'top',t0:.3,t1:.42,h:1.0,shape:'tri',sl:1.0,c1:'#667680',c2:'#566670',rib:0}),fin(st,L,{k:'top',t0:.7,t1:.76,h:.3,shape:'tri',sl:.8,c1:'#667680',c2:'#566670',rib:0}),fin(st,L,{k:'bot',t0:.72,t1:.78,h:.28,shape:'tri',sl:.8,c1:'#667680',c2:'#566670',rib:0}));
+    o.push(...pectFin(st,L,{t:.3,base:.5,len:1.0,span:1.5,drop:.7,y:-.3,c1:'#6a7a84',c2:'#566670'}),...pectFin(st,L,{t:.62,base:.25,len:.45,span:.6,drop:.3,y:-.4,c1:'#6a7a84',c2:'#566670'}));
+    o.push(tailFin(st,L,{len:.9,span:.9,up:1,fork:.6,p:1.1,c1:'#667680',c2:'#566670',dy:.15}));
+    o.push(...eyePair(1.38,.02,zc-.02,.08,'#d8c870','#03060a'));return mergeS(o);},
+  swordfish:()=>{const L=3.2,st=prof(L,.46,.4,[[0,.05,.05],[.04,.45,.5],[.14,.85,.9],[.34,1,1],[.55,.9,.92],[.74,.5,.5],[.9,.2,.22],[1,.1,.14]],16),o=[loft(st,14,'#425d80')];
+    o.push(tubeV([[0,0,L/2-.1],[0,-.02,L/2+1.1],[0,-.04,L/2+2.3]],[.075,.04,.012],'#3e4c5e',8,10),
+      fin(st,L,{k:'top',t0:.26,t1:.5,h:.85,shape:'tri',sl:.7,c1:'#2c4468',c2:'#1c2c46'}),fin(st,L,{k:'top',t0:.75,t1:.8,h:.22,shape:'tri',sl:.6,c1:'#2c4468',c2:'#1c2c46'}),fin(st,L,{k:'bot',t0:.74,t1:.8,h:.22,shape:'tri',sl:.6,c1:'#2c4468',c2:'#1c2c46'}),
+      tailFin(st,L,{len:.9,span:1.0,fork:.85,p:1.2,c1:'#2c4468',c2:'#1c2c46'}),...pectFin(st,L,{t:.3,base:.1,len:.45,span:.5,drop:.12,y:-.5,c1:'#2c4468',c2:'#1c2c46'}),...eyePair(.36,.12,L/2-.12*L,.1,'#1a1a14','#020202'));return mergeS(o);},
+  moray:()=>{const pts=[[0,.04,3.0],[0,.1,1.8],[.15,0,.4],[0,-.08,-.9],[-.18,0,-2.1],[0,.05,-3.1],[0,-.02,-3.9]],rad=[.17,.27,.27,.25,.2,.12,.02],cv=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p))),o=[tubeV(pts,rad,'#8a7438',10,40)];
+    const rt=[],tp=[];for(let i=0;i<=30;i++){const u=.1+i/30*.9,p=cv.getPointAt(u),r=.27*(1-Math.max(0,u-.45)*1.6);rt.push([p.x,p.y+r*.9,p.z]);tp.push([p.x,p.y+r*.9+.22*(1-Math.abs(u-.55)*.9)*(u<.95?1:.2),p.z-.1]);}o.push(sheet(rt,tp,'#5e4c22','#3a2d10'));
+    o.push(xf(loft([[.55,.04,.03],[.42,.19,.15,.02],[.12,.27,.2,.04],[-.28,.24,.17,.03]],10,'#9a8440'),[0,.04,3.0]),xf(loft([[.5,.03,.02],[.35,.14,.07],[0,.2,.08],[-.2,.18,.06]],10,'#7a6830'),[0,-.1,2.98],[.08,0,0]));
+    for(let i=0;i<8;i++){const z=3.4-i*.1-.2;for(const sd of [1,-1])o.push(P(new THREE.ConeGeometry(.012,.09,4),'#efe8d0',[sd*.09,-.05,z],[Math.PI,0,0]));}
+    o.push(...eyePair(.17,.12,3.05,.04,'#e8d070','#020202'));return mergeS(o);},
+  octopus:()=>{const o=[xf(loft([[.95,.12,.1],[.8,.5,.55],[.4,.8,.85],[0,.88,.95],[-.45,.74,.8],[-.85,.38,.42],[-1.0,.1,.12]],16,'#a94a34'),[0,.55,-.3],[-1.2,0,0]),xf(loft([[.5,.46,.4],[.1,.58,.48],[-.3,.46,.38]],14,'#b05038'),[0,.15,.4])];
+    for(let i=0;i<8;i++){const ang=i/8*Math.PI*2+.2,cx=Math.sin(ang),cz=Math.cos(ang),pts=[0,1,2,3,4,5,6].map(k=>[cx*(.3+k*.5)+Math.sin(k*1.1+i*1.7)*.2,.1-k*.1+Math.max(0,k-4)*.22,cz*(.3+k*.5)-.15-k*.08+Math.cos(k*1.0+i*1.3)*.18]);o.push(tubeV(pts,[.24,.2,.16,.12,.08,.045,.012],i%2?'#a94a34':'#9c4430',8,26));}
+    for(const sd of [1,-1]){o.push(P(new THREE.SphereGeometry(.14,10,8),'#cfae58',[sd*.46,.46,.64]),P(new THREE.SphereGeometry(.1,8,6),'#030303',[sd*.54,.46,.7],[0,0,0],[.8,.3,.6]));}
+    o.push(xf(tubeV([[0,0,0],[0,-.1,.18]],[.09,.07],'#8c3c2a',8,4),[0,.0,.65]));return mergeS(o);},
+  cuttle:()=>{const o=[xf(loft([[1.2,.06,.04],[1.0,.5,.22],[.4,.68,.3],[-.4,.65,.28],[-1.1,.38,.18],[-1.45,.05,.04]],16,'#8c7352'),[0,0,0]),
+      xf(loft([[.5,.5,.3],[.2,.6,.34],[-.1,.5,.28]],12,'#7d6648'),[0,.02,1.3])];
+    for(const sd of [1,-1]){const rt=[],tp=[];for(let i=0;i<14;i++){const u=i/13,z=1.0-u*2.3,w=Math.sin(Math.PI*(u*.92+.04));rt.push([sd*.62*(1-u*.4),-.02,z]);tp.push([sd*(.62*(1-u*.4)+.45*w),-.02+Math.sin(u*14+sd)*.035,z]);}o.push(sheet(rt,tp,'#7a6244','#c7b18a',true));
+      o.push(P(new THREE.SphereGeometry(.17,10,8),'#d0b050',[sd*.5,.12,1.38]),P(new THREE.SphereGeometry(.1,8,6),'#030303',[sd*.58,.12,1.46],[0,0,0],[.6,.4,1.3]));}
+    for(let i=0;i<8;i++){const x=(i-3.5)*.1;o.push(tubeV([[x,-.12,1.75],[x*1.3,-.16,2.15],[x*1.6,-.18+Math.sin(i)*.03,2.6]],[.07,.05,.015],'#8c7352',7,8));}
+    for(const sd of [1,-1])o.push(tubeV([[sd*.07,-.1,1.7],[sd*.1,-.14,2.4],[sd*.12,-.1,3.1]],[.05,.03,.05],'#8c7352',7,8));return mergeS(o);},
+  seadragon:()=>{const pts=[[0,.05,1.3],[0,.15,.5],[0,0,-.4],[0,-.2,-1.3],[0,-.35,-2.1]],rad=[.12,.16,.16,.1,.035],cv=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p))),o=[tubeV(pts,rad,'#b8903c',9,30,(u)=>Math.floor(u*28)%2?'#a98234':'#c4a04e')];
+    o.push(xf(loft([[.35,.04,.03],[.2,.1,.1],[-.05,.16,.17],[-.35,.12,.12]],10,'#c4a04e'),[0,.15,1.4]),tubeV([[0,.1,1.7],[0,.08,2.2]],[.05,.035],'#c4a04e',8,6),...eyePair(.13,.2,1.52,.05,'#e8d080','#020202'));
+    for(let i=0;i<16;i++){const u=.08+i/16*.84,p=cv.getPointAt(u),sd=i%2?1:-1,len=.5*(1-Math.abs(u-.5)*.6),col=i%3?'#6c9a3c':'#a8b04a';
+      o.push(sheet([[p.x+sd*.1,p.y+.1,p.z-.1],[p.x+sd*.1,p.y+.1,p.z],[p.x+sd*.1,p.y+.1,p.z+.1]],[[p.x+sd*(.1+len*.7),p.y+.1+len*.8,p.z-.28],[p.x+sd*(.1+len),p.y+.1+len*1.05,p.z-.05],[p.x+sd*(.1+len*.7),p.y+.1+len*.8,p.z+.14]],'#8aa84a',col));}
+    o.push(sheet([[0,.3,.4],[0,.28,.1],[0,.24,-.2],[0,.2,-.5]],[[0,.52,.2],[0,.5,-.15],[0,.46,-.5],[0,.4,-.8]],'#a8b04a','#e0e8a0',true));return mergeS(o);},
+  blobfish:()=>{const L=2.0,st=prof(L,.78,.85,[[0,.1,.1,-.1],[.05,.55,.55,-.12],[.18,.92,.9,-.05],[.42,1,1],[.7,.7,.75,.04],[.9,.3,.35,.05],[1,.16,.2,.05]],14),o=[loft(st,14,'#d9a39d')];
+    o.push(xf(P(new THREE.SphereGeometry(1,12,10),'#d49a94',[0,0,0]),[0,-.05,.95],[0,0,0],[.2,.24,.28]),xf(P(new THREE.SphereGeometry(1,12,8),'#b8706c',[0,0,0]),[0,-.34,.82],[0,0,0],[.5,.1,.26]),
+      sheet([[0,.5,-.8],[0,.4,-.95],[0,.1,-1.0],[0,-.2,-.95]],[[0,.62,-1.15],[0,.55,-1.4],[0,.1,-1.5],[0,-.3,-1.35]],'#d49a94','#e8bcb4'),...pectFin(st,L,{t:.3,base:.2,len:.3,span:.4,drop:.1,y:-.2,c1:'#d49a94',c2:'#e8bcb4'}),...eyePair(.42,.2,.62,.055,'#3a2a2c','#000'));return mergeS(o);},
+  turtle:()=>{const o=[loft([[1.55,.2,.1,.04],[1.3,.8,.35,.1],[.6,1.15,.6,.12],[-.3,1.2,.62,.12],[-1.1,.9,.45,.1],[-1.6,.2,.15,.06]],22,'#6c6a3c',null,3),loft([[1.3,.6,.04,-.08],[0,1.05,.08,-.1],[-1.2,.6,.04,-.08]],14,'#d8cc9a')];
+    o.push(xf(loft([[.55,.1,.1],[.3,.22,.2],[0,.24,.22],[-.4,.2,.18]],12,'#8d8f5c'),[0,.12,1.85]),xf(loft([[.1,.02,.02],[0,.16,.1]],10,'#7d7f50'),[0,.05,2.35]));
+    for(const sd of [1,-1]){const fl=loft([[.9,.05,.03],[.5,.3,.05],[0,.4,.06],[-.5,.3,.05],[-.95,.05,.03]],12,'#8d8f5c');o.push(xf(fl,[sd*1.5,-.05,.8],[0,-sd*.7,sd*.15],[1,1,1]),xf(loft([[.55,.04,.03],[.2,.22,.04],[-.2,.2,.04],[-.5,.04,.02]],10,'#8d8f5c'),[sd*.85,-.05,-1.35],[0,sd*.4,0]));
+      o.push(P(new THREE.SphereGeometry(.07,8,6),'#d8b848',[sd*.23,.2,2.0]),P(new THREE.SphereGeometry(.045,8,6),'#020202',[sd*.28,.2,2.03]));}
+    o.push(xf(loft([[.4,.02,.02],[0,.12,.1],[-.3,.1,.08]],8,'#7d7f50'),[0,0,-1.75],[0,Math.PI,0]));return mergeS(o);},
+  ray:()=>{const o=[winged(2.2,2.6,.34,'#7d7458','#e6e0d0',{sw:.12,pw:1.7,cw:.62,nz:.0}),xf(loft([[0,.09,.07,.0],[-1.2,.06,.05,.0],[-2.8,.03,.025,.0],[-4.2,.01,.01,.0]],8,'#5c5640'),[0,0,-1.1])];
+    o.push(P(new THREE.ConeGeometry(.035,.5,5),'#4a4636',[0,.04,-2.6],[-Math.PI/2-.12,0,0]));
+    for(const sd of [1,-1])o.push(P(new THREE.SphereGeometry(.09,10,8),'#2a2418',[sd*.38,.27,.55]),P(new THREE.SphereGeometry(.07,8,6),'#8a7e58',[sd*.58,.24,.44],[0,0,0],[1,.6,1.4]));
+    o.push(winged(.5,.6,.0,'#6a6048','#e0dccb',{sw:0,pw:2,tp:2}));o.pop();return mergeS(o);},
+  manta:()=>{const o=[winged(3.6,2.6,.3,'#27384a','#eef0f0',{sw:.55,sp:1.5,pw:1.45,cw:.55,nz:.15,droop:.15}),xf(loft([[0,.07,.05],[-1.0,.04,.03],[-2.6,.015,.012]],8,'#1f2f3e'),[0,0,-1.4])];
+    for(const sd of [1,-1]){o.push(sheet([[sd*.35,-.05,1.5],[sd*.35,-.07,1.35],[sd*.35,-.09,1.2]],[[sd*.55,-.1,2.45],[sd*.62,-.12,2.3],[sd*.55,-.14,2.15]],'#2a3c4e','#3a4e62'),P(new THREE.SphereGeometry(.12,8,6),'#0a0f14',[sd*1.05,.08,1.05],[0,0,0],[1,.7,1]),P(new THREE.SphereGeometry(.09,8,6),'#1a2430',[sd*1.18,.07,1.0]));}
+    o.push(xf(loft([[.4,.35,.02],[0,.5,.03],[-.4,.35,.02]],12,'#1a232d'),[0,-.1,1.6]));return mergeS(o);},
+  whaleshark:()=>{const L=8.4,st=prof(L,.78,.95,[[0,.55,.2,-.1],[.03,.85,.35,-.12],[.1,1,.7,-.04],[.25,.95,.95],[.45,.78,1],[.65,.5,.7,.03],[.85,.25,.4,.06],[1,.12,.3,.1]],20),o=[loft(st,18,'#4c6a82',null)];
+    o.push(fin(st,L,{k:'top',t0:.32,t1:.42,h:.9,shape:'tri',sl:.9,c1:'#44607a',c2:'#34506a',rib:0}),fin(st,L,{k:'top',t0:.66,t1:.7,h:.3,shape:'tri',sl:.6,c1:'#44607a',c2:'#34506a',rib:0}),fin(st,L,{k:'bot',t0:.68,t1:.72,h:.3,shape:'tri',sl:.6,c1:'#44607a',c2:'#34506a',rib:0}),
+      tailFin(st,L,{len:1.7,span:1.2,up:1,fork:.5,p:1.2,c1:'#44607a',c2:'#34506a'}),...pectFin(st,L,{t:.28,base:.5,len:.9,span:1.4,drop:.5,y:-.6,c1:'#436079',c2:'#34506a'}),
+      ...eyePair(.8,.06,L/2-.07*L,.06,'#10161a','#000'));
+    for(const sd of [1,-1])o.push(sheet([[sd*.45,-.1,L/2-.01],[sd*.6,-.1,L/2-.01]],[[sd*.7,-.18,L/2-.01],[sd*.9,-.18,L/2-.01]],'#101820','#101820'));return mergeS(o);},
+  narwhal:()=>{const L=4.2,st=prof(L,.62,.62,[[0,.2,.2,-.05],[.05,.6,.6,-.02],[.16,.95,.95],[.4,1,1],[.65,.8,.8],[.85,.4,.4],[1,.2,.2]],18),o=[loft(st,16,'#8a99a6')];
+    o.push(tubeV([[.06,.02,L/2-.1],[.1,.04,L/2+1.6],[.12,.06,L/2+3.3]],[.075,.05,.012],'#efe6cd',10,24,(u,a)=>Math.sin(u*70+a*2)>.1?'#f4ecd6':'#d8cdae'),fin(st,L,{k:'top',t0:.5,t1:.6,h:.15,shape:'sail',sl:.5,c1:'#76848f',c2:'#6a7882',rib:0}),
+      tailFin(st,L,{len:.45,span:.75,fork:.3,c1:'#76848f',c2:'#6a7882',dy:0}),...pectFin(st,L,{t:.3,base:.2,len:.45,span:.55,drop:.2,y:-.4,c1:'#76848f',c2:'#6a7882'}),...eyePair(.55,.0,L/2-.1*L,.045,'#2a2420','#000'));return mergeS(o);},
+  oarfish:()=>{const L=6.4,st=prof(L,.4,.14,[[0,.2,.5],[.03,.6,.9],[.1,1,1],[.4,1,.9],[.75,.7,.6],[.93,.3,.3],[1,.12,.12]],24),o=[loft(st,12,'#c8d4dc')];
+    o.push(fin(st,L,{k:'top',t0:.04,t1:.97,h:.55,shape:'flat',K:24,sl:.3,c1:'#e0302a',c2:'#b01c1c'}),...eyePair(.12,.04,L/2-.04*L,.09,'#c8c8c0','#000'),
+      tubeV([[.05,-.3,L/2-.9],[.15,-.9,L/2-1.2],[.2,-1.7,L/2-1.5]],[.025,.025,.06],'#e0302a',6,10),tubeV([[-.05,-.3,L/2-.9],[-.15,-.9,L/2-1.2],[-.2,-1.7,L/2-1.5]],[.025,.025,.06],'#e0302a',6,10));return mergeS(o);},
+  nautilus:()=>{const N=52,pts=[],rad=[];for(let i=0;i<=N;i++){const th=i/N*Math.PI*2.25,r=.2*Math.exp(.19*th);pts.push([0,Math.cos(th)*r,-Math.sin(th)*r]);rad.push(r*.66);}
+    const E=new THREE.Vector3(...pts[N]),Tn=new THREE.Vector3(...pts[N]).sub(new THREE.Vector3(...pts[N-1])).normalize(),o=[tubeV(pts,rad,'#efdcc0',16,60,(u,a)=>Math.floor(u*70+Math.sin(a)*3)%3===0?'#b86a30':'#f0e0c4')];
+    const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),Tn),fw=(g,off)=>{g.applyQuaternion(q);g.translate(E.x+Tn.x*off,E.y+Tn.y*off,E.z+Tn.z*off);return g;};
+    o.push(fw(loft([[.3,.3,.26],[.0,.46,.4],[-.3,.4,.34]],14,'#d88a58'),.25));
+    for(let i=0;i<18;i++){const ang=i/18*Math.PI*2,cx=Math.cos(ang),cy=Math.sin(ang),tg=tubeV([[cx*.22,cy*.2,.5],[cx*.3+Math.sin(i)*.04,cy*.27,.9],[cx*.34,cy*.3-.04,1.3]],[.028,.022,.008],i%2?'#e8d2ae':'#d8b88e',5,8);o.push(fw(tg,.1));}
+    for(const sd of [1,-1])o.push(fw(P(new THREE.SphereGeometry(.1,8,6),'#e8e0c0',[sd*.32,.12,.3]),.25),fw(P(new THREE.SphereGeometry(.06,8,6),'#030303',[sd*.39,.12,.34]),.25));
+    const g=mergeS(o);g.rotateX(Math.atan2(Tn.y,Tn.z));g.scale(1.45,1.45,1.45);g.translate(0,.1,-.35);return g;},
+  angler:()=>{const lure=[[0,.7,.65],[0,1.45,.95],[0,1.95,1.55],[0,1.75,2.35]],o=[loft([[1.0,.5,.35,-.1],[.75,.95,.8],[.2,1.1,1.0],[-.4,.95,.9],[-1.0,.5,.5],[-1.5,.15,.2]],18,'#3a2f28',null,2.2)];
+    o.push(xf(loft([[.4,.7,.5],[.1,.82,.5],[-.3,.7,.4]],14,'#241c18'),[0,-.1,.95],[.55,0,0]),tubeV(lure,[.045,.035,.03,.03],'#4a4034',6,16),P(new THREE.SphereGeometry(.26,12,10),'#b8ffe0',[0,1.75,2.38]),
+      tailFin(prof(3,.5,.3,[[0,.2,.2],[1,.15,.15]],4),3,{len:.5,span:.4,fork:0,c1:'#2a221c',c2:'#3a3028'}));
+    for(let i=0;i<10;i++){const x=(i-4.5)*.1;o.push(P(new THREE.ConeGeometry(.04,.34+(i%3)*.08,4),'#ece8d8',[x,.14,1.35+Math.abs(i-4.5)*-.02],[Math.PI+.1,0,0]),P(new THREE.ConeGeometry(.035,.3+(i%2)*.08,4),'#ece8d8',[x*.9,-.34,1.3],[-.05,0,0]));}
+    for(const sd of [1,-1])o.push(P(new THREE.SphereGeometry(.085,8,6),'#d8c068',[sd*.52,.38,.78]),P(new THREE.SphereGeometry(.05,8,6),'#000',[sd*.58,.38,.82]),sheet([[sd*.9,-.2,.2],[sd*.95,-.3,.0]],[[sd*1.4,-.3,-.1],[sd*1.45,-.6,-.4]],'#3a2f28','#5a4a3c',true));return mergeS(o);},
+  jelly:()=>{const prof0=[[0,.82],[.35,.78],[.65,.66],[.88,.42],[.98,.18],[1,0],[.97,-.1],[.9,-.12]],mod=(u,a)=>1+(u>.72?.05*Math.cos(a*16)*(u-.72)*3.5:0),o=[lathe(prof0,48,'#bfe4f0',mod),lathe(prof0.map(p=>[p[0]*.82,p[1]*.8-.04]),32,'#d8b4e0',mod)];
+    o.push(xf(P(new THREE.SphereGeometry(1,12,8),'#ff9ac8',[0,0,0]),[0,.15,0],[0,0,0],[.5,.2,.5]));
+    for(let i=0;i<4;i++){const a=i/4*Math.PI*2+.4,cx=Math.cos(a)*.22,cz=Math.sin(a)*.22,pts=[0,1,2,3,4].map(k=>[cx+Math.sin(k*1.8+i)*.12,-.1-k*.62,cz+Math.cos(k*1.5+i)*.12]);o.push(tubeV(pts,[.09,.1,.08,.05,.02],'#d8a4e0',7,18,u=>Math.floor(u*14)%2?'#e0b0e8':'#c890d8'));}
+    for(let i=0;i<14;i++){const a=i/14*Math.PI*2,r=.92,pts=[0,1,2,3,4,5].map(k=>[Math.cos(a)*r*(1-k*.05)+Math.sin(k*2.1+i)*.07,-.1-k*.62,Math.sin(a)*r*(1-k*.05)+Math.cos(k*1.7+i)*.07]);o.push(tubeV(pts,[.03,.024,.018,.013,.009,.005],'#cfeaf4',4,10));}return mergeS(o);},
+});
+
+const GEO=Object.assign({},GEO_OLD,GEO_NEW);
 const ANIM={
-  fish:'float sw=smoothstep(.3,-1.5,position.z);transformed.x+=sin(uT*9.+ph+position.z*2.5)*.24*sw;',
-  slow:'float sw=smoothstep(.3,-1.5,position.z);transformed.x+=sin(uT*5.+ph+position.z*2.)*.16*sw;',
+  fish:'float sw=clamp((.9-position.z)/2.7,0.,1.);transformed.x+=sin(uT*9.+ph-position.z*3.)*.2*sw*sw;',
+  slow:'float sw=clamp((.9-position.z)/3.2,0.,1.);transformed.x+=sin(uT*5.+ph-position.z*2.2)*.17*sw*sw;',
   seahorse:'transformed.z+=sin(uT*2.+ph+position.y*1.5)*.05;transformed.x+=sin(uT*12.+ph)*.03*step(abs(position.y-.2),.4)*step(position.z,-.2);',
   ray:'float ax=abs(position.x);transformed.y+=sin(uT*2.1+ph-ax*1.3)*.32*ax;transformed.x+=sin(uT*3.+ph+position.z)*.1*step(position.z,-1.6);',
   jelly:'float bell=smoothstep(-.2,.6,position.y);float pl=sin(uT*2.3+ph);transformed.xz*=1.+pl*.14*bell;transformed.y*=1.-pl*.06*bell;float tn=smoothstep(0.,-3.,position.y);transformed.x+=sin(uT*1.6+ph+position.y*1.8)*.28*tn;transformed.z+=cos(uT*1.3+ph+position.y*2.1)*.28*tn;',
@@ -1473,9 +1733,13 @@ const specMesh={};
 for(const sp of SPECIES){
   const list=creatures.filter(c=>c.sp===sp.id);list.forEach((c,i)=>c.idx=i);
   const cfg=SPEC_CFG[sp.id];
-  const o=sp.id==='jelly'?{vertexColors:true,roughness:.2,transparent:true,opacity:.6,emissive:0x2a8fb8,emissiveIntensity:.8,side:THREE.DoubleSide,depthWrite:false}:{vertexColors:true,roughness:.5,metalness:.05};
-  const m=new THREE.InstancedMesh(GEO[sp.id](),stdMat(o,'sp-'+sp.id,{v:ANIM[cfg.a],caus:.5,fx:cfg.fx?'{float mxc=max(diffuseColor.r,max(diffuseColor.g,diffuseColor.b));totalEmissiveRadiance+=diffuseColor.rgb*smoothstep(.62,.8,mxc)*(1.6+.5*sin(uT*2.3+vWp.x*.2));}':''}),list.length);
+  const m=new THREE.InstancedMesh(GEO[sp.id](),specMat(sp.id),list.length);
   m.frustumCulled=false;if(sp.id==='jelly')m.renderOrder=7;scene.add(m);specMesh[sp.id]=m;
+}
+function specMat(id){
+  const cfg=SPEC_CFG[id],sp={id};
+  const o=sp.id==='jelly'?{vertexColors:true,roughness:.2,transparent:true,opacity:.6,emissive:0x2a8fb8,emissiveIntensity:.8,side:THREE.DoubleSide,depthWrite:false}:{vertexColors:true,roughness:.5,metalness:.05,side:THREE.DoubleSide};
+  return stdMat(o,'sp-'+sp.id,{v:ANIM[cfg.a],caus:.5,skin:SKIN[id]?1:0,fx:(SKIN[id]?skinFx(SKIN[id]):'')+(cfg.fx?'{float mxc=max(diffuseColor.r,max(diffuseColor.g,diffuseColor.b));totalEmissiveRadiance+=diffuseColor.rgb*smoothstep(.62,.8,mxc)*(1.6+.5*sin(uT*2.3+vWp.x*.2));}':'')});
 }
 
 /* Yem (paylaşılan olay listesi, herkes aynı zaman çizelgesiyle hesaplar) */

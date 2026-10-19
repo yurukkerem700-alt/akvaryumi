@@ -231,6 +231,12 @@ Ayrıntılı inceleme ve yol haritası: [`GERCEKCILIK.md`](GERCEKCILIK.md).
 **Mobil (yatay ekran)**: sol başparmakta sürüş çubuğu + ▲▼⚡, sağ başparmakta ateş kümesi; kısa ekranlarda (<430 px yükseklik) düğmeler otomatik küçülür, ayarlardan %80–140 ölçeklenir ve **sol el düzeni** her şeyi aynalar. Üst şerit yalnızca temel düğmeleri (harita, ışık, bakış, ayarlar…) gösterir; diğerleri **⋯** altında toplanır. Silah paneli yok: ⇄ ve 🔫 düğmeleri silah/mühimmat döndürür, perk paneli küçük ve tek satırdır.
 **Performans**: zayıf cihazlarda otomatik düşük kalite, CDN ön yüklemesi, görsellerde önbellek başlığı, 30 FPS tasarruf modu.
 
+### v7.1: mağaralar, fener, modifikasyon, sade arayüz
+- **Mağaralar baştan yazıldı**: 200–250 m uzunluğunda kıvrımlı, yan kollu tüneller ve geniş odalar. En büyük denizaltı (Titan) dahil tüm denizaltılar girip sonuna kadar gidebilir (test edildi); içerisi karanlıktır, kristaller ve fener yol gösterir, en sondaki odada emanet vardır. Mühürlü mağaralar yine torpidoyla açılır.
+- **Projektör geliştirmesi** (5 seviye: menzil 55→140 m, daha güçlü ve geniş ışık) ve **Modifikasyon Atölyesi** (Tersane): her denizaltı için motor, zırh, sensör, silah ve aksesuar seçenekleri; hem değerleri değiştirir hem gövdede görünür, online'da diğer oyunculara da görünür.
+- **Sade arayüz**: bildirimler (keşif, başarım, günlük sayfası) ortada kısa belirip hemen sağ kenara küçülür, 3 sn durur ve kaybolur; görev paneli ve üst şerit açılıp kapanır; mod listesi Serbest · Ekip · Hayatta Kalma · Takım Savaşı olarak sadeleşti.
+- **Mobil**: ▲ ▼ ⚡ düğmeleri sağ başparmağa taşındı ve çubuğu bırakmadan dalmak için **bakış yönünde dalış/yükseliş** eklendi (ileri iterken yukarı bakınca yükselir); üst şerit tek ☰ düğmesinde toplandı.
+
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.
 

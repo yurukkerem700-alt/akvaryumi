@@ -474,7 +474,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.14-5',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.19-1',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -505,6 +505,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
   addEventListener('online',check);
 })();
 </script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js" crossorigin>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -634,7 +635,7 @@ const DIFFS=[{tr:'Kolay',en:'Easy',ic:'🌱',dmg:.6,hp:.75,rew:.8,ag:.8},{tr:'No
 const DIFF=()=>DIFFS[clamp(CFG.diff|0,0,3)];
 const EMBLEMS=['','⚓','🐟','🐙','🦈','🐬','🐢','🦑','🦀','🐠','🌊','🔱','🧭','💎','👑','🔥','❄','⚡','🌋','🌈','☠','🛡','🚀','🗡','🏴‍☠️','🐳','🦭','🪸','🦞','⭐','🌙','🔮'];
 const QUAL=['low','mid','high'];
-let Q=store.get('aqua-q');if(!QUAL.includes(Q))Q=isTouch?'mid':'high';
+let Q=store.get('aqua-q');if(!QUAL.includes(Q)){const weak=(navigator.deviceMemory&&navigator.deviceMemory<=2)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=2);Q=isTouch?(weak?'low':'mid'):(weak?'mid':'high');}
 /* vis: sis çarpanı (büyüdükçe görüş kısalır). Sis tam kapandığı mesafenin ötesindeki bitki/kaya/yapılar hiç çizilmez; yaklaşınca belirir (bkz. stream) */
 const QP={low:{pr:[.6,1,.8],cnt:1,seg:[300,172],cap:26,shaft:6,spot:0,vis:2},mid:{pr:[.75,1.3,1.1],cnt:1,seg:[380,217],cap:0,shaft:3,spot:1,vis:1.7},high:{pr:null,cnt:1,seg:[380,217],cap:0,shaft:3,spot:1,vis:1.35}};
 const QC=isTouch?QP[Q]:QP.high;
@@ -5964,6 +5965,7 @@ var SKINS=[
   {tr:'Buzul',en:'Glacier',price:1200,hull:0xeaf6ff,hull2:0x8fd0f0,tower:0xcfeaff,fin:0x4fb8e8,trim:0xffffff,prop:0x9fd8f0,sw:'#cfeaff'},
   {tr:'Mercan',en:'Coral',price:1000,hull:0xff7a8a,hull2:0x2fb8a8,tower:0xffd0c0,fin:0xff4a6a,trim:0xffe0a0,prop:0x2f9a8a,sw:'#ff7a8a'},
   {tr:'Neon',en:'Neon',price:3000,hull:0x1a0a2a,hull2:0x2a0a3a,tower:0x140820,fin:0xff2ad8,trim:0x2affe8,prop:0xff2ad8,em:0x30104a,sw:'#ff2ad8'},
+  {tr:'Efsane',en:'Legend',price:0,ach:'final',hull:0x2a1450,hull2:0xd9a520,tower:0x1a0a30,fin:0xffd56c,trim:0xfff1a8,prop:0xffd56c,met:.85,em:0x200a40,sw:'#7a3aff'},
   {tr:'Köpekbalığı',en:'Shark Gray',price:700,hull:0x6f7f8c,hull2:0xd8e2e8,tower:0x55636e,fin:0x44505a,trim:0x9fb0bb,prop:0x3a444c,sw:'#6f7f8c'},
   {tr:'Okyanus Mavisi',en:'Deep Blue',price:800,hull:0x14507a,hull2:0x0b2a44,tower:0x1d6a9a,fin:0xf2b134,trim:0xcfe8f5,prop:0x0d2e48,sw:'#14507a'},
   {tr:'Çöl Kumu',en:'Desert Sand',price:900,hull:0xb59a68,hull2:0x7d6a45,tower:0x9c8456,fin:0x6b5a38,trim:0xe8d9a8,prop:0x4a3f2a,sw:'#b59a68'},
@@ -5974,8 +5976,7 @@ var SKINS=[
   {tr:'Gün Batımı',en:'Sunset',price:1700,hull:0xff8a4a,hull2:0x8a2a5a,tower:0xffc07a,fin:0x5a2a8a,trim:0xffe0b0,prop:0x7a2a5a,sw:'#ff8a4a'},
   {tr:'Karbon',en:'Carbon',price:2000,hull:0x23262b,hull2:0x15171a,tower:0x2c3036,fin:0x4a505a,trim:0x8a94a0,prop:0x1a1c20,met:.7,sw:'#2c3036'},
   {tr:'Kraken Moru',en:'Kraken Purple',price:2200,hull:0x4a2a6a,hull2:0x1a0a2a,tower:0x6a3a8a,fin:0x2affd0,trim:0xd0b0ff,prop:0x2a1040,em:0x180a30,sw:'#6a3a8a'},
-  {tr:'Aurora',en:'Aurora',price:0,ach:'season',hull:0x0a4a52,hull2:0x2a1a6a,tower:0x13806a,fin:0x7aff9a,trim:0xb8f0ff,prop:0x1a3a5a,em:0x0a3a40,sw:'#2affb0'},
-  {tr:'Efsane',en:'Legend',price:0,ach:'final',hull:0x2a1450,hull2:0xd9a520,tower:0x1a0a30,fin:0xffd56c,trim:0xfff1a8,prop:0xffd56c,met:.85,em:0x200a40,sw:'#7a3aff'}
+  {tr:'Aurora',en:'Aurora',price:0,ach:'season',hull:0x0a4a52,hull2:0x2a1a6a,tower:0x13806a,fin:0x7aff9a,trim:0xb8f0ff,prop:0x1a3a5a,em:0x0a3a40,sw:'#2affb0'}
 ];
 var TRAILS=[{tr:'Yok',en:'None',price:0,c:null},{tr:'Altın Kıvılcım',en:'Gold Sparks',price:600,c:0xffd56c},{tr:'Buz Pırıltısı',en:'Frost Glitter',price:600,c:0x9fe8ff},{tr:'Ateş',en:'Fire',price:900,c:0xff6a2a},{tr:'Zehir',en:'Toxic',price:900,c:0x7aff5a},{tr:'Gökkuşağı',en:'Rainbow',price:2500,c:-1},{tr:'Biyolüminesans',en:'Bioluminescence',price:700,c:0x3affc8},{tr:'Magma',en:'Magma',price:1000,c:0xff3a10},{tr:'Mor Duman',en:'Violet Smoke',price:800,c:0xb06aff},{tr:'Kalpler',en:'Hearts',price:600,c:0xff6a9a},{tr:'Elektrik',en:'Electric',price:1200,c:0x8ae8ff}];
 var MODS={heat:{ic:'🔥',tr:'Isı Kalkanı',en:'Heat Shield',price:900,tier:4,ztr:'Yanardağ Bacaları',zen:'Volcanic Vents'},cold:{ic:'❄',tr:'Buz Kırıcı',en:'Ice Breaker',price:900,tier:4,ztr:'Buzul Kutbu',zen:'Polar Ice'},press:{ic:'⬇',tr:'Basınç Gövdesi',en:'Pressure Hull',price:1600,tier:3,ztr:'Karanlık Uçurum',zen:'Dark Abyss'},res:{ic:'💎',tr:'Kristal Rezonatör',en:'Crystal Resonator',price:2200,tier:5,ztr:'Kristal Mağaraları',zen:'Crystal Caverns'}};
@@ -8071,6 +8072,24 @@ function updateVols(dt){
       scene.remove(V.m);V.sp.material.dispose();VOLS.splice(i,1);}}
 }
 V7.updExtra=dt=>{updateVols(dt);};
+/* ---- v7: yeni başarımlar ---- */
+ACH.push(
+  {id:'trek',ic:'🧭',tr:'Gezgin',en:'Voyager',d:['20 km yol kat et','Travel 20 km'],t:()=>L('dist')>=20000,g:400,ti:['Gezgin','Voyager']},
+  {id:'deep40',ic:'⬇',tr:'Derin Dalış',en:'Deep Dive',d:['40 m derinliğe in','Dive to 40 m'],t:()=>L('depth')>=40,g:300,ti:['Dalgıç Usta','Deep Diver']},
+  {id:'hour',ic:'⏱',tr:'Denizci Ruhu',en:'Sea Legs',d:['Toplam 1 saat oyna','Play for 1 hour in total'],t:()=>L('time')>=3600,g:500,ti:['Denizci Ruhu','Sea Legs']},
+  {id:'sharp',ic:'🎯',tr:'Keskin Nişancı',en:'Sharpshooter',d:['300+ atışta %45 isabet','45% accuracy over 300+ shots'],t:()=>L('shots')>=300&&L('hits')/L('shots')>=.45,g:700,ti:['Keskin Nişancı','Sharpshooter']},
+  {id:'arms',ic:'🧰',tr:'Cephaneci',en:'Armorer',d:['Tüm teçhizatı satın al','Buy every gear item'],t:()=>save.gd.length>=GEARS.length,g:800,ti:['Cephaneci','Armorer']},
+  {id:'ammo',ic:'🔫',tr:'Mühimmat Uzmanı',en:'Ammo Expert',d:['İki özel mühimmatı da al','Buy both special ammo types'],t:()=>save.am.length>=2,g:600,ti:['Mühimmat Uzmanı','Ammo Expert']},
+  {id:'style',ic:'🎨',tr:'Stil Sahibi',en:'Stylist',d:['8 boya topla','Collect 8 paints'],t:()=>save.skins.length>=8,g:500,ti:['Stil Sahibi','Stylist']},
+  {id:'koth',ic:'👑',tr:'Tepenin Kralı',en:'King of the Hill',d:['Tepe Hakimi\'nde 120 puan','120 points in King of the Hill'],t:()=>(save.best.koth||0)>=120,g:700,ti:['Tepenin Kralı','King of the Hill']},
+  {id:'rush3',ic:'💀',tr:'Muhafız Avcısı',en:'Warden Slayer',d:['Muhafız Akını\'nda 3 muhafız yen','Defeat 3 wardens in Warden Rush'],t:()=>(save.best.rush||0)>=3,g:1200,ti:['Muhafız Avcısı','Warden Slayer']},
+  {id:'rush6',ic:'🏰',tr:'Akın Efendisi',en:'Rush Master',d:['6 muhafızı da yen','Defeat all 6 wardens'],t:()=>(save.best.rush||0)>=6,g:3000,ti:['Akın Efendisi','Rush Master']},
+  {id:'chal',ic:'📅',tr:'Günün Şampiyonu',en:'Daily Champion',d:['Günlük Meydan Okuma\'da 300 puan','Score 300 in the Daily Challenge'],t:()=>(save.best.chal||0)>=300,g:900,ti:['Günün Şampiyonu','Daily Champion']},
+  {id:'gold',ic:'🥇',tr:'Altın Lig',en:'Gold League',d:['Rekabet derecesi 1200','Reach rating 1200'],t:()=>save.elo>=1200,g:1000,ti:['Altın Lig','Gold League']},
+  {id:'dia',ic:'💎',tr:'Elmas Lig',en:'Diamond League',d:['Rekabet derecesi 1600','Reach rating 1600'],t:()=>save.elo>=1600,g:3000,ti:['Elmas Lig','Diamond League']},
+  {id:'sea10',ic:'🌊',tr:'Sezon Yolcusu',en:'Season Traveller',d:['Sezon yolunda 10. kademe','Reach tier 10 of the Season Path'],t:()=>seasonTier()>=10,g:600,ti:['Sezon Yolcusu','Season Traveller']},
+  {id:'titan',ic:'🚀',tr:'Titan Kaptanı',en:'Titan Captain',d:['Titan denizaltısını satın al','Buy the Titan submarine'],t:()=>save.owned.includes(15),g:1000,ti:['Titan Kaptanı','Titan Captain']}
+);
 /*V7-APPEND*/
 requestAnimationFrame(loop);
 </script>

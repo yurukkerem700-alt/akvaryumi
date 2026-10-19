@@ -2,7 +2,7 @@
 
 ![Akvaryum Seferi — Derinlikleri Keşfet](cover.webp)
 
-Online co-op / PvP 3D denizaltı oyunu: bosslar, dünya olayları, günlük görevler, başarımlar ve 7 oyun modu (Three.js, tek dosya, sunucusuz — oyuncular PeerJS ile tarayıcıdan tarayıcıya bağlanır).
+Online co-op / PvP 3D denizaltı oyunu: bosslar, dünya olayları, günlük görevler, başarımlar ve 7 oyun modu (Three.js, tek dosya, sunucusuz — oyuncular PeerJS ile tarayıcıdan tarayıcıya bağlanır). **v7.0** ile 15 denizaltı, 10 oyun modu, ayarlar merkezi, sezon yolu ve rekabet derecesi geldi.
 
 - Bilgisayarda 2240×1280 birimlik dev akvaryum, telefonda hafif cihazları zorlamayan küçük akvaryum (v5.0)
 - 27 canlı türü, 12 biyom (Mercan Bahçesi, Yosun Ormanı, Buzul Kutbu, Yanardağ Bacaları, Kristal Mağaraları, Karanlık Uçurum, Batık Şehir, Turkuaz Lagün, Mavi Okyanus, Kızıl Kanyon …)
@@ -208,6 +208,27 @@ Ayrıntılı inceleme ve yol haritası: [`GERCEKCILIK.md`](GERCEKCILIK.md).
 - **Balina iskeletleri** artık torpido, top ve patlamalara tepki verir; kemik parçaları kopar, yeterince hasarda dağılır.
 - **Gerçek bosslar**: tüm bosslar normal türlerinin ~10 katı boyutta (Kraken ≈ 100 m'lik dev kalamar: 8 kol + 2 yakalama dokunacı, emiciler, dev gözler; Derinlerin Efendisi ondan da iri). Saldırı menzilleri ve dayanıklılıkları buna göre ölçeklendi.
 - **Tersane → SİLAHLAR**: 4500 🪙 (en fazla 3). **`KEJDERYA`** kodu (Tersane'de kod alanı) **sınırsız** nükleer torpido verir. Online'da patlama herkeste aynı gerçekleşir; oyuncular yalnızca dost ateşi açıksa zarar görür.
+
+### v7.0: Büyük Güncelleme — ayarlar, profil, yeni silahlar, modlar, rekabet
+**Oyunu bölmeyen tasarım**: yeni ekranların hiçbiri oyunu durdurmaz ya da ortada beliren pencere açmaz. Ayarlar yalnızca sen açınca (⚙ / `,` / F2) görünür; ilk açılış kılavuzu köşede küçük bir nottur ve kendiliğinden kaybolur; perk paneli yalnızca dalga temizlenip yakında düşman kalmayınca, küçük ve 12 sn sonra kendiliğinden seçen biçimde çıkar.
+
+**Ayarlar merkezi (⚙)** — Görüntü (kalite, FOV, arayüz boyutu/saydamlığı, 9 tema, nişangâh biçim/renk/boyut, sade arayüz, performans göstergesi, 30 FPS pil tasarrufu) · Ses (ana ses, müzik, efekt) · Kontrol (hassasiyet, Y ters, nişan yardımı, otomatik ateş, titreşim, sol el düzeni, düğme boyutu) · Oynanış (4 zorluk seviyesi, ipuçları) · Erişilebilirlik (sarsıntı azaltma, parlak flaş kapatma, büyük yazı, renk körü dostu renkler) · Görünüm (özel denizaltı rengi, alt ışık, amblem) · Tuşlar · Veri (kaydı dışa/içe aktar, sıfırla).
+**Zorluk**: Kolay (×0,6 hasar) · Normal · Zor (×1,4 hasar, düşman ×1,3 can, ×1,25 ödül) · Efsane (×2 hasar, ×1,7 can, ×1,6 ödül). PvP hasarı zorluktan etkilenmez.
+**Profil 2.0**: oyun süresi, yol, en derin nokta, isabet oranı, rekabet derecesi, 32 amblem (seviyeyle açılır; isminin yanında diğer oyunculara da görünür), aylık **Sezon Yolu** (30 kademe: altın, boya, iz, özel *Aurora* boyası).
+**Yeni boyalar ve izler**: 11 boya (Köpekbalığı, Okyanus Mavisi, Çöl Kumu, Tuzlu Pas, Hayalet, Zümrüt, Kızıl Alarm, Gün Batımı, Karbon, Kraken Moru, Aurora) ve 5 pervane izi.
+
+**Yeni silahlar** (silah değiştir: `[` `]`, mermi değiştir: `\`; telefonda ⇄ ve 🔫 düğmeleri; hepsi Tersane → TEÇHİZAT'tan alınır)
+- 🎯 **Kablo güdümlü torpido**: ince kabloyla sana bağlıdır, nişangâhını çevirdiğin yere döner (190 m; kablo kopunca otonom). Herkes yolunu görür.
+- 💣 **Derinlik bombası**: kıçtan bırakılan varil yavaş batar; düşman yaklaşınca, dibe değince ya da 9 sn sonra patlar; ≈30 m alan hasarı — fazla yakınsan sen de hasar alırsın.
+- 🔔 **Akustik aldatıcı**: gürültü yapan şamandıra; düşmanlar 18 sn boyunca gerçek denizaltını bırakıp onu kovalar.
+- 🫧 **Kabarcık perdesi**: sonar yankısını dağıtır, düşmanlar seni 2 kat geç fark eder (14 sn).
+- **Mühimmat**: ✸ *Yüksek patlayıcı* (4,5 m sıçrama, yapıları 2× aşındırır) ve ➤ *Süperkavitasyon* (≈280 m menzil, 5 hedef deler, gürültülü).
+
+**3 yeni denizaltı** (gerçek örneklerden esinli): 💡 **Derin Dalgıç** (Alvin tipi DSV: küresel görüş portları, ön sepet, manipülatör kollar; Araştırma Sonarı + Strobe Işığı) · 📡 **Barakuda** (SSN av denizaltısı: ses emici gövde, X kıç dümeni, pompa-jet; sessiz seyir + Aktif Sonar Darbesi) · 🚀 **Titan** (SSBN: iki sıra silo kapağı, geniş yelken; %25 az hasar + Balistik Füze Salvosu).
+
+**Yeni modlar**: 👑 **Tepe Hakimi** (halkada tek başına kal, halka 50 sn'de bir taşınır; tek başına düşman baskısı) · 💀 **Muhafız Akını** (6 muhafızı sırayla yen) · 📅 **Günlük Meydan Okuma** (herkeste aynı 2 değiştirici, eşit denizaltı). Dalga modlarında her temizlenen dalgadan sonra **3 perkten 1'ini** seçersin (hasar, gövde, hız, vampir, son nefes…).
+**Rekabet**: online rekabetçi maçlarda (takım, kapmaca, av, yarış, tepe) ELO benzeri **derece** (Bronz → Efsane); 15 yeni başarım.
+**Performans**: zayıf cihazlarda otomatik düşük kalite, CDN ön yüklemesi, görsellerde önbellek başlığı, 30 FPS tasarruf modu.
 
 ### Yeni sürüm yayınlarken
 `index.html` içindeki `BUILD`, `sw.js` içindeki `VER` ve `version.json` içindeki `version` değerini aynı yeni değere çevir (ör. `2026.10.03-2`). Bu değer değişince açık olan tüm cihazlarda GÜNCELLE uyarısı çıkar.

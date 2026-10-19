@@ -67,3 +67,10 @@ Her yeni özellik önce gerçek dünyadaki fiziğe/ekolojiye dayanır; oyun akı
 
 ## Keşif ve gizem (v5.5)
 Akvaryum artık keşfe yönlendiriyor: balina iskeletleri, ışıklı mağaralar, mühürlü kayaların altındaki mabetler. Gerçek denizlerde de batmış balina leşleri ("balina düşüşü") dipte benzersiz topluluklar barındırır; iskelet ve çevresindeki yaşam bir sonraki adım olarak eklenebilir.
+
+## v7.0 ile yapılanlar
+| Alan | Yapılan |
+|---|---|
+| Silahlar | ✅ Kablo güdümlü torpido (gerçek ağır torpidolar gibi telle yönlendirilir, tel kopunca otonom), derinlik bombası (hidrostatik/yakınlık tapası, fırlatan için de tehlikeli), akustik aldatıcı (gürültü yapıcı şamandıra), kabarcık perdesi (Masker), süperkavitasyonlu mermi (düşük sürtünme, uzun menzil, yüksek gürültü). |
+| Tasarımlar | ✅ Derin Dalgıç (Alvin tipi DSV), Barakuda (Virginia/Seawolf tipi SSN: ses emici kaplama, X kıç dümeni), Titan (Ohio tipi SSBN: füze güvertesi, silo kapakları). Yeni boyalar mat/aşınmış donanma tonlarında (Tuzlu Pas, Köpekbalığı, Karbon). |
+| Ses/gürültü | ✅ Süperkavitasyon ve patlayıcı mermi daha yüksek gürültü üretir; aldatıcı ve derinlik bombası canlıları/düşmanları etkiler. |

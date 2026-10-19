@@ -43,6 +43,7 @@ Proje sahibinin kırmızı çizgisi: **biyomlar, canlılar, saldırılar, hareke
 |---|---|
 | ✅ | Komuta Denizaltısı gerçek nükleer saldırı denizaltısı oranlarında: gözyaşı gövde, yelken + dümenler, çapraz kıç, pompa-jet, silo kapakları, çekili sonar. |
 | ✅ | 12 denizaltı mat donanma paletlerine geçti, oyuncak ayrıntılar (dişler, göz gibi lambalar, parlak toplar) kaldırıldı. |
+| ✅ | Tüm canlılar yeniden tasarlandı: loft gövde, zarlı ışınlı yüzgeçler, gerçek orantılı gömük gözler, prosedürel deri (sırt-karın renk geçişi, desen, ölçek parıltısı), dalga yayılımlı yüzme; boss/efsaneler kendi geometrisine sahip (kraken, magma, buz, kristal, leviatan, megalodon, lord). |
 | 🔜 | Kalan işler: tutarlı malzeme (mat boya, çelik, pas/yosun kaplaması), perçin ve panel dikişleri (normal map), seyir ışıkları, pencere/iniş kapakları; iç mekânda ışık-gölge tutarlılığı. |
 
 ## 7. Ses

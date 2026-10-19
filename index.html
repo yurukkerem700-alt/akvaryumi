@@ -505,7 +505,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.19-4',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.19-5',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -1289,15 +1289,6 @@ function updateBubbles(dt,t){
 }
 
 /* ================= Canlılar ================= */
-function fishBase(body,tail,fin,eyeS=1){
-  return [P(new THREE.SphereGeometry(1,18,12),body,[0,0,0],[0,0,0],[.42,.75,1.1]),
-    P(new THREE.ConeGeometry(.62,1,4),tail,[0,0,-1.38],[Math.PI/2,0,0],[.12,1,1]),
-    P(new THREE.ConeGeometry(.34,.8,4),fin,[0,.72,-.1],[-.5,0,0],[.1,1,1.4]),
-    P(new THREE.ConeGeometry(.24,.5,4),fin,[0,-.62,-.35],[Math.PI+.5,0,0],[.1,1,1.2]),
-    P(new THREE.SphereGeometry(.13*eyeS,8,6),'#ffffff',[.3,.18,.68]),P(new THREE.SphereGeometry(.13*eyeS,8,6),'#ffffff',[-.3,.18,.68]),
-    P(new THREE.SphereGeometry(.07*eyeS,8,6),'#081018',[.37,.18,.75]),P(new THREE.SphereGeometry(.07*eyeS,8,6),'#081018',[-.37,.18,.75])];
-}
-const band=(z,hex,w=.16,sx=.42,sy=.75)=>{const f=Math.sqrt(Math.max(.05,1-(z/1.1)**2))*1.04;return P(new THREE.CylinderGeometry(1,1,w,18),hex,[0,0,z],[Math.PI/2,0,0],[sx*f,1,sy*f]);};
 /* ---- Gerçekçi canlı yapı taşları: loft gövde, zarlı yüzgeç, değişken yarıçaplı tüp, gerçek oranlı göz ---- */
 const _kc=new THREE.Color(),_kc2=new THREE.Color();
 const shade=(hex,k)=>'#'+_kc.set(hex).multiplyScalar(k).getHexString();
@@ -1359,9 +1350,9 @@ function fin(st,L,o){
   return sheet(root,tip,o.c1,o.c2,o.rib!==0);
 }
 function tailFin(st,L,o){
-  const K=o.K||9,zt=-L/2+.02,b=bodyAt(st,zt+.05),root=[],tip=[],ph=Math.max(.02,b[1]*.9);
-  for(let i=0;i<K;i++){const k=i/(K-1)*2-1,a=Math.abs(k),zz=zt-o.len*((o.fork||0)*(1-a*a)*0+(1-(o.fork||0))*(1-.35*k*k)+(o.fork||0)*(.3+.7*Math.pow(a,o.p||1.4)));
-    root.push([0,b[2]+k*ph,zt]);tip.push([0,b[2]+k*o.span+(o.dy||0),zz]);}
+  const K=o.K||9,zt=-L/2+.02,b=bodyAt(st,zt+.05),root=[],tip=[],ph=Math.max(.02,b[1]*.9),het=o.het||o.up;
+  for(let i=0;i<K;i++){const k=i/(K-1)*2-1,a=Math.abs(k),sp=o.span*(het?(k>0?1.3:.62):1),ln=o.len*(het?(k>0?1.25:.7):1),fk=o.fork||0,zz=zt-ln*((1-fk)*(1-.35*k*k)+fk*(.3+.7*Math.pow(a,o.p||1.4)));
+    root.push([0,b[2]+k*ph,zt]);tip.push([0,b[2]+k*sp+(o.dy||0),zz]);}
   return sheet(root,tip,o.c1,o.c2,true);
 }
 function pectFin(st,L,o){
@@ -1417,114 +1408,20 @@ Object.assign(SKIN,{
   angler:{belly:[.35,.28,.22],bk:.3,dk:.9,rough:.6,pat:'diffuseColor.rgb*=.75+.5*n21(vOp.xy*10.+vOp.z*4.);'},
   jelly:{belly:[.85,.95,1.],bk:.3,dk:1.,rough:.15,pat:'float rc=smoothstep(.93,1.,abs(sin(atan(vOp.z,vOp.x)*8.)))*smoothstep(.0,.6,vOp.y);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.95,.7,.95),rc*.35);float fr=pow(1.-abs(dot(normalize(vNormal),normalize(vViewPosition))),2.2);totalEmissiveRadiance+=vec3(.2,.55,.75)*fr*.8;'}
 });
+Object.assign(SKIN,{
+  shark:{belly:[.93,.95,.95],bk:.95,dk:.7,rough:.32,pat:'float gs=0.;for(int i=0;i<5;i++)gs=max(gs,1.-smoothstep(.008,.022,abs(vOp.z-(.75-float(i)*.1))));diffuseColor.rgb*=1.-.55*gs*bm*smoothstep(.1,.25,abs(vOp.x))*smoothstep(-.28,-.1,vOp.y);diffuseColor.rgb*=.94+.1*n21(vOp.zy*18.);'},
+  megalodon:{belly:[.8,.82,.82],bk:.8,dk:.6,rough:.45,pat:'float gs=0.;for(int i=0;i<5;i++)gs=max(gs,1.-smoothstep(.01,.03,abs(vOp.z-(.75-float(i)*.1))));diffuseColor.rgb*=1.-.6*gs*bm*smoothstep(.1,.25,abs(vOp.x));float sc=smoothstep(.97,1.,sin(vOp.z*14.+n21(vOp.zy*5.)*8.))*step(.55,n21(vOp.xz*2.5+1.));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.78,.72,.65),sc*.7*bm);diffuseColor.rgb*=.85+.2*n21(vOp.zy*12.);'},
+  frost:{belly:[.97,.99,1.],bk:.9,dk:.85,rough:.22,pat:'float fr=smoothstep(.55,.8,n21(vOp.zx*9.+vOp.y*4.));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.95,.98,1.),fr*.6*bm);totalEmissiveRadiance+=vec3(.05,.2,.3)*fr*.5;'},
+  crystal:{belly:[.55,.5,.7],bk:.5,dk:.75,rough:.3,pat:'vec2 v=vor(vOp.zy*5.+vOp.x*3.);float ed=1.-smoothstep(.0,.08,v.y-v.x);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.8,.6,1.),ed*.6*bm);totalEmissiveRadiance+=vec3(.35,.12,.6)*ed*.8;'},
+  eel:{belly:[.9,.55,.22],bk:.9,dk:.8,rough:.3,pat:'float m=smoothstep(.5,.7,n21(vOp.zy*vec2(2.5,9.)+vOp.x*3.));diffuseColor.rgb*=1.-.35*m*cs*bm;'},
+  magma:{belly:[.35,.12,.05],bk:.5,dk:.85,rough:.7,pat:'vec2 v=vor(vOp.zy*vec2(2.6,9.)+vOp.x*4.);float cr=1.-smoothstep(.0,.1,v.y-v.x);diffuseColor.rgb*=.8+.4*n21(vOp.zy*20.);totalEmissiveRadiance+=vec3(1.,.38,.05)*cr*(1.3+.5*sin(uT*2.+vOp.z));'},
+  leviathan:{belly:[.55,.78,.9],bk:.8,dk:.7,rough:.3,pat:'float blm=smoothstep(.72,.8,n21(vOp.zy*vec2(3.,10.)+vOp.x*2.));totalEmissiveRadiance+=vec3(.1,.5,.9)*blm*bm*.9;diffuseColor.rgb*=1.-.2*blm;'},
+  squid:{belly:[.85,.6,.55],bk:.6,dk:.8,rough:.35,pat:'float ch=smoothstep(.3,.12,vor(vOp.zx*vec2(8.,10.)+vOp.y*5.).x);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.3,.04,.08),ch*.55);'},
+  kraken:{belly:[.82,.62,.58],bk:.6,dk:.75,rough:.4,pat:'float ch=smoothstep(.3,.12,vor(vOp.zx*vec2(7.,9.)+vOp.y*5.).x);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.22,.03,.07),ch*.6);float sc=smoothstep(.96,1.,sin(vOp.z*17.+n21(vOp.xz*5.)*7.))*step(.5,n21(vOp.zx*2.+2.));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.85,.75,.7),sc*.6);'},
+  lord:{belly:[.65,.45,.62],bk:.5,dk:.7,rough:.4,pat:'float ch=smoothstep(.3,.12,vor(vOp.zx*vec2(7.,9.)+vOp.y*5.).x);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.12,.02,.1),ch*.6);float gl=smoothstep(.9,1.,n21(vOp.zx*11.+vOp.y*4.));totalEmissiveRadiance+=vec3(.6,.1,.5)*gl*.9;'},
+  swarm:{belly:[.9,.4,.25],bk:.8,dk:.8,rough:.3,pat:'diffuseColor.rgb*=.9+.2*n21(vOp.zy*30.);'}
+});
 
-const GEO_OLD={
-  clown:()=>merge([...fishBase('#ff6a1a','#ff6a1a','#ff7a2e'),band(.42,'#ffffff'),band(-.35,'#ffffff'),band(-1.02,'#111111',.08)]),
-  tang:()=>{const a=fishBase('#1f5fd6','#ffd23a','#12254f');a[0]=P(new THREE.SphereGeometry(1,18,12),'#1f5fd6',[0,0,0],[0,0,0],[.36,.9,1.05]);return merge([...a,P(new THREE.SphereGeometry(1,12,8),'#0b1a3a',[0,.25,-.1],[0,0,0],[.37,.3,.7])]);},
-  angel:()=>{const a=fishBase('#f5d23a','#f5d23a','#f5d23a');a[0]=P(new THREE.SphereGeometry(1,18,12),'#f5d23a',[0,0,0],[0,0,0],[.28,1.1,.9]);a[2]=P(new THREE.ConeGeometry(.5,1.7,4),'#3b3a52',[0,1.3,-.45],[-.75,0,0],[.08,1,1]);a[3]=P(new THREE.ConeGeometry(.5,1.7,4),'#3b3a52',[0,-1.3,-.45],[Math.PI+.75,0,0],[.08,1,1]);
-    return merge([...a,band(.38,'#3b3a52',.12,.28,1.1),band(-.1,'#3b3a52',.12,.28,1.1),band(-.52,'#3b3a52',.1,.28,1.1)]);},
-  puffer:()=>{const a=fishBase('#c6c46a','#b5a85a','#b5a85a',1.5);a[0]=P(new THREE.SphereGeometry(1,18,14),'#c6c46a',[0,0,0],[0,0,0],[.8,.78,1]);const sp=[];
-    for(let i=0;i<26;i++){const u=R()*2-1,th=R()*6.28,d=new THREE.Vector3(Math.sqrt(1-u*u)*Math.cos(th),u,Math.sqrt(1-u*u)*Math.sin(th));if(d.z>.8)continue;const g=new THREE.ConeGeometry(.06,.28,4);g.translate(0,.12,0);g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d));g.translate(d.x*.8,d.y*.78,d.z);sp.push(colorize(g,'#6f6630'));}
-    return merge([...a,P(new THREE.SphereGeometry(1,14,10),'#f4f0d8',[0,-.2,.05],[0,0,0],[.72,.6,.9]),...sp]);},
-  seahorse:()=>{const c=new THREE.CatmullRomCurve3([[0,-1.3,.3],[0,-1.6,.02],[0,-1.3,-.25],[0,-.55,-.18],[0,.2,-.05],[0,.85,.08],[0,1.1,.05]].map(a=>new THREE.Vector3(...a)));
-    return merge([colorize(new THREE.TubeGeometry(c,24,.2,8,false),'#f19a4a'),P(new THREE.SphereGeometry(1,12,10),'#f4a85c',[0,.15,.12],[0,0,0],[.32,.62,.38]),P(new THREE.SphereGeometry(1,12,10),'#f19a4a',[0,1.18,.14],[0,0,0],[.25,.3,.36]),
-      P(new THREE.CylinderGeometry(.06,.08,.55,8),'#f19a4a',[0,1.08,.58],[Math.PI/2+.25,0,0]),P(new THREE.ConeGeometry(.12,.3,5),'#ffcf8a',[0,1.45,.05]),P(new THREE.ConeGeometry(.3,.5,3),'#ffd7a0',[0,.2,-.32],[Math.PI/2+.4,0,0],[.2,1,1]),
-      P(new THREE.SphereGeometry(.07,8,6),'#081018',[.2,1.22,.28]),P(new THREE.SphereGeometry(.07,8,6),'#081018',[-.2,1.22,.28])]);},
-  ray:()=>merge([P(new THREE.SphereGeometry(1,28,12),'#6d7f86',[0,0,0],[0,0,0],[2.3,.22,1.5]),P(new THREE.SphereGeometry(1,20,10),'#e8e2d4',[0,-.05,0],[0,0,0],[2.2,.15,1.42]),P(new THREE.CylinderGeometry(.07,.015,3.8,5),'#56656b',[0,0,-3.2],[Math.PI/2,0,0]),
-    P(new THREE.SphereGeometry(.1,8,6),'#0b1215',[.35,.2,.75]),P(new THREE.SphereGeometry(.1,8,6),'#0b1215',[-.35,.2,.75])]),
-  jelly:()=>{const a=[P(new THREE.SphereGeometry(1,26,14,0,Math.PI*2,0,Math.PI*.5),'#a8ecff',[0,0,0],[0,0,0],[1,.8,1]),P(new THREE.SphereGeometry(.5,14,10),'#ff9ad5',[0,.15,0],[0,0,0],[1,.7,1])];
-    for(let i=0;i<10;i++){const ang=i/10*6.28,r=.85;const c=new THREE.CatmullRomCurve3([0,1,2,3,4].map(k=>new THREE.Vector3(Math.cos(ang)*r*(1-k*.08)+Math.sin(k*1.7+i)*.1,-k*.75,Math.sin(ang)*r*(1-k*.08)+Math.cos(k*1.3+i)*.1)));a.push(colorize(new THREE.TubeGeometry(c,16,.025,4,false),'#c8f4ff'));}
-    for(let i=0;i<4;i++){const ang=i/4*6.28+.4;const c=new THREE.CatmullRomCurve3([0,1,2,3].map(k=>new THREE.Vector3(Math.cos(ang)*.2+Math.sin(k*2+i)*.12,-k*.55,Math.sin(ang)*.2)));a.push(colorize(new THREE.TubeGeometry(c,12,.09,6,false),'#ffb3e0'));}
-    return merge(a);},
-  manta:()=>merge([P(new THREE.SphereGeometry(1,30,12),'#2f4558',[0,0,0],[0,0,0],[3.4,.26,1.7]),P(new THREE.SphereGeometry(1,24,10),'#f1f3f4',[0,-.06,.05],[0,0,0],[3.25,.18,1.6]),
-    P(new THREE.ConeGeometry(.5,1.6,5),'#2f4558',[3.2,0,.2],[0,0,-Math.PI/2],[.35,1,1.4]),P(new THREE.ConeGeometry(.5,1.6,5),'#2f4558',[-3.2,0,.2],[0,0,Math.PI/2],[.35,1,1.4]),
-    P(new THREE.CylinderGeometry(.02,.1,4.6,6),'#27384a',[0,0,-3.6],[Math.PI/2,0,0]),
-    P(new THREE.ConeGeometry(.2,1.2,5),'#2f4558',[.45,-.05,2.0],[Math.PI/2+.3,0,0],[1,1,.6]),P(new THREE.ConeGeometry(.2,1.2,5),'#2f4558',[-.45,-.05,2.0],[Math.PI/2+.3,0,0],[1,1,.6]),
-    P(new THREE.SphereGeometry(.34,10,8),'#d8dde0',[.9,-.05,1.05],[0,0,0],[1.1,.4,.8]),P(new THREE.SphereGeometry(.34,10,8),'#d8dde0',[-.9,-.05,1.05],[0,0,0],[1.1,.4,.8]),
-    P(new THREE.SphereGeometry(.12,8,6),'#0b1215',[1.1,.2,1.35]),P(new THREE.SphereGeometry(.12,8,6),'#0b1215',[-1.1,.2,1.35])]),
-  whaleshark:()=>{const rnd=mulberry32(5),a=[P(new THREE.SphereGeometry(1,24,14),'#4d6c86',[0,0,0],[0,0,-0.0],[.95,.8,3.6]),P(new THREE.SphereGeometry(1,20,12),'#e6eef2',[0,-.28,.1],[0,0,0],[.82,.5,3.3]),
-      P(new THREE.SphereGeometry(1,18,10),'#5a7b96',[0,-.05,3.2],[0,0,0],[.98,.5,1.1]),P(new THREE.BoxGeometry(1.6,.08,.18),'#16222c',[0,-.2,4.0]),
-      P(new THREE.ConeGeometry(.7,1.6,4),'#4d6c86',[0,.95,.3],[-.35,0,0],[.12,1,1.3]),P(new THREE.ConeGeometry(.8,3.0,4),'#4d6c86',[0,.9,-3.9],[-Math.PI/2+.5,0,0],[.1,1,1]),P(new THREE.ConeGeometry(.5,2.0,4),'#4d6c86',[0,-.5,-3.7],[-Math.PI/2-.5,0,0],[.1,1,1]),
-      P(new THREE.ConeGeometry(.7,2.4,4),'#436079',[1.45,-.45,1.3],[.4,0,-1.7],[.12,1,1.4]),P(new THREE.ConeGeometry(.7,2.4,4),'#436079',[-1.45,-.45,1.3],[.4,0,1.7],[.12,1,1.4]),
-      P(new THREE.SphereGeometry(.09,8,6),'#081018',[.85,.2,3.7]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[-.85,.2,3.7])];
-    for(let i=0;i<46;i++){const z=-3+rnd()*6.8,ang=(rnd()-.5)*2.3,r=.82*(1-Math.max(0,z-1.5)/12);a.push(P(new THREE.SphereGeometry(1,6,4),'#f4f7f8',[Math.sin(ang)*r*1.0,Math.cos(ang)*.78+.02,z],[0,0,0],[.2,.06,.2]));}
-    return merge(a);},
-  mola:()=>merge([P(new THREE.SphereGeometry(1,22,14),'#9aa8b2',[0,0,0],[0,0,0],[.36,1.15,1.05]),P(new THREE.SphereGeometry(1,18,10),'#d7dee3',[0,0,.08],[0,0,0],[.3,1.0,.98]),
-    P(new THREE.ConeGeometry(.5,1.7,4),'#7f8e99',[0,1.55,-.6],[-.55,0,0],[.1,1,1.2]),P(new THREE.ConeGeometry(.5,1.7,4),'#7f8e99',[0,-1.55,-.6],[Math.PI+.55,0,0],[.1,1,1.2]),
-    P(new THREE.CylinderGeometry(1,1,.12,16),'#8a98a2',[0,0,-1.05],[Math.PI/2,0,0],[.3,.08,.95]),
-    P(new THREE.ConeGeometry(.3,.6,4),'#8a98a2',[.4,-.2,.3],[0,0,-1.4],[.12,1,1]),P(new THREE.ConeGeometry(.3,.6,4),'#8a98a2',[-.4,-.2,.3],[0,0,1.4],[.12,1,1]),
-    P(new THREE.SphereGeometry(.16,8,6),'#ffffff',[.3,.3,.82]),P(new THREE.SphereGeometry(.16,8,6),'#ffffff',[-.3,.3,.82]),P(new THREE.SphereGeometry(.08,8,6),'#081018',[.36,.3,.92]),P(new THREE.SphereGeometry(.08,8,6),'#081018',[-.36,.3,.92])]),
-  lion:()=>{const a=fishBase('#b8381f','#c8472a','#7a1f12');const out=[...a,band(.5,'#f5ecd8',.14),band(.05,'#f5ecd8',.14),band(-.42,'#f5ecd8',.12),band(-.85,'#f5ecd8',.1)];
-    for(let i=-4;i<=4;i++){const ang=i*.26;out.push(P(new THREE.ConeGeometry(.05,1.15,4),i%2?'#f0e0c8':'#8a2412',[Math.sin(ang)*.55+.42*Math.sign(i||1)*Math.abs(i)/4*0,.55,-.1-Math.abs(i)*.08],[-.35,0,-ang*1.3]));}
-    for(const sx of [1,-1])for(let i=0;i<7;i++){out.push(P(new THREE.ConeGeometry(.045,1.1,4),i%2?'#f0e0c8':'#a63018',[sx*.34,-.05+i*.015,.28-i*.1],[0,0,-sx*(1.0+i*.14)]));}
-    return merge(out);},
-  angler:()=>{const lure=new THREE.CatmullRomCurve3([[0,.75,.7],[0,1.5,1.0],[0,1.95,1.7],[0,1.7,2.5]].map(a=>new THREE.Vector3(...a)));
-    const a=[P(new THREE.SphereGeometry(1,20,14),'#2a2f3b',[0,0,0],[0,0,0],[.95,.85,1.05]),P(new THREE.SphereGeometry(1,16,12),'#1d212b',[0,-.35,.5],[0,0,0],[.82,.55,.85]),
-      P(new THREE.ConeGeometry(.75,1.2,10),'#16191f',[0,-.02,1.0],[Math.PI/2,0,0],[1,1,.75]),P(new THREE.ConeGeometry(.5,1.0,4),'#2a2f3b',[0,0,-1.3],[-Math.PI/2,0,0],[.15,1,1]),
-      P(new THREE.ConeGeometry(.3,.7,4),'#2a2f3b',[0,.8,-.2],[-.4,0,0],[.1,1,1.2]),P(new THREE.ConeGeometry(.3,.7,4),'#242836',[.9,-.2,.2],[0,0,-1.3],[.12,1,1]),P(new THREE.ConeGeometry(.3,.7,4),'#242836',[-.9,-.2,.2],[0,0,1.3],[.12,1,1]),
-      colorize(new THREE.TubeGeometry(lure,16,.035,5,false),'#3a4252'),P(new THREE.SphereGeometry(.28,12,10),'#aaffd8',[0,1.7,2.5]),
-      P(new THREE.SphereGeometry(.2,10,8),'#ffe9a0',[.5,.35,.78]),P(new THREE.SphereGeometry(.2,10,8),'#ffe9a0',[-.5,.35,.78]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[.57,.35,.92]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[-.57,.35,.92])];
-    for(let i=0;i<9;i++){const x=(i-4)*.12;a.push(P(new THREE.ConeGeometry(.045,.32,4),'#f2f2e8',[x,.22,1.62],[Math.PI,0,0]),P(new THREE.ConeGeometry(.045,.28,4),'#f2f2e8',[x*.9,-.34,1.55]));}
-    return merge(a);},
-  narwhal:()=>merge([P(new THREE.SphereGeometry(1,22,14),'#8d9aa8',[0,0,0],[0,0,0],[.62,.58,2.1]),P(new THREE.SphereGeometry(1,18,12),'#d8dfe6',[0,-.2,.1],[0,0,0],[.52,.38,1.95]),
-    P(new THREE.SphereGeometry(1,16,12),'#7f8d9c',[0,.05,1.9],[0,0,0],[.5,.5,.6]),P(new THREE.CylinderGeometry(.015,.08,3.4,8),'#f3ecd8',[.1,.05,3.9],[Math.PI/2,0,0]),
-    P(new THREE.ConeGeometry(.55,1.0,4),'#7f8d9c',[.62,0,-2.3],[Math.PI/2,0,1.2],[.1,1,1.3]),P(new THREE.ConeGeometry(.55,1.0,4),'#7f8d9c',[-.62,0,-2.3],[Math.PI/2,0,-1.2],[.1,1,1.3]),
-    P(new THREE.ConeGeometry(.35,.9,4),'#7f8d9c',[.62,-.25,1.1],[.4,0,-1.5],[.1,1,1.2]),P(new THREE.ConeGeometry(.35,.9,4),'#7f8d9c',[-.62,-.25,1.1],[.4,0,1.5],[.1,1,1.2]),
-    P(new THREE.ConeGeometry(.2,.5,4),'#7f8d9c',[0,.55,-.6],[-.3,0,0],[.1,1,1]),
-    ...Array.from({length:14},(_,i)=>P(new THREE.SphereGeometry(1,6,4),'#566470',[((i*37)%11-5)*.09,.38+((i*13)%5)*.03,-1.5+((i*29)%16)*.2],[0,0,0],[.2,.05,.2])),
-    P(new THREE.SphereGeometry(.07,8,6),'#081018',[.46,.12,2.05]),P(new THREE.SphereGeometry(.07,8,6),'#081018',[-.46,.12,2.05])]),
-  oarfish:()=>{const a=[],N=24;for(let i=0;i<N;i++){const u=i/(N-1),z=-3.2+u*6.4,r=.3*(.35+.65*Math.sin(Math.min(1,u*1.15+.05)*Math.PI*.85)),st=6.4/N*1.5;
-      a.push(P(new THREE.SphereGeometry(1,10,8),'#d3dce4',[0,0,z],[0,0,0],[r*.6,r*1.5,st]));if(i%2===0&&i>1&&i<N-2)a.push(P(new THREE.ConeGeometry(.05,.7+(i%4)*.1,4),'#e0302a',[0,r*1.5+.25,z],[-.25,0,0]));}
-    a.push(P(new THREE.SphereGeometry(1,14,10),'#c9d4dc',[0,0,3.2],[0,0,0],[.22,.34,.5]),P(new THREE.SphereGeometry(.1,8,6),'#081018',[.2,.1,3.4]),P(new THREE.SphereGeometry(.1,8,6),'#081018',[-.2,.1,3.4]),P(new THREE.ConeGeometry(.04,.9,4),'#e0302a',[0,.5,3.2],[-.9,0,0]));
-    return merge(a);},
-  nautilus:()=>{const a=[P(new THREE.SphereGeometry(1,22,16),'#f1e4cc',[0,.15,-.35],[0,0,0],[.62,.95,1.0]),P(new THREE.SphereGeometry(.5,14,10),'#e6b88a',[0,.1,.05],[0,0,0],[1.1,1.05,.6])];
-    for(let i=0;i<8;i++){const z=-.95+i*.26;a.push(P(new THREE.CylinderGeometry(1,1,.07,16),i%2?'#d9742a':'#8a3a14',[0,.15-Math.abs(z+.35)*.1,z],[Math.PI/2,0,0],[.63*Math.sqrt(Math.max(.1,1-((z+.35)/1.0)**2)),1,.95*Math.sqrt(Math.max(.1,1-((z+.35)/1.0)**2))]));}
-    for(let i=0;i<16;i++){const ang=i/16*6.28,c=new THREE.CatmullRomCurve3([0,1,2,3].map(k=>new THREE.Vector3(Math.cos(ang)*.42*(1-k*.1)+Math.sin(k*1.6+i)*.06,Math.sin(ang)*.36*(1-k*.1)-.05,.55+k*.42)));a.push(colorize(new THREE.TubeGeometry(c,10,.03,5,false),i%2?'#ecd2ac':'#d9a97a'));}
-    a.push(P(new THREE.SphereGeometry(.16,8,6),'#ffffff',[.32,.1,.45]),P(new THREE.SphereGeometry(.16,8,6),'#ffffff',[-.32,.1,.45]),P(new THREE.SphereGeometry(.08,8,6),'#081018',[.38,.1,.58]),P(new THREE.SphereGeometry(.08,8,6),'#081018',[-.38,.1,.58]));
-    return merge(a);},
-  sardine:()=>{const a=fishBase('#cfdde6','#9fb4c2','#8aa0ae',.8);a[0]=P(new THREE.SphereGeometry(1,14,10),'#cfdde6',[0,0,0],[0,0,0],[.3,.55,1.25]);return merge([...a,P(new THREE.SphereGeometry(1,12,8),'#3d6a8a',[0,.28,-.05],[0,0,0],[.28,.2,1.1])]);},
-  butterfly:()=>{const a=fishBase('#fff2a0','#fff2a0','#ffd23a');a[0]=P(new THREE.SphereGeometry(1,16,12),'#fff4b0',[0,0,0],[0,0,0],[.3,.82,.95]);return merge([...a,band(.55,'#16181c',.1,.31,.8),P(new THREE.SphereGeometry(1,10,8),'#ffd23a',[0,.1,-.5],[0,0,0],[.31,.5,.35]),P(new THREE.ConeGeometry(.12,.7,5),'#ffd23a',[0,0,.95],[Math.PI/2,0,0])]);},
-  barracuda:()=>merge([P(new THREE.SphereGeometry(1,18,12),'#aab8c0',[0,0,0],[0,0,0],[.26,.3,2.0]),P(new THREE.SphereGeometry(1,14,10),'#e8eef0',[0,-.1,.1],[0,0,0],[.22,.2,1.8]),P(new THREE.ConeGeometry(.2,1.0,8),'#8c9aa2',[0,-.03,2.2],[Math.PI/2,0,0],[1,1,.8]),P(new THREE.ConeGeometry(.5,.9,4),'#6c7a82',[0,0,-2.2],[Math.PI/2,0,0],[.12,1,1.2]),P(new THREE.ConeGeometry(.2,.6,4),'#6c7a82',[0,.35,-.6],[-.3,0,0],[.1,1,1]),P(new THREE.ConeGeometry(.15,.5,4),'#6c7a82',[0,.3,.9],[-.3,0,0],[.1,1,1]),P(new THREE.SphereGeometry(.1,8,6),'#ffffff',[.2,.12,1.6]),P(new THREE.SphereGeometry(.1,8,6),'#ffffff',[-.2,.12,1.6]),P(new THREE.SphereGeometry(.055,8,6),'#081018',[.25,.12,1.68]),P(new THREE.SphereGeometry(.055,8,6),'#081018',[-.25,.12,1.68])]),
-  dolphin:()=>merge([P(new THREE.SphereGeometry(1,22,14),'#6a8296',[0,0,0],[0,0,0],[.5,.52,1.7]),P(new THREE.SphereGeometry(1,18,12),'#d8e2e8',[0,-.2,.15],[0,0,0],[.42,.36,1.55]),P(new THREE.SphereGeometry(1,14,10),'#6a8296',[0,.02,1.6],[0,0,0],[.4,.38,.55]),P(new THREE.CylinderGeometry(.08,.14,.75,8),'#7d93a6',[0,-.06,2.25],[Math.PI/2,0,0]),
-    P(new THREE.ConeGeometry(.3,.9,4),'#5a7288',[0,.62,-.2],[-.5,0,0],[.12,1,1.2]),P(new THREE.ConeGeometry(.28,.8,4),'#5a7288',[.55,-.35,.6],[0,0,-1.1],[.12,1,1]),P(new THREE.ConeGeometry(.28,.8,4),'#5a7288',[-.55,-.35,.6],[0,0,1.1],[.12,1,1]),
-    P(new THREE.ConeGeometry(.5,.8,6),'#6a8296',[0,0,-1.85],[Math.PI/2,0,0],[.7,1,.9]),P(new THREE.ConeGeometry(.9,.9,4),'#5a7288',[0,0,-2.35],[Math.PI/2,0,0],[1,1,.14]),
-    P(new THREE.SphereGeometry(.07,8,6),'#081018',[.36,.14,1.85]),P(new THREE.SphereGeometry(.07,8,6),'#081018',[-.36,.14,1.85])]),
-  hammerhead:()=>merge([P(new THREE.SphereGeometry(1,22,14),'#7a8892',[0,0,0],[0,0,0],[.7,.65,2.6]),P(new THREE.SphereGeometry(1,18,12),'#e4eaee',[0,-.28,.1],[0,0,0],[.6,.4,2.4]),P(new THREE.SphereGeometry(1,16,10),'#7a8892',[0,0,2.55],[0,0,0],[1.5,.15,.42]),
-    P(new THREE.SphereGeometry(.1,8,6),'#081018',[1.4,.03,2.7]),P(new THREE.SphereGeometry(.1,8,6),'#081018',[-1.4,.03,2.7]),
-    P(new THREE.ConeGeometry(.6,1.8,4),'#6a7882',[0,1.0,.2],[-.3,0,0],[.1,1,1.3]),P(new THREE.ConeGeometry(.7,3.0,4),'#6a7882',[0,.6,-3.4],[-Math.PI/2+.45,0,0],[.1,1,1]),P(new THREE.ConeGeometry(.45,2.0,4),'#6a7882',[0,-.45,-3.2],[-Math.PI/2-.5,0,0],[.1,1,1]),
-    P(new THREE.ConeGeometry(.6,2.0,4),'#5a6872',[1.2,-.55,1.0],[.4,0,-1.7],[.1,1,1.4]),P(new THREE.ConeGeometry(.6,2.0,4),'#5a6872',[-1.2,-.55,1.0],[.4,0,1.7],[.1,1,1.4])]),
-  swordfish:()=>merge([P(new THREE.SphereGeometry(1,20,12),'#4a6a8c',[0,0,0],[0,0,0],[.38,.42,1.6]),P(new THREE.SphereGeometry(1,16,10),'#d8e4ec',[0,-.14,.1],[0,0,0],[.33,.28,1.45]),P(new THREE.CylinderGeometry(.012,.07,2.4,6),'#3a4a5a',[0,.02,2.85],[Math.PI/2,0,0]),
-    P(new THREE.ConeGeometry(.45,1.5,4),'#2f4a6e',[0,.62,.2],[-.15,0,0],[.06,1,1.4]),P(new THREE.ConeGeometry(.5,.9,4),'#2f4a6e',[0,.5,-1.35],[Math.PI/2+.5,0,0],[.08,1,1.3]),P(new THREE.ConeGeometry(.5,.9,4),'#2f4a6e',[0,-.5,-1.35],[Math.PI/2-.5,0,0],[.08,1,1.3]),
-    P(new THREE.ConeGeometry(.3,.9,4),'#2f4a6e',[.4,-.3,.5],[0,0,-1.3],[.1,1,1]),P(new THREE.ConeGeometry(.3,.9,4),'#2f4a6e',[-.4,-.3,.5],[0,0,1.3],[.1,1,1]),
-    P(new THREE.SphereGeometry(.12,8,6),'#ffffff',[.3,.14,1.25]),P(new THREE.SphereGeometry(.12,8,6),'#ffffff',[-.3,.14,1.25]),P(new THREE.SphereGeometry(.065,8,6),'#081018',[.36,.14,1.33]),P(new THREE.SphereGeometry(.065,8,6),'#081018',[-.36,.14,1.33])]),
-  moray:()=>{const c=new THREE.CatmullRomCurve3([[0,0,2.6],[0,.06,1.4],[0,-.05,0],[0,.05,-1.4],[0,0,-2.6],[0,-.04,-3.4]].map(a=>new THREE.Vector3(...a)));
-    const a=[colorize(new THREE.TubeGeometry(c,28,.26,8,false),'#8a7a34'),P(new THREE.SphereGeometry(1,14,10),'#a0903c',[0,.04,2.75],[0,0,0],[.3,.26,.55]),P(new THREE.ConeGeometry(.2,.55,6),'#c8a84a',[0,-.03,3.2],[Math.PI/2,0,0],[1,1,.7]),P(new THREE.BoxGeometry(.04,.26,5.8),'#7a6a2a',[0,.28,-.2]),
-      P(new THREE.SphereGeometry(.07,8,6),'#ffe08a',[.2,.14,2.95]),P(new THREE.SphereGeometry(.07,8,6),'#ffe08a',[-.2,.14,2.95]),P(new THREE.SphereGeometry(.035,6,5),'#081018',[.23,.14,3.0]),P(new THREE.SphereGeometry(.035,6,5),'#081018',[-.23,.14,3.0])];
-    for(let i=0;i<14;i++){const z=2.2-i*.42;a.push(P(new THREE.SphereGeometry(1,6,5),'#3a2e12',[((i*37)%5-2)*.07,.2,z],[0,0,0],[.11,.08,.13]));}
-    return merge(a);},
-  octopus:()=>{const a=[P(new THREE.SphereGeometry(1,18,14),'#c4543a',[0,.7,-.2],[0,0,0],[.85,1.05,.9]),P(new THREE.SphereGeometry(1,12,10),'#d0644a',[0,.2,.45],[0,0,0],[.7,.55,.7]),
-      P(new THREE.SphereGeometry(.2,8,6),'#fff1c0',[.4,.42,.82]),P(new THREE.SphereGeometry(.2,8,6),'#fff1c0',[-.4,.42,.82]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[.46,.42,.97]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[-.46,.42,.97])];
-    for(let i=0;i<8;i++){const ang=i/8*Math.PI*2,c=new THREE.CatmullRomCurve3([0,1,2,3,4].map(k=>new THREE.Vector3(Math.cos(ang)*(.4+k*.38),.25-k*.2+Math.max(0,k-2)*.12,Math.sin(ang)*(.4+k*.38)-k*.5)));
-      a.push(colorize(new THREE.TubeGeometry(c,14,.11,6,false),i%2?'#c4543a':'#b8482e'));}
-    return merge(a);},
-  cuttle:()=>{const a=[P(new THREE.SphereGeometry(1,18,12),'#b8946a',[0,0,0],[0,0,0],[.7,.4,1.4]),P(new THREE.SphereGeometry(1,14,8),'#d6b88f',[.62,0,-.1],[0,0,0],[.3,.06,1.3]),P(new THREE.SphereGeometry(1,14,8),'#d6b88f',[-.62,0,-.1],[0,0,0],[.3,.06,1.3]),
-      P(new THREE.SphereGeometry(1,10,8),'#7a5a3a',[0,.3,-.2],[0,0,0],[.45,.1,1.0]),P(new THREE.SphereGeometry(.2,8,6),'#fff1c0',[.45,.12,1.25]),P(new THREE.SphereGeometry(.2,8,6),'#fff1c0',[-.45,.12,1.25]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[.5,.12,1.4]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[-.5,.12,1.4])];
-    for(let i=0;i<8;i++){const x=(i-3.5)*.14,c=new THREE.CatmullRomCurve3([[x,-.1,1.3],[x*1.2,-.12,1.75],[x*1.5,-.1,2.15]].map(p=>new THREE.Vector3(...p)));a.push(colorize(new THREE.TubeGeometry(c,8,.05,5,false),'#b8946a'));}
-    return merge(a);},
-  seadragon:()=>{const c=new THREE.CatmullRomCurve3([[0,0,1.3],[0,.1,.5],[0,0,-.4],[0,-.15,-1.3],[0,-.3,-2.0]].map(a=>new THREE.Vector3(...a)));
-    const a=[colorize(new THREE.TubeGeometry(c,20,.14,7,false),'#c8a24a'),P(new THREE.SphereGeometry(1,12,10),'#d0aa50',[0,.12,1.45],[0,0,0],[.2,.22,.32]),P(new THREE.CylinderGeometry(.045,.06,.55,7),'#d0aa50',[0,.08,1.95],[Math.PI/2,0,0]),
-      P(new THREE.SphereGeometry(.05,6,5),'#081018',[.15,.2,1.55]),P(new THREE.SphereGeometry(.05,6,5),'#081018',[-.15,.2,1.55])];
-    for(let i=0;i<12;i++){const t=i/11,z=1.2-t*3.0,y=Math.sin(t*3)*.12+(t>.5?-.12*(t-.5)*2:0),sd=i%2?1:-1;a.push(P(new THREE.SphereGeometry(1,6,5),i%3?'#7ab04a':'#a8c850',[sd*.15,y+(i%3)*.05+.1,z],[0,0,sd*.6],[.025,.34,.2]));}
-    a.push(P(new THREE.SphereGeometry(1,6,5),'#7ab04a',[0,.38,1.2],[0,0,0],[.02,.28,.18]));
-    return merge(a);},
-  blobfish:()=>merge([P(new THREE.SphereGeometry(1,18,14),'#e8a8a0',[0,0,0],[0,0,0],[.9,.8,1.0]),P(new THREE.SphereGeometry(1,12,10),'#d88a88',[0,-.08,.88],[0,0,0],[.3,.28,.32]),P(new THREE.SphereGeometry(1,10,8),'#c47a7a',[0,-.38,.75],[0,0,0],[.5,.14,.28]),
-    P(new THREE.ConeGeometry(.3,.8,5),'#d89890',[0,.05,-1.15],[Math.PI/2,0,0],[.2,1,1]),P(new THREE.SphereGeometry(.09,8,6),'#2a1a20',[.4,.22,.78]),P(new THREE.SphereGeometry(.09,8,6),'#2a1a20',[-.4,.22,.78]),
-    P(new THREE.ConeGeometry(.2,.5,4),'#d89890',[.8,-.15,.2],[0,0,-1.3],[.1,1,1]),P(new THREE.ConeGeometry(.2,.5,4),'#d89890',[-.8,-.15,.2],[0,0,1.3],[.1,1,1])]),
-  turtle:()=>merge([P(new THREE.SphereGeometry(1,22,12,0,Math.PI*2,0,Math.PI*.55),'#5b7a3a',[0,0,0],[0,0,0],[1.2,.62,1.5]),P(new THREE.SphereGeometry(1,20,10),'#d9c98a',[0,-.02,0],[0,0,0],[1.12,.2,1.38]),
-    P(new THREE.SphereGeometry(1,14,10),'#8aa36a',[0,.08,1.75],[0,0,0],[.38,.34,.5]),P(new THREE.SphereGeometry(1,14,8),'#7f9a5e',[1.45,0,.7],[0,.5,.1],[1.1,.08,.36]),P(new THREE.SphereGeometry(1,14,8),'#7f9a5e',[-1.45,0,.7],[0,-.5,-.1],[1.1,.08,.36]),
-    P(new THREE.SphereGeometry(1,12,8),'#7f9a5e',[.9,0,-1.3],[0,-.6,0],[.55,.07,.28]),P(new THREE.SphereGeometry(1,12,8),'#7f9a5e',[-.9,0,-1.3],[0,.6,0],[.55,.07,.28]),P(new THREE.ConeGeometry(.15,.5,6),'#7f9a5e',[0,0,-1.65],[-Math.PI/2,0,0]),
-    P(new THREE.SphereGeometry(.07,8,6),'#081018',[.24,.2,2.05]),P(new THREE.SphereGeometry(.07,8,6),'#081018',[-.24,.2,2.05])])
-};
 const xf=(g,p=[0,0,0],r=[0,0,0],s=[1,1,1])=>{_m.compose(_v.set(...p),_q.setFromEuler(_e.set(...r)),_s.set(...s));g.applyMatrix4(_m);return g;};
 const dk=(h,k)=>shade(h,k);
 /* iki yüzeyli kanat gövdesi: vatoz/manta (S: yarı kanat açıklığı, C: gövde derinliği, T: kalınlık) */
@@ -1664,7 +1561,7 @@ Object.assign(GEO_NEW,{
     for(let i=0;i<14;i++){const a=i/14*Math.PI*2,r=.92,pts=[0,1,2,3,4,5].map(k=>[Math.cos(a)*r*(1-k*.05)+Math.sin(k*2.1+i)*.07,-.1-k*.62,Math.sin(a)*r*(1-k*.05)+Math.cos(k*1.7+i)*.07]);o.push(tubeV(pts,[.03,.024,.018,.013,.009,.005],'#cfeaf4',4,10));}return mergeS(o);},
 });
 
-const GEO=Object.assign({},GEO_OLD,GEO_NEW);
+const GEO=GEO_NEW;
 const ANIM={
   fish:'float sw=clamp((.9-position.z)/2.7,0.,1.);transformed.x+=sin(uT*9.+ph-position.z*3.)*.2*sw*sw;',
   slow:'float sw=clamp((.9-position.z)/3.2,0.,1.);transformed.x+=sin(uT*5.+ph-position.z*2.2)*.17*sw*sw;',
@@ -1679,7 +1576,8 @@ ANIM.octo='float tn=smoothstep(.5,-.15,position.y);transformed.x+=sin(uT*2.6+ph+
 ANIM.cuttle='float ax=abs(position.x);transformed.y+=sin(uT*5.+ph-position.z*3.)*.07*smoothstep(.4,.8,ax);transformed.x+=sin(uT*3.+ph+position.z*4.)*.05*step(1.1,position.z);';
 ANIM.seadragon='transformed.y+=sin(uT*1.5+ph+position.z*2.)*.08;transformed.x+=sin(uT*3.+ph+position.z*3.)*.04*smoothstep(0.,-2.,position.z)+sin(uT*6.+ph+position.y*8.)*.02;';
 ANIM.eel='float kk=smoothstep(2.6,-3.3,position.z);transformed.x+=sin(uT*4.+ph-position.z*1.6)*.5*kk;transformed.y+=cos(uT*3.1+ph-position.z*1.2)*.12*kk;';
-const SPEC_CFG={manta:{s:2.1,a:'ray'},whaleshark:{s:2.3,a:'whale'},mola:{s:1.5,a:'slow'},lion:{s:.95,a:'slow'},angler:{s:1.25,a:'slow',fx:1},narwhal:{s:1.8,a:'whale'},oarfish:{s:1.2,a:'eel'},nautilus:{s:.9,a:'nautilus'},sardine:{s:.42,a:'fish'},butterfly:{s:.6,a:'fish'},barracuda:{s:1.25,a:'slow'},dolphin:{s:1.45,a:'whale'},hammerhead:{s:1.9,a:'whale'},swordfish:{s:1.4,a:'slow'},moray:{s:.85,a:'eel'},octopus:{s:.95,a:'octo'},cuttle:{s:.85,a:'cuttle'},seadragon:{s:.8,a:'seadragon'},blobfish:{s:.8,a:'slow'},clown:{s:.55,a:'fish'},tang:{s:.8,a:'fish'},angel:{s:.85,a:'fish'},puffer:{s:.72,a:'slow'},seahorse:{s:.62,a:'seahorse'},ray:{s:1.3,a:'ray'},jelly:{s:1.15,a:'jelly'},turtle:{s:1.55,a:'turtle'}};
+ANIM.sharkl='float sw=clamp((1.4-position.z)/6.,0.,1.);transformed.x+=sin(uT*2.4+ph-position.z*.9)*.3*sw*sw;';
+const SPEC_CFG={manta:{s:2.1,a:'ray'},whaleshark:{s:2.3,a:'sharkl'},mola:{s:1.5,a:'slow'},lion:{s:.95,a:'slow'},angler:{s:1.25,a:'slow',fx:1},narwhal:{s:1.8,a:'whale'},oarfish:{s:1.2,a:'eel'},nautilus:{s:.9,a:'nautilus'},sardine:{s:.42,a:'fish'},butterfly:{s:.6,a:'fish'},barracuda:{s:1.25,a:'slow'},dolphin:{s:1.45,a:'whale'},hammerhead:{s:1.9,a:'sharkl'},swordfish:{s:1.4,a:'slow'},moray:{s:.85,a:'eel'},octopus:{s:.95,a:'octo'},cuttle:{s:.85,a:'cuttle'},seadragon:{s:.8,a:'seadragon'},blobfish:{s:.8,a:'slow'},clown:{s:.55,a:'fish'},tang:{s:.8,a:'fish'},angel:{s:.85,a:'fish'},puffer:{s:.72,a:'slow'},seahorse:{s:.62,a:'seahorse'},ray:{s:1.3,a:'ray'},jelly:{s:1.15,a:'jelly'},turtle:{s:1.55,a:'turtle'}};
 const schools=[],creatures=[];
 function addSchool(sp,n,ax,ay,az,amp,fr,spread,minAlt,opt={}){
   amp=[Math.min(amp[0],HX-6-Math.abs(ax)),Math.min(amp[1],SURF-3-ay),Math.min(amp[2],HZ-6-Math.abs(az))].map(v=>Math.max(v,.5));
@@ -3997,7 +3895,7 @@ const fragCache={},fragMats={},EG={};
 function fragPieces(sp){
   if(fragCache[sp])return fragCache[sp];
   const g=specMesh[sp]?specMesh[sp].geometry:EG[sp],P=g.attributes.position,N=g.attributes.normal,C=g.attributes.color,nt=P.count/3;
-  const K=sp==='whaleshark'||sp==='narwhal'||sp==='manta'?13:sp==='oarfish'?10:sp==='shark'?14:sp==='squid'||sp==='kraken'?12:sp==='eel'?10:sp==='swarm'?9:sp==='turtle'||sp==='ray'?12:sp==='jelly'?9:sp==='seahorse'?6:8;
+  const K=sp==='whaleshark'||sp==='narwhal'||sp==='manta'?13:sp==='oarfish'?10:sp==='shark'||sp==='frost'||sp==='crystal'||sp==='megalodon'?14:sp==='squid'||sp==='kraken'||sp==='lord'?12:sp==='eel'||sp==='magma'||sp==='leviathan'?10:sp==='swarm'?9:sp==='turtle'||sp==='ray'?12:sp==='jelly'?9:sp==='seahorse'?6:8;
   const cen=new Float32Array(nt*3);
   for(let t=0;t<nt;t++)for(let a=0;a<3;a++)cen[t*3+a]=(P.array[t*9+a]+P.array[t*9+3+a]+P.array[t*9+6+a])/3;
   const seeds=[0],md=new Float32Array(nt).fill(1e9);
@@ -4191,66 +4089,68 @@ const ETYPE={
   squid:{tr:'Dev Kalamar',en:'Giant Squid',hp:4,sc:2.1,r:2.8,aggro:75,col:'#ff7ab0'},
   swarm:{tr:'Piranha Sürüsü',en:'Piranha Swarm',hp:2,sc:1,r:2.3,aggro:48,col:'#ff9a3a'}
 };
-const EGEO={
-  shark:()=>merge([
-    P(new THREE.SphereGeometry(1,22,14),'#6b7f8c',[0,0,0],[0,0,0],[.42,.4,1.5]),
-    P(new THREE.SphereGeometry(1,20,12),'#e9eef0',[0,-.14,.06],[0,0,0],[.37,.3,1.42]),
-    P(new THREE.ConeGeometry(.3,.6,10),'#6b7f8c',[0,-.02,1.62],[Math.PI/2,0,0],[1,1,.9]),
-    P(new THREE.ConeGeometry(.3,.95,4),'#566873',[0,.5,.1],[-.5,0,0],[.15,1,1]),
-    P(new THREE.ConeGeometry(.22,.9,4),'#566873',[.42,-.15,.55],[.5,0,-1.9],[.12,1,1.5]),
-    P(new THREE.ConeGeometry(.22,.9,4),'#566873',[-.42,-.15,.55],[.5,0,1.9],[.12,1,1.5]),
-    P(new THREE.ConeGeometry(.5,1.5,4),'#566873',[0,.3,-2.0],[-Math.PI/2+.6,0,0],[.09,1,1]),
-    P(new THREE.ConeGeometry(.35,1.1,4),'#566873',[0,-.2,-1.9],[-Math.PI/2-.5,0,0],[.09,1,1]),
-    P(new THREE.SphereGeometry(.07,8,6),'#081018',[.28,.1,1.0]),P(new THREE.SphereGeometry(.07,8,6),'#081018',[-.28,.1,1.0]),
-    P(new THREE.BoxGeometry(.36,.05,.3),'#ffffff',[0,-.2,1.35])
-  ]),
-  eel:()=>{
-    const a=[],N=26;
-    for(let i=0;i<N;i++){const u=i/(N-1),z=-3.3+u*6.2,r=.26*(.55+.45*Math.sin(u*Math.PI*.9+.3)),st=6.2/N*1.5;
-      a.push(P(new THREE.SphereGeometry(1,10,8),i%2?'#3f5f34':'#486d3a',[0,0,z],[0,0,0],[r,r,st]),P(new THREE.SphereGeometry(1,8,6),'#e39a3a',[0,-r*.55,z],[0,0,0],[r*.85,r*.55,st*.95]));}
-    a.push(P(new THREE.SphereGeometry(1,14,10),'#3a5a30',[0,0,3.05],[0,0,0],[.3,.26,.5]),P(new THREE.SphereGeometry(.07,8,6),'#ffe14a',[.18,.1,3.3]),P(new THREE.SphereGeometry(.07,8,6),'#ffe14a',[-.18,.1,3.3]));
-    return merge(a);
-  },
-  squid:()=>{
-    const a=[P(new THREE.SphereGeometry(1,20,14),'#c24a58',[0,0,-.9],[0,0,0],[.55,.55,1.5]),P(new THREE.SphereGeometry(1,16,12),'#d9606c',[0,0,.35],[0,0,0],[.5,.48,.6]),
-      P(new THREE.SphereGeometry(1,12,8),'#a03a48',[.62,0,-1.9],[0,0,.2],[.75,.07,.55]),P(new THREE.SphereGeometry(1,12,8),'#a03a48',[-.62,0,-1.9],[0,0,-.2],[.75,.07,.55]),
-      P(new THREE.SphereGeometry(.17,10,8),'#fff6e0',[.42,.1,.55]),P(new THREE.SphereGeometry(.17,10,8),'#fff6e0',[-.42,.1,.55]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[.5,.12,.68]),P(new THREE.SphereGeometry(.09,8,6),'#081018',[-.5,.12,.68])];
-    for(let i=0;i<8;i++){const ang=i/8*6.28,len=2.1+(i%2)*.3;const c=new THREE.CatmullRomCurve3([0,1,2,3].map(k=>new THREE.Vector3(Math.cos(ang)*.3*(1-k*.05)+Math.sin(k*1.4+i)*.08,Math.sin(ang)*.3+Math.cos(k*1.3+i)*.08,.6+k*len/3)));a.push(colorize(new THREE.TubeGeometry(c,14,.07,6,false),'#d9606c'));}
-    for(let i=0;i<2;i++){const s=i?1:-1,pt=k=>new THREE.Vector3(s*.15+Math.sin(k*1.7)*.1*s,.05+Math.cos(k*1.2)*.08,.6+k*.95);
-      a.push(colorize(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([0,1,2,3,4].map(pt)),16,.045,6,false),'#e88a94'),P(new THREE.SphereGeometry(.13,8,6),'#c24a58',pt(4).toArray()));}
-    return merge(a);
-  },
-  kraken:()=>{ /* devasa kalamar (Architeuthis): uzun manto, kuyruk yüzgeçleri, dev gözler, 8 kol ve 2 uzun yakalama dokunacı; kollarda emiciler */
-    const a=[],rnd=mulberry32(4242),taper=(pts,r0,r1,hex)=>{for(let i=1;i<pts.length;i++){const t=(i-.5)/(pts.length-1);a.push(segGeo(pts[i-1],pts[i],r0+(r1-r0)*t,hex,7));}},sph=(r,hex,p,sc)=>P(new THREE.SphereGeometry(r,10,8),hex,p,[0,0,0],sc||[1,1,1]);
-    a.push(P(new THREE.SphereGeometry(1,24,16),'#8c2f3d',[0,.04,-1.0],[0,0,0],[.52,.5,1.75]),P(new THREE.SphereGeometry(1,20,12),'#e0b0a8',[0,-.14,-.95],[0,0,0],[.44,.34,1.65]),
-      P(new THREE.SphereGeometry(1,18,12),'#a03a48',[0,0,.95],[0,0,0],[.46,.44,.55]),
-      P(new THREE.SphereGeometry(1,14,8),'#7a2735',[.62,.02,-2.15],[0,.25,0],[.85,.06,.8]),P(new THREE.SphereGeometry(1,14,8),'#7a2735',[-.62,.02,-2.15],[0,-.25,0],[.85,.06,.8]),
-      P(new THREE.ConeGeometry(.12,.4,8),'#8c2f3d',[0,-.36,.8],[-Math.PI/2,0,0]),P(new THREE.ConeGeometry(.1,.3,6),'#1a1210',[0,-.06,1.5],[Math.PI/2,0,0]));
-    for(const sg of [-1,1])a.push(sph(.2,'#efe6c8',[sg*.44,.1,1.02]),sph(.11,'#05080c',[sg*.55,.12,1.1]),sph(.05,'#9ab0b8',[sg*.58,.15,1.14]));
-    for(let i=0;i<46;i++){const t=rnd()*2-1,ph=.15+rnd()*(Math.PI-.3),sc2=Math.sqrt(Math.max(0,1-t*t));a.push(sph(.05+rnd()*.05,rnd()<.5?'#c24a58':'#5e1c2a',[Math.cos(ph)*.52*sc2,.04+Math.sin(ph)*.5*sc2,-1+t*1.75],[1,.5,1]));}
-    for(let i=0;i<8;i++){
-      const ang=i/8*Math.PI*2+Math.PI/8,len=2.3+(i%2)*.35+rnd()*.3,pts=[],ca=Math.cos(ang),sa=Math.sin(ang);
-      for(let k=0;k<=9;k++){const u=k/9;pts.push([ca*(.26+.6*Math.sin(u*Math.PI*.75)),sa*(.26+.6*Math.sin(u*Math.PI*.75))-u*u*.35+Math.sin(u*5+i)*.07*u,1.45+u*len]);}
-      taper(pts,.11,.015,i%2?'#a03a48':'#8c2f3d');
-      for(let k=2;k<=9;k++)for(const sg of [-1,1]){const q=pts[k],r1=.11-.095*(k/9)*.9;a.push(sph(Math.max(.014,r1*.45),'#f0d8d0',[q[0]-ca*r1*.55+sg*sa*r1*.4,q[1]-sa*r1*.55-sg*ca*r1*.4,q[2]],[1,1,.7]));}
-    }
-    for(const sg of [-1,1]){
-      const pts=[];for(let k=0;k<=12;k++){const u=k/12;pts.push([sg*(.14+.45*Math.sin(u*Math.PI*.9)),.05+Math.cos(u*4+sg)*.1*u-u*u*.3,1.4+u*4.6]);}
-      taper(pts,.05,.022,'#c26a74');
-      const e=pts[12];a.push(sph(.16,'#a03a48',[e[0],e[1],e[2]+.05],[.8,.55,2.2]));
-      for(let k=0;k<12;k++)a.push(sph(.03,'#f6e4dc',[e[0]+(k%2?.07:-.07),e[1]-.07,e[2]-.25+k*.07],[1,1,.8]));
-    }
-    return merge(a);
-  },
-  swarm:()=>{
-    const rnd=mulberry32(99),a=[];
-    for(let i=0;i<9;i++){
-      const g=merge([...fishBase('#8b9ba3','#6e7d84','#a83a3a',1.3),P(new THREE.SphereGeometry(1,12,8),'#d23b2b',[0,-.3,.1],[0,0,0],[.36,.36,.9])]);
-      g.applyMatrix4(_m.compose(_v.set((rnd()-.5)*3,(rnd()-.5)*1.6,(rnd()-.5)*3),_q.setFromEuler(_e.set(0,(rnd()-.5)*.8,0)),_s.set(.55,.55,.55)));a.push(g);
-    }
-    return merge(a);
-  }
+/* ---- Düşmanlar ve boss'lar ---- */
+function teethRow(z0,y,hw,n,sz,col,dir){const o=[];for(let i=0;i<n;i++){const u=i/(n-1)*2-1,x=u*hw,zz=z0-Math.abs(u)*hw*.9;o.push(P(new THREE.ConeGeometry(sz*.5,sz,4),col,[x,y,zz],[dir>0?Math.PI:0,0,u*.2]));}return o;}
+function sharkGeo(v){
+  const L=3.7,big=v==='megalodon',H=big?.5:.42,W=big?.48:.4,col=v==='frost'?'#b8cfd8':v==='crystal'?'#8a82a0':'#6c7c88',fc=shade(col,.82),
+    st=prof(L,H,W,[[0,.1,.08,-.03],[.04,.4,.4],[.12,.75,.8],[.3,1,1],[.5,.9,.92],[.7,.5,.5],[.88,.2,.22],[1,.1,.14]],18),o=[xf(loft(st,18,col),[0,0,-.05])];
+  const fo=(f)=>xf(f,[0,0,-.05]);
+  o.push(fo(fin(st,L,{k:'top',t0:.31,t1:.45,h:big?1.05:.88,shape:'tri',sl:1.0,c1:fc,c2:shade(col,.62),rib:0})),fo(fin(st,L,{k:'top',t0:.72,t1:.77,h:.2,shape:'tri',sl:.7,c1:fc,c2:fc,rib:0})),fo(fin(st,L,{k:'bot',t0:.74,t1:.79,h:.2,shape:'tri',sl:.7,c1:fc,c2:fc,rib:0})),
+    fo(tailFin(st,L,{len:1.15,span:.95,het:1,fork:.55,p:1.2,c1:fc,c2:shade(col,.6)})));
+  for(const f of pectFin(st,L,{t:.3,base:.4,len:.8,span:1.1,drop:.55,y:-.55,c1:fc,c2:shade(col,.6)}))o.push(fo(f));
+  for(const f of pectFin(st,L,{t:.62,base:.2,len:.35,span:.4,drop:.25,y:-.6,c1:fc,c2:fc}))o.push(fo(f));
+  const zh=L/2-.55-.05;o.push(xf(P(new THREE.SphereGeometry(1,10,6),'#2a1416',[0,0,0]),[0,-.2,zh+.1],[0,0,0],[.2,.05,.34]));
+  o.push(...teethRow(zh+.25,-.2,.2,big?12:11,big?.13:.075,'#f4f0e4',1).map(g=>xf(g,[0,0,0])),...teethRow(zh+.12,-.25,.17,big?10:9,big?.1:.06,'#f0ece0',-1));
+  o.push(...eyePair(.3,.1,L/2-.2*L-.05,.05,'#10161a','#000'));
+  if(v==='frost'){const r=mulberry32(11);for(let i=0;i<22;i++){const z=1.2-r()*3.0,x=(r()-.5)*.4,s=.2+r()*.3;o.push(xf(P(new THREE.ConeGeometry(.08,s,5),'#cfeefc',[0,0,0]),[x,.36+r()*.05,z],[-.35,0,(r()-.5)*.5]));}}
+  if(v==='crystal'){const r=mulberry32(21);for(let i=0;i<20;i++){const z=1.3-r()*3.2,x=(r()-.5)*.55,s=.25+r()*.4;o.push(xf(P(new THREE.CylinderGeometry(.0,.07,s,6),i%3?'#b890ff':'#e0c8ff',[0,0,0]),[x,.34+r()*.1,z],[(r()-.5)*.8,0,(r()-.5)*.8]));}}
+  return mergeS(o);
+}
+function eelGeo(v){
+  const L=6.4,H=.26,W=.25,col=v==='magma'?'#3a3030':v==='leviathan'?'#27506e':'#415a30',big=v==='magma'||v==='leviathan',
+    st=prof(L,H,W,[[0,.5,.35],[.03,.9,.7],[.1,1,.95],[.5,1,.9],[.8,.85,.8],[.95,.5,.5],[1,.1,.1]],26),o=[loft(st,12,col)];
+  o.push(xf(loft([[.5,.2,.07],[.28,.32,.16],[-.1,.3,.2],[-.4,.24,.2]],12,shade(col,1.05)),[0,.0,L/2+.1]));
+  o.push(fin(st,L,{k:'bot',t0:.1,t1:.98,h:.22,shape:'flat',K:34,sl:.2,c1:v==='magma'?'#d84a10':'#d98a30',c2:v==='magma'?'#ff8a30':'#a8601c'}),...pectFin(st,L,{t:.12,base:.1,len:.2,span:.25,drop:.05,y:-.4,c1:shade(col,1.2),c2:shade(col,1.4)}),
+    ...eyePair(.2,.1,L/2+.05,.035,'#d8b840','#000'));
+  if(v==='magma'){const r=mulberry32(5);for(let i=0;i<34;i++){const z=2.9-i*.18+r()*.05;o.push(xf(P(new THREE.ConeGeometry(.06+r()*.05,.28+r()*.2,5),'#201814',[0,0,0]),[0,.2,z],[-.35,0,0]));}
+    for(let i=0;i<2;i++)for(const sd of [1,-1])o.push(xf(P(new THREE.ConeGeometry(.05,.45,5),'#1c1410',[0,0,0]),[sd*.14,.2,L/2+.25],[-.9,0,sd*.4]));}
+  if(v==='leviathan'){o.push(fin(st,L,{k:'top',t0:.08,t1:.96,h:.65,shape:'sail',K:30,sl:.4,c1:'#1c3e5a',c2:'#6ac8ff'}),fin(st,L,{k:'bot',t0:.1,t1:.98,h:.5,shape:'flat',K:24,sl:.3,c1:'#1c3e5a',c2:'#6ac8ff'}));
+    for(const sd of [1,-1])o.push(sheet([[sd*.28,-.1,3.0],[sd*.3,-.1,2.8]],[[sd*1.0,-.55,2.6],[sd*1.1,-.6,2.3]],'#1c3e5a','#4a8ac0',true));
+    o.push(xf(loft([[.3,.16,.05],[.05,.3,.14]],10,'#27506e'),[0,-.1,L/2+.6]),...teethRow(L/2+.62,-.12,.2,8,.07,'#eef2f4',1));}
+  return mergeS(o);
+}
+function squidGeo(v){
+  const kr=v!=='squid',big=v==='lord',rnd=mulberry32(v==='lord'?77:4242),col=v==='lord'?'#6a3060':kr?'#8c2f3d':'#b8434f',pale=v==='lord'?'#a878a0':kr?'#d8a8a0':'#e0a0a0',
+    L=2.9,st=prof(L,.5,.52,[[0,.55,.55],[.18,.85,.85],[.5,1,1],[.78,.72,.72],[.94,.3,.3],[1,.07,.07]],18),o=[xf(loft(st,16,col),[0,.02,-1.3])];
+  o.push(xf(loft([[.8,.34,.3],[.45,.5,.48],[.05,.56,.5],[-.2,.5,.46]],14,shade(col,1.12)),[0,0,.1]));
+  const er=kr?.24:.18;for(const sd of [1,-1])o.push(P(new THREE.SphereGeometry(er,12,10),'#7d8d98',[sd*.5,.08,.5]),P(new THREE.SphereGeometry(er*.72,10,8),'#020304',[sd*(.5+er*.5),.08,.5+er*.15]));
+  for(const sd of [1,-1]){const rt=[],tp=[];for(let i=0;i<12;i++){const u=i/11,z=-2.7+u*1.5,b=bodyAt(st,z+1.3);rt.push([sd*b[0]*.92,.0,z]);tp.push([sd*(b[0]+.95*Math.pow(Math.sin(Math.PI*(u*.9+.05)),.8)),.0+Math.sin(u*9)*.02,z-.1*Math.sin(Math.PI*u)]);}o.push(sheet(rt,tp,col,pale,true));}
+  const arms=8,suck=[];
+  for(let i=0;i<arms;i++){const ang=i/arms*Math.PI*2+Math.PI/arms,ca=Math.cos(ang),sa=Math.sin(ang),len=(kr?2.9:2.3)+(i%2)*.35+rnd()*.25,pts=[];
+    for(let k=0;k<=9;k++){const u=k/9;pts.push([ca*(.2+.5*Math.sin(u*Math.PI*.8))+Math.sin(u*5+i)*.05*u,sa*(.2+.5*Math.sin(u*Math.PI*.8))-u*u*.3+Math.cos(u*4+i)*.05*u,.7+u*len]);}
+    o.push(tubeV(pts,[.14,.12,.1,.085,.07,.055,.04,.025,.012,.004],i%2?col:shade(col,.9),kr?8:6,kr?24:14));
+    for(let k=2;k<=9;k+=kr?1:2){const q=pts[k],r1=.14-.12*(k/9);for(const sg of (kr?[-1,1]:[1]))suck.push(P(new THREE.SphereGeometry(Math.max(.014,r1*.4),kr?6:5,kr?4:3),pale,[q[0]-ca*r1*.55+sg*sa*r1*.35,q[1]-sa*r1*.55-sg*ca*r1*.35,q[2]],[0,0,0],[1,1,.7]));}}
+  o.push(...suck);
+  for(const sg of [-1,1]){const pts=[],T=kr?6.2:4.2;for(let k=0;k<=12;k++){const u=k/12;pts.push([sg*(.12+.4*Math.sin(u*Math.PI*.9)),.05+Math.cos(u*4+sg)*.1*u-u*u*.3,.7+u*T]);}
+    o.push(tubeV(pts,[.07,.055,.045,.04,.036,.034,.034,.034,.034,.034,.034,.034,.02],shade(col,1.15),kr?7:6,kr?26:14));const e=pts[12];o.push(xf(P(new THREE.SphereGeometry(1,8,6),pale,[0,0,0]),[e[0],e[1],e[2]-.15],[0,0,0],[.15,.07,.45]));
+    for(let k=0;k<(kr?10:5);k++)o.push(P(new THREE.SphereGeometry(.03,5,3),'#f4e4dc',[e[0]+(k%2?.06:-.06),e[1]-.05,e[2]-.5+k*.1]));}
+  o.push(xf(P(new THREE.ConeGeometry(.1,.3,6),'#140c0a',[0,0,0]),[0,-.05,.72],[Math.PI/2,0,0]),xf(tubeV([[0,0,0],[0,-.1,.35]],[.1,.07],shade(col,.85),8,4),[0,-.28,-.1]));
+  if(big)for(let i=0;i<9;i++){const a=i/9*Math.PI*2;o.push(xf(P(new THREE.ConeGeometry(.07,.55,5),'#e0d0b0',[0,0,0]),[Math.cos(a)*.42,Math.sin(a)*.42+.12,.0],[Math.sin(a)*.5-Math.PI/2*0,0,-Math.cos(a)*.5]));}
+  return mergeS(o);
+}
+function piranhaGeo(){
+  return fishGeo({L:2.0,H:.7,W:.28,n:10,N:12,col:'#6f7e78',pr:[[0,.06,.06,-.02],[.05,.5,.55],[.18,.9,.95],[.4,1,1],[.65,.8,.85],[.85,.4,.45],[1,.2,.26]],
+    fins:[{k:'top',t0:.32,t1:.55,h:.38,shape:'tri',sl:.4,c1:'#5a6862',c2:'#3a4640'},{k:'bot',t0:.5,t1:.82,h:.3,shape:'flat',sl:.2,c1:'#c8402a',c2:'#8a2a1a'}],
+    tail:{len:.55,span:.5,fork:.3,c1:'#c8402a',c2:'#2a1a16'},pect:{t:.3,len:.25,span:.25,drop:.1,c1:'#d8602a',c2:'#c8402a'},eye:{t:.1,r:.09,iris:'#d8502a'},
+    extra:(st,L)=>{const o=[];for(let i=0;i<7;i++){const z=L/2-.1-i*.05;for(const sd of [1,-1])o.push(P(new THREE.ConeGeometry(.018,.08,4),'#f4f0e0',[sd*(.06+i*.01),-.19,z],[0,0,0]));}return o;}});
+}
+const ENEMY_NEW={
+  shark:()=>sharkGeo('shark'),eel:()=>eelGeo('eel'),squid:()=>squidGeo('squid'),kraken:()=>squidGeo('kraken'),
+  frost:()=>sharkGeo('frost'),crystal:()=>sharkGeo('crystal'),megalodon:()=>sharkGeo('megalodon'),magma:()=>eelGeo('magma'),leviathan:()=>eelGeo('leviathan'),lord:()=>squidGeo('lord'),
+  swarm:()=>{const rnd=mulberry32(99),a=[],g0=piranhaGeo();for(let i=0;i<9;i++){const g=g0.clone();g.applyMatrix4(_m.compose(_v.set((rnd()-.5)*3,(rnd()-.5)*1.6,(rnd()-.5)*3),_q.setFromEuler(_e.set(0,(rnd()-.5)*.8,0)),_s.set(.55,.55,.55)));a.push(g);}return mergeS(a);}
 };
+const EGEO={};
+Object.assign(EGEO,ENEMY_NEW);
 ANIM.shark='float sw=smoothstep(.2,-1.8,position.z);transformed.x+=sin(uT*3.8+ph+position.z*1.8)*.2*sw;';
 ANIM.eel='float kk=smoothstep(2.6,-3.3,position.z);transformed.x+=sin(uT*4.+ph-position.z*1.6)*.5*kk;transformed.y+=cos(uT*3.1+ph-position.z*1.2)*.12*kk;';
 ANIM.squid='float tn=smoothstep(.6,3.6,position.z);transformed.x+=sin(uT*3.+ph+position.z*3.)*.22*tn;transformed.y+=cos(uT*2.6+ph+position.z*2.5)*.22*tn;float mp=sin(uT*2.2+ph)*.05*smoothstep(.2,-1.5,position.z);transformed.xy*=1.+mp;';
@@ -4261,7 +4161,7 @@ const enemies=[];
   const RE=mulberry32(7771),re=(a,b)=>a+RE()*(b-a);
   const mk=(type,x,y,z)=>{
     const cfg=ETYPE[type];EG[type]=EG[type]||EGEO[type]();
-    const mat=stdMat({vertexColors:true,roughness:.5,metalness:.05,emissive:0x000000},'en-'+type,{v:ANIM[type],caus:.5});
+    const mat=stdMat({vertexColors:true,roughness:.5,metalness:.05,emissive:0x000000,side:THREE.DoubleSide},'en-'+type,{v:ANIM[type],caus:.5,skin:SKIN[type]?1:0,fx:SKIN[type]?skinFx(SKIN[type]):''});
     const mesh=new THREE.Mesh(EG[type],mat);mesh.frustumCulled=false;mesh.scale.setScalar(cfg.sc);scene.add(mesh);
     enemies.push({i:enemies.length,type,cfg,mesh,mat,x,y,z,nx:x,ny:y,nz:z,nyaw:0,npitch:0,yaw:re(0,6.28),pitch:0,hp:cfg.hp,dead:false,respT:0,home:{x,y,z},wp:null,st:0,stT:0,cd:re(1,4),stun:0,flash:0,dashHit:false,seen:false,r:cfg.r,bt:0});
   };
@@ -4438,7 +4338,7 @@ function killEnemyFx(e,by,nk){
   if(by===net.myId&&PK.vamp&&!dead)hull=Math.min(HULL_MAX,hull+PK.vamp*(e.cfg.boss?4:1));
   if(nk&&e.cfg.boss)spawnRelic(e);
   const center=new THREE.Vector3(e.x,e.y,e.z),q=new THREE.Quaternion().setFromEuler(new THREE.Euler(e.pitch,e.yaw,0,'YXZ'));
-  shatter(e.cfg.base||e.type,center,q,e.cfg.sc,center,e.cfg.col,null);
+  shatter(EGEO[e.type]&&e.cfg.boss?e.type:(e.cfg.base||e.type),center,q,e.cfg.sc,center,e.cfg.col,null);
   for(let i=0;i<40;i++)spawnBubble(e.x+rr(-2,2),e.y+rr(-1,1),e.z+rr(-2,2),.06+Math.random()*.2,rr(-4,4),rr(0,4),rr(-4,4));
   if(e.cfg.boss)bossDown(e,by);
   else if(by===net.myId){const gg=statEnemy(e.type);toast(ETYPE[e.type][lang]+T.slain+' +'+gg+' 🪙');if(kits<3){kits++;setTimeout(()=>toast(T.kitGain),1700);}}
@@ -6658,9 +6558,9 @@ Object.assign(ETYPE,{
 });
 const BOSS_AT=Object.fromEntries(Object.entries({kraken:[-468,214],magma:[-372,-205],frost:[470,-215],crystal:[466,208],lord:[-70,238],leviathan:[90,-262],megalodon:[-250,40]}).map(([k,[x,z]])=>[k,[x*WS,z*WS]]));
 function addSlot(type,x,y,z,pool){
-  const cfg=ETYPE[type],base=cfg.base||type;EG[base]=EG[base]||EGEO[base]();
-  const mat=stdMat({vertexColors:true,roughness:.5,metalness:.05,emissive:0x000000,color:cfg.tint||0xffffff},'en-'+type,{v:ANIM[base],caus:.5});
-  const mesh=new THREE.Mesh(EG[base],mat);mesh.frustumCulled=false;mesh.scale.setScalar(cfg.sc);scene.add(mesh);
+  const cfg=ETYPE[type],base=cfg.base||type,gk=EGEO[type]&&cfg.boss?type:base;EG[gk]=EG[gk]||EGEO[gk]();
+  const mat=stdMat({vertexColors:true,roughness:.5,metalness:.05,emissive:0x000000,color:cfg.tint||0xffffff,side:THREE.DoubleSide},'en-'+type,{v:ANIM[base],caus:.5,skin:SKIN[gk]?1:0,fx:SKIN[gk]?skinFx(SKIN[gk]):''});
+  const mesh=new THREE.Mesh(EG[gk],mat);mesh.frustumCulled=false;mesh.scale.setScalar(cfg.sc);scene.add(mesh);
   const e={i:enemies.length,type,cfg,mesh,mat,x,y,z,nx:x,ny:y,nz:z,nyaw:0,npitch:0,yaw:0,pitch:0,hp:cfg.hp,hpM:cfg.hp,dead:false,respT:0,home:{x,y,z},wp:null,st:0,stT:0,cd:2,stun:0,flash:0,dashHit:false,seen:false,r:cfg.r,bt:0,em:cfg.em?new THREE.Color(cfg.em):null,pool:pool||null,tmp:!!pool,ag:0};
   if(pool||type==='lord'){e.dead=true;e.hp=0;e.respT=Infinity;mesh.visible=false;}
   enemies.push(e);return e;

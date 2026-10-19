@@ -505,7 +505,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.19-3',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.19-4',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -3478,6 +3478,7 @@ function explode(x,y,z,ci,tid){
   if(tid){if(boomed.has(tid)){if(ci>=0)killCreature(ci,new THREE.Vector3(x,y,z),mine);return;}boomed.add(tid);if(boomed.size>200)boomed.delete(boomed.values().next().value);}
   const pos=new THREE.Vector3(x,y,z),dist=pos.distanceTo(camera.position);
   if(ci>=0)killCreature(ci,pos,mine);
+  relicBlast(x,y,z,BLAST_R*1.6,14);
   {const wt=worldTime(),near=[];
    for(let i=0;i<creatures.length;i++){const c=creatures[i];if(i===ci||c.deadUntil>wt)continue;const dx=c.wx-x,dy=c.wy-y,dz=c.wz-z,rk=BLAST_R+hitR(c)*.5,d2=dx*dx+dy*dy+dz*dz;if(d2<rk*rk)near.push([d2,i]);}
    near.sort((a,b)=>a[0]-b[0]);for(let k=0;k<near.length&&k<10;k++)killCreature(near[k][1],pos,mine);}
@@ -4152,12 +4153,13 @@ function hurtEnemy(e,dmg,by){
   if(e.hp<=0){e.respT=e.tmp||e.cfg.final?Infinity:e.cfg.boss?480:rr(70,100);broadcast({t:'edie',i:e.i,by:String(by||''),nk:e.nk?1:0});killEnemyFx(e,by,!!e.nk);}
 }
 /* su altı patlama basıncı yaklaşık 1/r ile düşer: yüzeyden ne kadar uzaksa hasar o kadar azdır */
-function enemyBlast(x,y,z,ei,by){for(const e of enemies){if(e.dead)continue;const d=Math.hypot(e.x-x,e.y-y,e.z-z),R2=e.r+20,dd=Math.max(0,d-e.r),fall=dd<R2?Math.pow(1-dd/R2,1.6):0,dmg=(e.i===ei?(e.cfg.boss?3:2):0)+(e.cfg.boss?1.2:2.4)*fall;if(dmg>.15)hurtEnemy(e,dmg,by);}}
+function enemyBlast(x,y,z,ei,by){relicBlast(x,y,z,28,10);for(const e of enemies){if(e.dead)continue;const d=Math.hypot(e.x-x,e.y-y,e.z-z),R2=e.r+20,dd=Math.max(0,d-e.r),fall=dd<R2?Math.pow(1-dd/R2,1.6):0,dmg=(e.i===ei?(e.cfg.boss?3:2):0)+(e.cfg.boss?1.2:2.4)*fall;if(dmg>.15)hurtEnemy(e,dmg,by);}}
 function isAttacking(e,d){
   const t=e.st;
   return e.type==='shark'?(t>=2&&t<=4):e.type==='eel'?(t===5||t===6):e.type==='squid'?t===2:(t===1&&d<10)||(t===1&&d<12);
 }
 function enemyShockwave(x,y,z,by){
+  relicBlast(x,y,z,34,10);
   for(const e of enemies){
     if(e.dead)continue;const d=Math.hypot(e.x-x,e.y-y,e.z-z);if(d>30+e.r)continue;
     if(e.cfg.boss){hurtEnemy(e,4,by);continue;}
@@ -6476,18 +6478,19 @@ function bossDown(e,by){
 /* Gerçekçilik: kalamarın kemiği yoktur; geriye gladius (iç kılıç), gaga ve emici halkaları kalır. Yılanbalığımsılarda omurga+kaburga, köpekbalıklarında kıkırdak omurga ve diş sıraları. */
 const relics=[],RELIC_KEY='aqua-relics';
 function relicGeo(base,r){
-  const parts=[],bc='#d9d3bf',bd='#bdb59c',chain=(pts,rad,col,n=5)=>{for(let i=1;i<pts.length;i++)parts.push(segGeo(pts[i-1],pts[i],rad*(1-.5*i/pts.length),col,n));};
+  const parts=[],out=[],cut=()=>{if(parts.length)out.push(merge(parts.splice(0)));},bc='#d9d3bf',bd='#bdb59c',chain=(pts,rad,col,n=5)=>{for(let i=1;i<pts.length;i++)parts.push(segGeo(pts[i-1],pts[i],rad*(1-.5*i/pts.length),col,n));};
   if(base==='squid'||base==='kraken'){
     const L=r*4.6;
-    parts.push(segGeo([-L/2,0,0],[L/2,0,0],r*.06,bc,6));
-    for(let i=0;i<24;i++){const t=i/23,x=-L/2+t*L*.85,w=r*.7*Math.pow(Math.sin(Math.PI*clamp(t*1.1+.04,0,1)),.8);for(const sg of [-1,1])parts.push(segGeo([x,0,0],[x+L*.035,0,sg*w],r*.025,i%2?bc:bd,4));}
+    parts.push(segGeo([-L/2,0,0],[L/2,0,0],r*.06,bc,6));cut();
+    for(let i=0;i<24;i++){const t=i/23,x=-L/2+t*L*.85,w=r*.7*Math.pow(Math.sin(Math.PI*clamp(t*1.1+.04,0,1)),.8);for(const sg of [-1,1])parts.push(segGeo([x,0,0],[x+L*.035,0,sg*w],r*.025,i%2?bc:bd,4));cut();}
     parts.push(P(new THREE.ConeGeometry(r*.34,r*.95,7),bd,[L/2+r*.6,r*.05,0],[0,0,-Math.PI/2-.4]));
-    parts.push(P(new THREE.ConeGeometry(r*.26,r*.7,7),bc,[L/2+r*.45,-r*.45,0],[0,0,-Math.PI/2+.5]));
+    parts.push(P(new THREE.ConeGeometry(r*.26,r*.7,7),bc,[L/2+r*.45,-r*.45,0],[0,0,-Math.PI/2+.5]));cut();
     for(let a=0;a<10;a++){
       const ang=a/10*Math.PI*2+.3,len=a<8?r*2.8:r*4.2,cy=Math.cos(ang),cz=Math.sin(ang),pts=[];
       for(let k=0;k<=8;k++){const u=k/8;pts.push([L/2+r*.5+u*len*.7,cy*u*len*.3,cz*u*len*.45]);}
       chain(pts,r*.035,bd,4);
       for(let k=1;k<=8;k+=1){const q=pts[k];parts.push(P(new THREE.TorusGeometry(r*.075,r*.02,4,8),k%2?bc:bd,q,[Math.random()*3,Math.random()*3,0]));}
+      cut();
     }
   }else if(base==='eel'){
     const L=r*7,N=34,pts=[];
@@ -6495,60 +6498,170 @@ function relicGeo(base,r){
     for(let i=0;i<N;i++){const q=pts[i],t=i/(N-1),rv=r*.26*(1-.55*t);
       parts.push(P(new THREE.CylinderGeometry(rv*.85,rv,r*.2,7),i%2?bc:bd,q,[0,0,Math.PI/2]));
       parts.push(P(new THREE.BoxGeometry(r*.05,rv*2.4,r*.05),bc,[q[0],q[1]+rv*1.2,q[2]]));
-      if(i>2&&i%2===0&&i<N-5)for(const sg of [-1,1]){const s2=r*(.9-.5*t);chain([[q[0],q[1]-rv*.4,q[2]],[q[0],q[1]-s2*.5,q[2]+sg*s2*.7],[q[0],q[1]-s2*.9,q[2]+sg*s2*.35]],r*.04,i%4?bc:bd,4);}}
+      if(i>2&&i%2===0&&i<N-5)for(const sg of [-1,1]){const s2=r*(.9-.5*t);chain([[q[0],q[1]-rv*.4,q[2]],[q[0],q[1]-s2*.5,q[2]+sg*s2*.7],[q[0],q[1]-s2*.9,q[2]+sg*s2*.35]],r*.04,i%4?bc:bd,4);}cut();}
     const hx=L/2+r*.5;
-    parts.push(P(new THREE.SphereGeometry(1,12,10),bc,[hx,r*.05,pts[N-1][2]],[0,0,0],[r*.95,r*.4,r*.5]));
+    parts.push(P(new THREE.SphereGeometry(1,12,10),bc,[hx,r*.05,pts[N-1][2]],[0,0,0],[r*.95,r*.4,r*.5]));cut();
     for(let k=0;k<12;k++){const x=hx+r*.1+k*r*.07;for(const sg of [-1,1])parts.push(P(new THREE.ConeGeometry(r*.05,r*.22,4),bc,[x,-r*.28,pts[N-1][2]+sg*r*.3*(1-k/16)],[Math.PI,0,0]));}
+    cut();
   }else{ /* shark */
     const L=r*5,N=22;
     for(let i=0;i<N;i++){const t=i/(N-1),x=-L/2+t*L,rv=r*.3*(.55+.45*Math.sin(Math.PI*Math.min(1,t*1.05+.02)));
       parts.push(P(new THREE.CylinderGeometry(rv*.9,rv,r*.2,8),i%2?bc:bd,[x,0,0],[0,0,Math.PI/2]));
-      if(i%3===0&&i>2&&i<N-4)for(const sg of [-1,1])chain([[x,-rv*.3,0],[x,-rv*1.1,sg*rv*1.2],[x,-rv*2,sg*rv*1.1]],r*.035,bd,4);}
-    for(let k=0;k<9;k++){const a=(k/8-.5)*1.3;chain([[-L/2,0,0],[-L/2-r*.5,Math.sin(a)*r*.5,Math.cos(a)*0],[-L/2-r*1.1,Math.sin(a)*r*1.1,0]],r*.03,bc,4);}
-    for(const sg of [-1,1])for(let k=0;k<6;k++){const a=k/5-.5;chain([[L*.18,-r*.1,sg*r*.2],[L*.18+r*.4,-r*.4+a*r*.3,sg*r*.9],[L*.18+r*.7+a*r*.4,-r*.8,sg*r*1.5]],r*.03,bc,4);}
+      if(i%3===0&&i>2&&i<N-4)for(const sg of [-1,1])chain([[x,-rv*.3,0],[x,-rv*1.1,sg*rv*1.2],[x,-rv*2,sg*rv*1.1]],r*.035,bd,4);cut();}
+    for(let k=0;k<9;k++){const a=(k/8-.5)*1.3;chain([[-L/2,0,0],[-L/2-r*.5,Math.sin(a)*r*.5,Math.cos(a)*0],[-L/2-r*1.1,Math.sin(a)*r*1.1,0]],r*.03,bc,4);cut();}
+    for(const sg of [-1,1])for(let k=0;k<6;k++){const a=k/5-.5;chain([[L*.18,-r*.1,sg*r*.2],[L*.18+r*.4,-r*.4+a*r*.3,sg*r*.9],[L*.18+r*.7+a*r*.4,-r*.8,sg*r*1.5]],r*.03,bc,4);cut();}
     const mx=L/2+r*.3;
-    parts.push(P(new THREE.TorusGeometry(r*.8,r*.08,5,18),bd,[mx,0,0],[0,Math.PI/2,0]));
+    parts.push(P(new THREE.TorusGeometry(r*.8,r*.08,5,18),bd,[mx,0,0],[0,Math.PI/2,0]));cut();
     for(let row=0;row<2;row++)for(let k=0;k<16;k++){const a=k/16*Math.PI*2,rr2=r*(.8-row*.18);
-      parts.push(P(new THREE.ConeGeometry(r*.1,r*(.36-row*.08),5),bc,[mx+r*.05+row*r*.12,Math.cos(a)*rr2,Math.sin(a)*rr2],[0,0,-Math.PI/2+Math.cos(a)*.35]));}
+      parts.push(P(new THREE.ConeGeometry(r*.1,r*(.36-row*.08),5),bc,[mx+r*.05+row*r*.12,Math.cos(a)*rr2,Math.sin(a)*rr2],[0,0,-Math.PI/2+Math.cos(a)*.35]));if(k%2)cut();}
   }
-  return merge(parts);
+  cut();return out;
 }
-function relicCols(q){
-  const c0=Math.cos(q.ry),s0=Math.sin(q.ry),bb=q.bb,n=Math.max(3,Math.round(q.L/(q.r*1.4))),rad=clamp((bb.max.z-bb.min.z)*.28,1.6,q.r*.9),my=q.ty+(bb.min.y+bb.max.y)/2;
-  for(let k=0;k<n;k++){const lx=bb.min.x+q.L*(k+.5)/n,c=addCol(q.x+lx*c0,my,q.z-lx*s0,rad);c.bone=true;q.cols.push(c);}
-}
-function relicSave(){try{store.set(RELIC_KEY,JSON.stringify(relics.filter(q=>q.st==='rest').slice(-14).map(q=>({t:q.type,b:q.base,r:q.r,x:+q.x.toFixed(1),z:+q.z.toFixed(1),ry:+q.ry.toFixed(2)}))));}catch{}}
-function relicMake(type,base,r,x,y,z,ry,rest){
-  const geo=relicGeo(base,r);geo.computeBoundingBox();const bb=geo.boundingBox,g=new THREE.Group();g.add(new THREE.Mesh(geo,boneMat));g.rotation.y=ry;scene.add(g);
-  const L=bb.max.x-bb.min.x,c0=Math.cos(ry),s0=Math.sin(ry);let fl=-1e9;
-  for(let k=0;k<=8;k++){const lx=bb.min.x+L*k/8;fl=Math.max(fl,floorQ(x+lx*c0,z-lx*s0));}
-  const q={g,type,base,r,x,z,ry,st:rest?'rest':'fall',ty:fl-bb.min.y+.15,vy:0,bb,L,t:0,cols:[]};
-  g.position.set(x,rest?q.ty:Math.max(y,q.ty),z);relics.push(q);if(rest)relicCols(q);return q;
-}
-function spawnRelic(e){const c=e.cfg;relicMake(e.type,c.base||e.type,c.r,e.x,e.y,e.z,(e.yaw||0)-Math.PI/2,false);}
 function boneHit(p,c){
+  if(c.relic)relicHurt(c.relic,c,1);
   const n=performance.now();if(n-boneHit.t<90)return;boneHit.t=n;
   debris({cols:[c],x:c.x,y:c.y,z:c.z,r:c.r,kind:'bone',dc:'#d9d3bf'},p,2,.4);
   if(p.distanceTo(camera.position)<90)addPuff(p.x,p.y,p.z,0xd9d3bf,rr(-.4,.4),rr(.2,.8),rr(-.4,.4),.5,2.2,.3,3);
 }
 boneHit.t=0;
-function updateRelics(dt){
+/* Çürüme döngüsü: sağlam → aşınma (kemikler tek tek kopar) → çökme (kalan kemikler dökülür) → çürüme (kararır, tortuya gömülür, yok olur).
+   Gerçekçilik: derin deniz kemiği yıllarca dayanır, ama leşçiler/kemik yiyen solucanlar onu kemirir; patlama ve çarpma kemikleri kırar. Süreler oyun için sıkıştırılmıştır (sn). */
+const RELIC_LIFE=3000,RELIC_ROT=300,RELIC_W0=.25,RELIC_W1=.7;
+let relicSaveT=30,relicSfxT=0;
+const relicWear=q=>Math.max(q.age/RELIC_LIFE,1-q.hp/q.hpMax);
+/* parça-yerel (x,y,z) → dünya (iskelet yalnızca y ekseninde döner) */
+function relicW(q,lx,ly,lz){const c0=Math.cos(q.ry),s0=Math.sin(q.ry);return [q.x+lx*c0+lz*s0,q.ty+ly,q.z-lx*s0+lz*c0];}
+function relicKillCol(c){const i=colliders.indexOf(c);if(i>=0){colliders.splice(i,1);cgDirty=true;}const q=c.relic,j=q?q.cols.indexOf(c):-1;if(j>=0)q.cols.splice(j,1);}
+function relicCols(q){
+  const c0=Math.cos(q.ry),s0=Math.sin(q.ry),bb=q.bb,n=Math.max(3,Math.round(q.L/(q.r*1.4))),rad=clamp((bb.max.z-bb.min.z)*.28,1.6,q.r*.9),my=q.ty+(bb.min.y+bb.max.y)/2;
+  for(let k=0;k<n;k++){const lx=bb.min.x+q.L*(k+.5)/n,c=addCol(q.x+lx*c0,my,q.z-lx*s0,rad);c.bone=true;c.relic=q;c.parts=[];q.cols.push(c);}
+  q.pc.forEach((p,j)=>{const c=q.cols[clamp(Math.floor((p.x-bb.min.x)/q.L*n),0,n-1)];c.parts.push(j);q.pcol[j]=c;});
+  for(const c of q.cols.slice())if(!c.parts.length)relicKillCol(c); /* altında kemik kalmamış küre: hayalet çarpışma olmasın */
+}
+function relicSave(){try{store.set(RELIC_KEY,JSON.stringify(relics.filter(q=>q.st==='rest').slice(-14).map(q=>({t:q.type,b:q.base,r:q.r,x:+q.x.toFixed(1),z:+q.z.toFixed(1),ry:+q.ry.toFixed(2),h:+q.hp.toFixed(1),a:Math.round(q.age),p:q.ph==='ok'?'ok':'rot',k:Math.round(q.rotT),s:Date.now(),bk:q.ph==='ok'?q.gone.map((g,i)=>g?i:-1).filter(i=>i>=0):[]}))));}catch{}}
+function relicMake(type,base,r,x,y,z,ry,rest){
+  const pg=relicGeo(base,r),geo=merge(pg);geo.computeBoundingBox();const bb=geo.boundingBox,g=new THREE.Group(),m0=new THREE.Mesh(geo,boneMat);g.add(m0);g.rotation.y=ry;scene.add(g);
+  const L=bb.max.x-bb.min.x,c0=Math.cos(ry),s0=Math.sin(ry);let fl=-1e9;
+  for(let k=0;k<=8;k++){const lx=bb.min.x+L*k/8;fl=Math.max(fl,floorQ(x+lx*c0,z-lx*s0));}
+  pg.forEach(p=>p.computeBoundingSphere());
+  const hpMax=60+r*8,q={g,type,base,r,x,z,ry,st:rest?'rest':'fall',ty:fl-bb.min.y+.15,vy:0,bb,L,t:0,cols:[],
+    pg,pc:pg.map(p=>p.boundingSphere.center.clone()),pr:pg.map(p=>p.boundingSphere.radius),pcol:[],m0,pm:null,mat:null,pHp:pg.map(()=>3),gone:pg.map(()=>false),nb:0,bits:[],
+    hp:hpMax,hpMax,age:0,ph:'ok',rotT:0,bt:0,hb:0,hq:null,sc:0,tint:0};
+  g.position.set(x,rest?q.ty:Math.max(y,q.ty),z);relics.push(q);if(rest)relicCols(q);return q;
+}
+function spawnRelic(e){const c=e.cfg;relicMake(e.type,c.base||e.type,c.r,e.x,e.y,e.z,(e.yaw||0)-Math.PI/2,false);}
+/* ilk kopmada tek parça mesh'i parçalara ayrılır (sağlam iskelet tek çizim çağrısıdır) */
+function relicSplit(q){
+  if(q.pm)return;
+  q.mat=stdMat({roughness:.88,flatShading:true,vertexColors:true},'bone',{caus:.8});
+  q.g.remove(q.m0);q.m0.geometry.dispose();q.m0=null;
+  q.pm=q.pg.map(p=>{const m=new THREE.Mesh(p,q.mat);q.g.add(m);return m;});
+}
+function relicDust(x,y,z,n){const d=Math.hypot(x-camera.position.x,z-camera.position.z);if(d>260)return;for(let i=0;i<n;i++)addPuff(x+rr(-1,1),y+rr(-1,1),z+rr(-1,1),0xcfc6a8,rr(-.5,.5),rr(.1,.6),rr(-.5,.5),.5,2.6,.3,rr(4,8));}
+/* j. kemik parçası iskeletten ayrılır ve serbest cisim olarak dibe düşer; instant: kayıttan yüklerken doğrudan yatar */
+function relicBreak(q,j,instant){
+  if(q.gone[j])return;relicSplit(q);q.gone[j]=true;q.nb++;
+  const c=q.pc[j],w=relicW(q,c.x,c.y,c.z),geo=q.pg[j];
+  q.g.remove(q.pm[j]);q.pm[j]=null;geo.translate(-c.x,-c.y,-c.z);
+  const m=new THREE.Mesh(geo,q.mat),b={m,v:new THREE.Vector3(),ax:new THREE.Vector3(rr(-1,1),rr(-1,1),rr(-1,1)).normalize(),w:0,rest:false,s:q.pr[j],y0:0};
+  m.position.set(w[0],w[1],w[2]);m.rotation.y=q.ry;scene.add(m);q.bits.push(b);
+  if(instant){const s=b.s;m.position.x+=rr(-1,1)*s*1.5;m.position.z+=rr(-1,1)*s*1.5;m.rotation.set(rr(0,6),rr(0,6),rr(0,6));b.y0=m.position.y=floorQ(m.position.x,m.position.z)+clamp(s*.12,.15,1.2);b.rest=true;}
+  else{b.v.set(rr(-1,1),rr(-.4,.3),rr(-1,1)).multiplyScalar(1.2);b.w=rr(.4,1.6);relicDust(w[0],w[1],w[2],2);}
+  const cl=q.pcol[j];if(cl&&q.cols.includes(cl)&&cl.parts.every(i=>q.gone[i]))relicKillCol(cl);
+}
+function relicHurt(q,c,dmg){
+  if(q.st!=='rest'||q.ph!=='ok'||!c.parts)return;
+  q.hp-=dmg*.5;const pl=c.parts.filter(i=>!q.gone[i]);if(!pl.length)return;
+  const j=pl[(Math.random()*pl.length)|0];q.pHp[j]-=dmg;
+  if(q.pHp[j]<=0){relicBreak(q,j);const n=performance.now();if(n-relicSfxT>350){relicSfxT=n;const d=Math.hypot(c.x-camera.position.x,c.z-camera.position.z);if(d<200)sfx.crash(clamp(.35-d/600,.04,.3));}}
+}
+/* patlama: menzildeki kemik kürelerinin altındaki parçalar mesafeye göre kırılır */
+function relicBlast(x,y,z,R,dmg){
   for(const q of relics){
-    if(q.st!=='fall')continue;
-    q.t+=dt;q.vy=Math.min(5.5,q.vy+1.8*dt);const y=q.g.position.y,h=clamp((y-q.ty)/12,0,1);
-    q.g.position.y=Math.max(q.ty,y-q.vy*dt);q.g.rotation.z=Math.sin(q.t*.5)*.14*h;q.g.rotation.x=Math.cos(q.t*.4)*.1*h;
-    if(Math.random()<dt*5)spawnBubble(q.x+rr(-q.r,q.r),q.g.position.y+rr(0,q.r),q.z+rr(-q.r,q.r),.05+Math.random()*.12,0,rr(.4,1.2),0);
-    if(q.g.position.y<=q.ty+1e-3){
-      q.st='rest';q.g.rotation.x=0;q.g.rotation.z=0;relicCols(q);relicSave();
-      const d=Math.hypot(q.x-camera.position.x,q.z-camera.position.z);
-      for(let i=0;i<26;i++)addPuff(q.x+rr(-q.r,q.r)*1.5,q.ty-.5+rr(0,1.5),q.z+rr(-q.r,q.r)*1.5,0xb8a57c,rr(-3,3),rr(.3,1.5),rr(-3,3),q.r*.5,q.r*rr(2,4),.4,rr(8,14));
-      shake=Math.max(shake,clamp(.9-d/160,0,.7));sfx.crash(clamp(1-d/220,.05,.9));
-      if(d<400)toast('🦴 '+tl(ETYPE[q.type].tr+' iskeleti dibe çöktü','The '+ETYPE[q.type].en+' skeleton sank to the seabed'));
-    }
+    if(q.st!=='rest'||q.ph!=='ok')continue;let fm=0;
+    for(const c of q.cols.slice()){const d=Math.hypot(c.x-x,c.y-y,c.z-z)-c.r;if(d>=R)continue;const f=1-Math.max(0,d)/R;fm=Math.max(fm,f);
+      for(const j of c.parts.slice())if(!q.gone[j]&&Math.random()<f*1.2){q.pHp[j]-=dmg*f;if(q.pHp[j]<=0)relicBreak(q,j);}}
+    if(fm>0){q.hp-=dmg*fm;relicDust(x,y,z,4);}
   }
 }
+function relicCollapse(q){
+  q.ph='heap';relicSplit(q);for(const c of q.cols.slice())relicKillCol(c);
+  q.hq=q.pm.map((m,i)=>m?i:-1).filter(i=>i>=0).sort(()=>Math.random()-.5);q.hb=0;
+  const d=Math.hypot(q.x-camera.position.x,q.z-camera.position.z);shake=Math.max(shake,clamp(.6-d/200,0,.5));sfx.crash(clamp(1-d/240,.05,.8));
+  if(d<400)toast('🦴 '+tl(ETYPE[q.type].tr+' iskeleti çöküyor','The '+ETYPE[q.type].en+' skeleton is collapsing'));
+}
+function relicRemove(q){
+  for(const c of q.cols.slice())relicKillCol(c);
+  scene.remove(q.g);for(const b of q.bits)scene.remove(b.m);
+  for(const p of q.pg)p.dispose();if(q.m0)q.m0.geometry.dispose();if(q.mat)q.mat.dispose();
+  const i=relics.indexOf(q);if(i>=0)relics.splice(i,1);q.ph='gone';relicSave();
+}
+function relicTint(q,t){
+  if(!q.mat||Math.abs(t-q.tint)<.01)return;q.tint=t;
+  q.mat.color.setRGB(1-.66*t,1-.62*t,1-.76*t); /* kemik: krem → yosun/çamur karası */
+}
+function updateRelics(dt){
+  const camx=camera.position.x,camz=camera.position.z,wt=worldTime();
+  for(let ri=relics.length-1;ri>=0;ri--){
+    const q=relics[ri];
+    if(q.st==='fall'){
+      q.t+=dt;q.vy=Math.min(5.5,q.vy+1.8*dt);const y=q.g.position.y,h=clamp((y-q.ty)/12,0,1);
+      q.g.position.y=Math.max(q.ty,y-q.vy*dt);q.g.rotation.z=Math.sin(q.t*.5)*.14*h;q.g.rotation.x=Math.cos(q.t*.4)*.1*h;
+      if(Math.random()<dt*5)spawnBubble(q.x+rr(-q.r,q.r),q.g.position.y+rr(0,q.r),q.z+rr(-q.r,q.r),.05+Math.random()*.12,0,rr(.4,1.2),0);
+      if(q.g.position.y<=q.ty+1e-3){
+        q.st='rest';q.g.rotation.x=0;q.g.rotation.z=0;relicCols(q);relicSave();
+        const d=Math.hypot(q.x-camx,q.z-camz);
+        for(let i=0;i<26;i++)addPuff(q.x+rr(-q.r,q.r)*1.5,q.ty-.5+rr(0,1.5),q.z+rr(-q.r,q.r)*1.5,0xb8a57c,rr(-3,3),rr(.3,1.5),rr(-3,3),q.r*.5,q.r*rr(2,4),.4,rr(8,14));
+        shake=Math.max(shake,clamp(.9-d/160,0,.7));sfx.crash(clamp(1-d/220,.05,.9));
+        if(d<400)toast('🦴 '+tl(ETYPE[q.type].tr+' iskeleti dibe çöktü','The '+ETYPE[q.type].en+' skeleton sank to the seabed'));
+      }
+      continue;
+    }
+    /* serbest kemikler: negatif kaldırma ile yavaşça batar, tabanda yatar */
+    for(const b of q.bits){
+      if(b.rest)continue;const m=b.m;
+      b.v.multiplyScalar(Math.exp(-1.6*dt));b.v.y=Math.max(-2.5,b.v.y-1.6*dt);m.position.addScaledVector(b.v,dt);
+      m.rotateOnAxis(b.ax,b.w*dt);b.w*=Math.exp(-.5*dt);
+      const fh=floorQ(m.position.x,m.position.z)+clamp(b.s*.12,.15,1.2);
+      if(m.position.y<=fh){if(b.v.y<-1)relicDust(m.position.x,fh,m.position.z,1);m.position.y=b.y0=fh;b.rest=true;}
+    }
+    if(q.ph==='ok'){
+      q.age+=dt;const w=relicWear(q);relicTint(q,clamp((w-.1)/.6,0,1)*.4);
+      /* çevredeki canlılar kemik üstündeki biyofilmi/kemiği kemirir (çok yavaş) */
+      q.sc-=dt;if(q.sc<=0){q.sc=1;let n=0;const cx=q.x+Math.cos(q.ry)*(q.bb.min.x+q.bb.max.x)/2,cz=q.z-Math.sin(q.ry)*(q.bb.min.x+q.bb.max.x)/2,R=q.L/2+8,R2=R*R;
+        for(const c of creatures){if(c.deadUntil>wt)continue;const dx=c.wx-cx,dz=c.wz-cz;if(dx*dx+dz*dz<R2&&Math.abs(c.wy-q.ty)<14&&++n>=4)break;}
+        if(n)q.hp-=n*q.hpMax/(RELIC_LIFE*12);}
+      /* aşınma: yıpranma eşiğini geçtikçe kemikler birer birer kopar */
+      q.bt-=dt;const N=q.pg.length,target=Math.floor(clamp((w-RELIC_W0)/(RELIC_W1-RELIC_W0),0,1)*N*.6);
+      if(q.bt<=0&&q.nb<target){const pl=[];for(let i=0;i<N;i++)if(!q.gone[i])pl.push(i);if(pl.length){relicBreak(q,pl[(Math.random()*pl.length)|0]);q.bt=rr(.6,3);}}
+      if(w>=RELIC_W1)relicCollapse(q);
+    }else if(q.ph==='heap'){
+      q.hb-=dt;if(q.hb<=0&&q.hq.length){for(let n=1+((Math.random()*3)|0);n>0&&q.hq.length;n--)relicBreak(q,q.hq.pop());q.hb=.15;const d=Math.hypot(q.x-camx,q.z-camz);if(d<260&&Math.random()<.5)sfx.crash(clamp(.4-d/600,.03,.3));}
+      if(!q.hq.length&&q.bits.every(b=>b.rest)){q.ph='rot';q.rotT=0;relicSave();}
+    }else if(q.ph==='rot'){
+      q.rotT+=dt;const k=Math.min(1,q.rotT/RELIC_ROT),u=clamp((k-.55)/.45,0,1),sc=Math.max(.001,1-u*u*(3-2*u));
+      relicTint(q,.4+.6*k);
+      for(const b of q.bits){if(!b.rest)continue;b.m.position.y=b.y0-k*b.s*.5;b.m.scale.setScalar(sc);}
+      if(k>=1)relicRemove(q);
+    }
+  }
+  relicSaveT-=dt;if(relicSaveT<=0){relicSaveT=30;relicSave();}
+}
+/* kayıttan yükle: oyun kapalıyken de yaşlanır / çürür */
+function relicRestore(q,o){
+  const el=o.s?clamp((Date.now()-num(o.s))/1000,0,86400*30):0;
+  q.hp=o.h==null?q.hpMax:clamp(num(o.h),0,q.hpMax);q.age=Math.max(0,num(o.a));
+  const all=()=>{for(let j=0;j<q.pg.length;j++)relicBreak(q,j,true);for(const c of q.cols.slice())relicKillCol(c);q.ph='rot';};
+  if(o.p==='rot'){q.rotT=Math.max(0,num(o.k))+el;all();}
+  else{
+    q.age+=el;if(Array.isArray(o.bk))for(const j of o.bk)if(Number.isInteger(j)&&j>=0&&j<q.pg.length)relicBreak(q,j,true);
+    if(relicWear(q)>=RELIC_W1){q.rotT=Math.max(0,q.age-RELIC_W1*RELIC_LIFE);all();}
+  }
+  if(q.ph==='rot'&&q.rotT>=RELIC_ROT){relicRemove(q);return;}
+  relicTint(q,q.ph==='rot'?.4+.6*Math.min(1,q.rotT/RELIC_ROT):clamp((relicWear(q)-.1)/.6,0,1)*.4);
+}
 (function loadRelics(){try{const a=JSON.parse(store.get(RELIC_KEY)||'[]');if(!Array.isArray(a))return;
-  for(const o of a.slice(-14)){if(!o||!ETYPE[o.t]||!['squid','kraken','eel','shark'].includes(o.b))continue;const r=clamp(num(o.r),4,40),x=clamp(num(o.x),-HX+20,HX-20),z=clamp(num(o.z),-HZ+20,HZ-20);relicMake(o.t,o.b,r,x,0,z,num(o.ry),true);}}catch{}})();
+  for(const o of a.slice(-14)){if(!o||!ETYPE[o.t]||!['squid','kraken','eel','shark'].includes(o.b))continue;const r=clamp(num(o.r),4,40),x=clamp(num(o.x),-HX+20,HX-20),z=clamp(num(o.z),-HZ+20,HZ-20);relicRestore(relicMake(o.t,o.b,r,x,0,z,num(o.ry),true),o);}}catch{}})();
 function wakeLord(){const e=bossOf('lord');if(!e||!e.dead||!BOSSES.every(b=>save.bosses.includes(b)))return;const [x,z]=BOSS_AT.lord;activateSlot(e,x,e.home.y,z);e.tmp=false;e.pool=null;bigBanner('💀 '+tl('DERİNLERİN EFENDİSİ UYANDI','THE LORD OF THE DEEP AWAKENS'),tl('Batık Şehir · haritadaki kafatasını izle','Sunken City · follow the skull on the map'));}
 function showEnding(){
   unlockLore(9,true);addGold(5000,true);

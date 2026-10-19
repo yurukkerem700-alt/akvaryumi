@@ -286,6 +286,19 @@ body.crew #cockpit{display:none!important}
 .qi .qt{display:flex;justify-content:space-between;gap:6px}.rq{border:0;background:rgba(255,255,255,.1);color:#cfe6ef;border-radius:6px;font-size:11px;cursor:pointer;padding:1px 6px;flex:none}.rq:hover{background:rgba(255,255,255,.22)}
 @media (orientation:portrait){.touch #musicBtn{display:none}}
 /* v7: ayarlar, temalar, nişangâh, erişilebilirlik */
+.hud>.side:first-child{flex-wrap:nowrap;min-width:0}.hud>.side:first-child .stat{min-width:0;flex:0 1 auto}.hud>.side:last-child{flex-wrap:nowrap}
+@media(max-width:1250px){.hud .brand{display:none}}
+/* ani bildirimler: ekran ortasında hemen küçülür, sağ kenara gider, 3 sn durup kaybolur */
+@keyframes dockA{0%{opacity:0;transform:translate(-50%,-8px) scale(.9)}7%{opacity:1;transform:translate(-50%,0) scale(1)}14%{opacity:1;left:50%;transform:translate(-50%,0) scale(1)}26%,92%{opacity:1;left:calc(100% - 10px);top:136px;transform:translate(-100%,0) scale(.5)}100%{opacity:0;left:calc(100% - 10px);top:136px;transform:translate(-100%,0) scale(.5)}}
+@keyframes dockB{0%{opacity:0;transform:translate(-50%,-8px) scale(.9)}7%{opacity:1;transform:translate(-50%,0) scale(1)}14%{opacity:1;left:50%;transform:translate(-50%,0) scale(1)}26%,92%{opacity:1;left:calc(100% - 10px);top:178px;transform:translate(-100%,0) scale(.5)}100%{opacity:0;left:calc(100% - 10px);top:178px;transform:translate(-100%,0) scale(.5)}}
+#discCard{transform-origin:100% 0}#bigBan{transform-origin:100% 0}
+#discCard.on{animation:dockB 4.6s ease-in-out forwards;opacity:0}
+#bigBan.on{animation:dockA 4.6s ease-in-out forwards;top:12%;width:min(560px,calc(100vw - 24px))}
+#loreCard.dock{animation:dockB 4.6s ease-in-out forwards;top:110px;transform:translate(-50%,0)}
+.toast{left:auto!important;right:10px;top:92px!important;transform:none!important;border-radius:12px;max-width:min(260px,60vw);white-space:normal;text-align:left;font-size:11.5px;padding:7px 11px}
+#questP.min #questList{display:none}#questP .qTg{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:6px;width:22px;height:22px;cursor:pointer;font-size:11px;margin-left:6px}
+.hud .side.collapsed>.btn:not(#hudTg):not(#menuBtn){display:none!important}#hudTg{min-width:34px;padding:7px 9px}
+.touch #soundBtn{display:inline-block}.touch .hud .side.collapsed #soundBtn{display:none!important}
 #pkP{position:fixed;left:50%;bottom:168px;transform:translateX(-50%);z-index:8;display:none;gap:6px;flex-wrap:wrap;justify-content:center;width:min(520px,calc(100vw - 20px));padding:5px 8px;border-radius:12px;border-color:rgba(255,213,108,.35);opacity:.92}
 #qsNote{position:fixed;left:12px;bottom:230px;z-index:6;max-width:300px;padding:8px 11px;border-radius:10px;font-size:11px;line-height:1.45;pointer-events:none;transition:opacity .8s}#qsNote b{display:block;color:var(--cyan);font-size:10px;letter-spacing:1px;margin-bottom:2px}
 .pkC{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 5px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff;font:inherit;cursor:pointer}.pkC:hover{border-color:var(--gold);background:rgba(255,213,108,.12)}
@@ -314,8 +327,16 @@ body.lefty #touch .tfire{right:auto;left:calc(14px + env(safe-area-inset-left));
 body.lefty #touch .tfire .fire{right:auto;left:0}
 body.lefty #touch .tfire .sm{right:auto;left:22px;transform:rotate(calc(var(--a) * -1)) translateX(var(--r,126px)) rotate(var(--a))}
 body.lefty.touch #joy{left:auto;right:calc(18px + env(safe-area-inset-right));transform-origin:100% 100%}
-body.lefty #touch .tvb{left:auto;right:calc(176px + env(safe-area-inset-right));transform-origin:100% 100%}
+#touch .tvb{left:auto;right:calc(198px + env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));gap:9px}
+#touch .tvb button{width:50px;height:50px;font-size:20px}
+body.lefty #touch .tvb{right:auto;left:calc(198px + env(safe-area-inset-left));transform-origin:0 100%}
+#touch .tvb{transform-origin:100% 100%}
+#touch .ttop{top:calc(44px + env(safe-area-inset-top));gap:4px;opacity:.78}
+#touch .ttop button{width:34px;height:34px;font-size:14px}
+#touch .ttop.open{max-width:214px;opacity:1;background:rgba(2,14,24,.7);border-radius:14px;padding:6px}
 #touch .ttop button.x2{display:none}#touch .ttop.open button.x2{display:block}
+.touch #catBtn,.touch #viewBtn,.touch #inBtn,.touch #profBtn,.touch #garBtn,.touch #cfgBtn,.touch #musicBtn,.touch #fsBtn,.touch #langBtn{display:none!important}
+
 .touch #bigBan{top:19%}.touch #bigBan b{font-size:18px;letter-spacing:1px}.touch #bigBan span{font-size:11px}
 .touch #pkP{bottom:auto;top:98px;width:min(400px,calc(100vw - 300px));gap:4px;padding:4px 6px}.touch .pkC span,.touch .pkC kbd{display:none}.touch .pkC{padding:4px;flex-direction:row;gap:5px}.touch .pkC i{font-size:16px}.touch .pkC b{font-size:10px}
 #cfgM .card{width:min(860px,100%)}
@@ -386,7 +407,7 @@ body.lefty #touch .tvb{left:auto;right:calc(176px + env(safe-area-inset-right));
 <div id="touch">
   <div id="joy"><i id="joyK"></i></div>
   <div class="tvb"><button data-t="down">▼</button><button data-t="up">▲</button><button data-t="boost">⚡</button></div>
-  <div class="ttop"><button data-t="cat" class="x2">📖</button><button data-t="food" class="x2">🍤</button><button data-t="quest" class="x2">🎯</button><button data-t="inside" class="x2">🚶</button><button data-t="gar" class="x2">🏪</button><button data-t="prof" class="x2">🏆</button><button data-t="photo" class="x2">📷</button><button data-t="crew" id="crewB" class="x2">🤝</button><button data-t="help" class="x2">❓</button><button data-t="room" id="roomB">👥</button><button data-t="chatb" id="chatB">💬</button><button data-t="ping">📍</button><button data-t="map">🗺</button><button data-t="light">💡</button><button data-t="view">👁</button><button data-t="cfg">⚙</button><button data-t="more">⋯</button></div>
+  <div class="ttop"><button data-t="cat" class="x2">📖</button><button data-t="food" class="x2">🍤</button><button data-t="quest" class="x2">🎯</button><button data-t="inside" class="x2">🚶</button><button data-t="gar" class="x2">🏪</button><button data-t="prof" class="x2">🏆</button><button data-t="photo" class="x2">📷</button><button data-t="crew" id="crewB" class="x2">🤝</button><button data-t="help" class="x2">❓</button><button data-t="light" class="x2">💡</button><button data-t="view" class="x2">👁</button><button data-t="cfg" class="x2">⚙</button><button data-t="room" id="roomB">👥</button><button data-t="chatb" id="chatB">💬</button><button data-t="ping">📍</button><button data-t="map">🗺</button><button data-t="more">☰</button></div>
   <div class="tin"><button data-t="act" id="actB">🪑</button><button data-t="run" id="runB">🏃</button><button data-t="seat" id="seatB" title="koltuk">💺</button></div>
   <div class="tfire">
     <button class="fire" data-t="fire" id="fireB">🚀</button>
@@ -636,7 +657,7 @@ if(isTouch)document.body.classList.add('touch');
 /* Grafik kalitesi: telefonda varsayılan DÜŞÜK (akıcı); lobideki ⚙ düğmesiyle değişir. Bilgisayarda hep YÜKSEK. */
 /* ---- v7: kalıcı ayarlar (⚙) ---- */
 const CFG_KEY='aqua-cfg7';
-const CFG={vol:100,mus:100,sfx:100,sens:100,invY:0,fov:0,hud:100,hudOp:100,theme:0,xh:0,xhc:0,xhs:100,compact:0,fps:0,saver:0,assist:isTouch?1:0,auto:0,haptic:1,lefty:0,btn:100,diff:1,tips:1,shake:100,flash:1,big:0,cb:0,em:0,ul:0,ulc:'#6fe0ff',cc:'',pw:0,dmgn:1};
+const CFG={vol:100,mus:100,sfx:100,sens:100,invY:0,fov:0,hud:100,hudOp:100,theme:0,xh:0,xhc:0,xhs:100,compact:0,fps:0,saver:0,assist:isTouch?1:0,auto:0,haptic:1,lefty:0,btn:100,diff:1,tips:1,shake:100,flash:1,big:0,cb:0,em:0,ul:0,ulc:'#6fe0ff',cc:'',pw:isTouch?1:0,dmgn:1};
 try{const o=JSON.parse(localStorage.getItem(CFG_KEY)||'null');if(o&&typeof o==='object')for(const k in CFG){if(typeof CFG[k]==='string'){if(typeof o[k]==='string'&&(o[k]===''||/^#[0-9a-f]{6}$/i.test(o[k])))CFG[k]=o[k];}else if(Number.isFinite(+o[k]))CFG[k]=+o[k];}}catch{}
 const cfgSave=()=>store.set(CFG_KEY,JSON.stringify(CFG));
 /* zorluk: gelen hasar, düşman dayanıklılığı, ödül, algı mesafesi çarpanları */
@@ -2373,7 +2394,7 @@ function noiseSrc(dur){const s=ac.createBufferSource();s.buffer=noiseBuf();retur
 function noise(dur,f0,f1,vol,delay=0){vol*=CFG.sfx/100;if(!ac||muted||vol<.005)return;const t=ac.currentTime+delay,s=noiseSrc(dur);const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+dur);const g=ac.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);s.connect(f).connect(g).connect(master);s.start(t,Math.random()*Math.max(0,_nb.duration-dur-.1),dur+.05);}
 
 /* ================= Arayüz ================= */
-function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),1800);}
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),3000);}
 function renderCatalog(){
   $('catalog').innerHTML=SPECIES.map(s=>{const d=teamDisc.get(s.id);return `<div class="chip ${d?'found':''}"><i style="background:${d?s.col:'#2a4450'}"></i>${esc(d?s[lang]:'???')}${d?`<small>${esc(d.id===net.myId?T.you:d.name)}</small>`:''}</div>`;}).join('');
   $('live').textContent=teamDisc.size+'/'+SPECIES.length;$('progress').style.width=teamDisc.size/SPECIES.length*100+'%';
@@ -2390,8 +2411,8 @@ function renderPlayers(){
 let discTimer=0;
 function showDiscCard(sp,d){
   const s=SPECIES[SP_IDX[sp]];
-  if(isTouch){$('discName').textContent=s[lang]+' '+T.discShort;$('discName').style.color=s.col;$('discCard').classList.add('on');clearTimeout(discTimer);discTimer=setTimeout(()=>$('discCard').classList.remove('on'),2000);return;}$('discName').textContent=s[lang];$('discName').style.color=s.col;$('discFact').textContent=lang==='tr'?s.ftr:s.fen;
-  $('discBy').textContent=d.id===net.myId?T.byYou:T.by+d.name;$('discCard').classList.add('on');clearTimeout(discTimer);discTimer=setTimeout(()=>$('discCard').classList.remove('on'),5200);
+  if(isTouch){$('discName').textContent=s[lang]+' '+T.discShort;$('discName').style.color=s.col;$('discCard').classList.add('on');clearTimeout(discTimer);discTimer=setTimeout(()=>$('discCard').classList.remove('on'),4700);return;}$('discName').textContent=s[lang];$('discName').style.color=s.col;$('discFact').textContent=lang==='tr'?s.ftr:s.fen;
+  $('discBy').textContent=d.id===net.myId?T.byYou:T.by+d.name;$('discCard').classList.add('on');clearTimeout(discTimer);discTimer=setTimeout(()=>$('discCard').classList.remove('on'),4700);
 }
 function chatLine(html,sys){const el=document.createElement('div');if(sys)el.className='sys';el.innerHTML=html;$('chatLog').appendChild(el);while($('chatLog').children.length>30)$('chatLog').firstChild.remove();}
 const sysMsg=m=>chatLine(esc(m),true);
@@ -4778,7 +4799,7 @@ if(isTouch){
   canvas.addEventListener('pointermove',e=>{if(e.pointerId!==lid||!running)return;if(IN.on){IN.cy-=(e.clientX-tx)*.005;IN.cp=clamp(IN.cp+(e.clientY-ty)*.004,IN.fpv?-1.2:-.55,IN.fpv?1.2:1.05);tx=e.clientX;ty=e.clientY;return;}camYaw-=(e.clientX-tx)*.005*CFG.sens/100;camPitch=pitchClamp(camPitch+(e.clientY-ty)*.004*CFG.sens/100*(CFG.invY?-1:1));tx=e.clientX;ty=e.clientY;});
   const endL=e=>{if(e.pointerId===lid)lid=null;};canvas.addEventListener('pointerup',endL);canvas.addEventListener('pointercancel',endL);
   let fireIv=null;const stopFire=()=>{clearInterval(fireIv);fireIv=null;};
-  const ACT={swv:doShock,sonar:doSonar,food:doFood,light:toggleLight,shield:doShield,repair:doRepair,map:()=>toggleMap(),chatb:()=>{if(net.mode!=='solo')openChat();},cat:toggleCatalog,room:()=>$('roomP').classList.toggle('open'),wpn:()=>cycleWeapon(1),amm:()=>cycleAmmo(),net:doNet,melee:doMelee,spc:doSpecial,quest:()=>$('questP').classList.toggle('open'),view:()=>{if(IN.on){IN.fpv=!IN.fpv;toast(IN.fpv?T.viewFp:T.viewTp);}else toggleView();},gar:()=>toggleGarage(),help:()=>startTutorial(),prof:()=>toggleProfile(),cfg:()=>toggleCfg(),more:()=>document.querySelector('.ttop').classList.toggle('open'),photo:doPhoto,ping:doPing,crew:doBoard,
+  const ACT={swv:doShock,sonar:doSonar,food:doFood,light:toggleLight,shield:doShield,repair:doRepair,map:()=>toggleMap(),chatb:()=>{if(net.mode!=='solo')openChat();},cat:toggleCatalog,room:()=>$('roomP').classList.toggle('open'),wpn:()=>cycleWeapon(1),amm:()=>cycleAmmo(),net:doNet,melee:doMelee,spc:doSpecial,quest:()=>$('questP').classList.toggle('open'),view:()=>{if(IN.on){IN.fpv=!IN.fpv;toast(IN.fpv?T.viewFp:T.viewTp);}else toggleView();},gar:()=>toggleGarage(),help:()=>startTutorial(),prof:()=>toggleProfile(),cfg:()=>toggleCfg(),more:()=>{const t=document.querySelector('.ttop');t.classList.toggle('open');clearTimeout(ACT.mt);if(t.classList.contains('open'))ACT.mt=setTimeout(()=>t.classList.remove('open'),7000);},photo:doPhoto,ping:doPing,crew:doBoard,
     inside:()=>{if(IN.on)exitInterior();else enterInterior();},act:()=>inInteract(),seat:()=>{if(IN.on&&IN.mode==='walk')exitInterior();},run:()=>{vk.run=vk.run?0:1;$('runB').classList.toggle('on',!!vk.run);}};
   const TOG={up:1,down:1,boost:1};
   document.querySelectorAll('#touch button').forEach(b=>{const t=b.dataset.t;
@@ -4805,8 +4826,8 @@ function updateSub(dt){
     else{if(hull>HULL_MAX*.15)hull=Math.max(HULL_MAX*.15,hull-.7*dt);if(Math.random()<dt*14)spawnBubble(sub.position.x+rr(-1,1)*subSc,sub.position.y+rr(-.5,1),sub.position.z+rr(-1,1)*subSc,.05+Math.random()*.08,rr(-.3,.3),rr(.8,2),rr(-.3,.3));}}
   if(CREW.pilot)return crewFollow(dt);
   const ctl=(IN.on||IN.busy||(MS.phase==='count'&&MODES[MS.mode].match))?0:stunT>0?.25:1;
-  const auto=(vk.boost&&stunT<=0&&battery>1&&Math.abs(vk.fwd)<.15)?1:0;
-  const fwdIn=ctl*clamp((keys.w?1:0)-(keys.s?1:0)+vk.fwd+auto,-1,1),turnIn=ctl*clamp((keys.d?1:0)-(keys.a?1:0)+vk.turn,-1,1),upIn=ctl*clamp((keys.e?1:0)-(keys.q?1:0)+vk.up-vk.down,-1,1);
+  const pdv=-(camPitch-(fp?0:.22)),auto=(vk.boost&&stunT<=0&&battery>1&&Math.abs(vk.fwd)<.15)?1:0;
+  const fwdIn=ctl*clamp((keys.w?1:0)-(keys.s?1:0)+vk.fwd+auto,-1,1),turnIn=ctl*clamp((keys.d?1:0)-(keys.a?1:0)+vk.turn,-1,1),pwUp=(CFG.pw&&isTouch&&!IN.on&&Math.abs(vk.fwd)>.25)?(Math.abs(pdv)>.14?clamp(pdv*2.4,-1,1):0)*Math.min(1,Math.abs(vk.fwd)*1.4):0,upIn=ctl*clamp((keys.e?1:0)-(keys.q?1:0)+vk.up-vk.down+pwUp,-1,1);
   const boost=!silentRun&&stunT<=0&&(keys.shift||vk.boost)&&battery>1&&ORB.by!==net.myId&&(Math.abs(fwdIn)>.1||Math.abs(upIn)>.1);
   if(vk.boost&&battery<=1){vk.boost=0;syncTog();toast(T.battEmpty);}
   /* dümen etkisi hızla artar: durağan denizaltı olduğu yerde fırıl fırıl dönemez */
@@ -6059,7 +6080,7 @@ function gainXp(n){
   xpUI();
 }
 function xpUI(){const el=$('xpL');if(!el)return;const i=lvlInfo(save.xp),t='⭐ '+tl('Sv ','Lv ')+(i.l+1)+' · '+rankName(i.l);if(el.dataset.t!==t){el.dataset.t=t;el.firstChild.textContent=t;}el.lastChild.textContent=i.cur+'/'+i.next;const b=$('xpB');if(b)b.style.width=(i.cur/i.next*100)+'%';}
-function bigBanner(a,b){const el=$('bigBan');el.children[0].textContent=a;el.children[1].textContent=b||'';el.classList.add('on');clearTimeout(bigBanner.t);bigBanner.t=setTimeout(()=>el.classList.remove('on'),3600);}
+function bigBanner(a,b){const el=$('bigBan');el.children[0].textContent=a;el.children[1].textContent=b||'';el.classList.add('on');clearTimeout(bigBanner.t);bigBanner.t=setTimeout(()=>el.classList.remove('on'),4700);}
 
 /* ---- Başarımlar ve unvanlar ---- */
 const BOSSES=['kraken','magma','frost','crystal'];
@@ -6155,7 +6176,7 @@ function unlockLore(i,quiet){
 function showLore(i,fresh){
   const t=LORE[i][lang==='tr'?0:1];$('loreK').textContent='📜 '+tl('KAPTANIN GÜNLÜĞÜ · SAYFA ','CAPTAIN\'S LOG · PAGE ')+(i+1)+'/'+LORE.length;$('loreH').textContent=t[0];$('loreP').textContent=t[1];$('loreS').textContent=tl('Kendiliğinden kapanır','Closes by itself');
   $('loreCard').style.display='block';if(document.pointerLockElement)document.exitPointerLock();if(fresh){[392,523,659].forEach((f,k)=>tone(f,f,.6,'sine',.14,k*.18));}
-  clearTimeout(showLore.t);showLore.t=setTimeout(()=>{$('loreCard').style.display='none';},fresh?3000:8000);
+  clearTimeout(showLore.t);$('loreCard').classList.toggle('dock',!!fresh);showLore.t=setTimeout(()=>{$('loreCard').style.display='none';$('loreCard').classList.remove('dock');},fresh?4700:8000);
 }
 $('loreCard').addEventListener('click',()=>{$('loreCard').style.display='none';});
 function loreCheck(){
@@ -6251,7 +6272,7 @@ function shipInterior(dt,t){
     withIN(st,()=>animHuman(dt,t));r.h.root.position.set(r.x,0,r.z);r.h.root.rotation.y=r.yaw;
   }
 }
-const MODE_KEYS=Object.keys(MODES);
+const MODE_KEYS=['free','coop','survival','team'];
 var lobbyMode=MODE_KEYS.includes(store.get('aqua-mode'))?store.get('aqua-mode'):'free',lobbyEq=store.get('aqua-eq')==='1';
 const mname=m=>{const o=MODES[m||MS.mode];return o?tl(o.tr,o.en):'';};
 const TEAMC=['#4fd1ff','#ff6b5a'],TEAMN=[['MAVİ','BLUE'],['KIRMIZI','RED']];
@@ -7509,6 +7530,7 @@ const CFGS=[
  {ic:'🖥',n:['Görüntü','Display'],it:[
   {t:'seg',k:'q',get:()=>Q,set:v=>{store.set('aqua-q',v);toast(T.qSet);setTimeout(()=>location.reload(),350);},n:['Grafik kalitesi','Graphics quality'],d:['Değişince oyun yeniden başlar. Telefonda ORTA/DÜŞÜK önerilir.','The game restarts when changed. MEDIUM/LOW recommended on phones.'],o:[['low','Düşük','Low'],['mid','Orta','Medium'],['high','Yüksek','High']]},
   {t:'rng',k:'fov',n:['Görüş açısı (FOV)','Field of view'],min:-15,max:25,step:1,u:'°',fmt:v=>(v>0?'+':'')+v+'°'},
+  {t:'seg',k:'lang',get:()=>lang,set:v=>{lang=v;store.set('aqua-lang',v);applyLang();},n:['Dil','Language'],o:[['tr','Türkçe','Türkçe'],['en','English','English']]},
   {t:'seg',k:'theme',n:['Arayüz teması','Interface theme'],sw:THEMES.map(x=>x.c)},
   {t:'rng',k:'hud',n:['Arayüz boyutu','HUD scale'],min:70,max:130,step:5,u:'%'},
   {t:'rng',k:'hudOp',n:['Arayüz saydamlığı','HUD opacity'],min:40,max:100,step:5,u:'%'},
@@ -7521,12 +7543,14 @@ const CFGS=[
  ]},
  {ic:'🔊',n:['Ses','Audio'],it:[
   {t:'rng',k:'vol',n:['Ana ses','Master volume'],min:0,max:100,step:5,u:'%'},
+  {t:'seg',k:'musOn',get:()=>mus.on?1:0,set:v=>setMusic(!!v),n:['Müzik','Music'],o:[[0,'Kapalı','Off'],[1,'Açık','On']]},
   {t:'rng',k:'mus',n:['Müzik','Music'],min:0,max:100,step:5,u:'%'},
   {t:'rng',k:'sfx',n:['Efektler','Effects'],min:0,max:100,step:5,u:'%'}
  ]},
  {ic:'🎮',n:['Kontrol','Controls'],it:[
   {t:'rng',k:'sens',n:['Bakış hassasiyeti','Look sensitivity'],min:30,max:250,step:10,u:'%'},
   {t:'tog',k:'invY',n:['Y eksenini ters çevir','Invert Y axis']},
+  {t:'tog',k:'pw',n:['Bakış yönünde dalış / yükseliş (telefon)','Dive / rise where you look (phone)'],d:['Çubuğu ileri iterken yukarı bakarsan yükselir, aşağı bakarsan dalarsın: ▲▼ düğmelerine dokunmak için parmağını kaldırman gerekmez.','Push the stick forward while looking up to rise, or down to dive — no need to lift your thumb for ▲▼.'],tch:1},
   {t:'seg',k:'assist',n:['Nişan yardımı','Aim assist'],d:['Hedefe yakın nişanı mıknatıs gibi çeker. Telefonda varsayılan AÇIK.','Magnetises your aim near targets. On by default on phones.'],o:[[0,'Kapalı','Off'],[1,'Orta','Medium'],[2,'Güçlü','Strong']]},
   {t:'tog',k:'auto',n:['Otomatik ateş','Auto-fire'],d:['Nişangâh bir düşmana kilitlenince makineli top kendiliğinden ateş eder (telefon için ideal).','The machine gun fires on its own while a target is locked (great on phones).']},
   {t:'tog',k:'haptic',n:['Titreşim','Vibration'],d:['Hasar alınca telefon/oyun kolu titreşir.','Phone / controller vibrates when hit.']},
@@ -7657,7 +7681,7 @@ function v7Glow(){myGlow.visible=!!CFG.ul;myGlow.material.color.set(CFG.ulc);myG
 const V7={handlers:{}};
 function v7Recv(d,from){
   if(d.t==='col'){const p=players.get(from);if(p){p.color=cleanColor(d.c);p.sub.paint.color.set(p.color);p.tag.style.color=p.color;renderPlayers();}return true;}
-  const h=V7.handlers[d.t];if(h){h(d,from,players.get(from));return true;}
+  const h=Object.prototype.hasOwnProperty.call(V7.handlers,d.t)?V7.handlers[d.t]:null;if(typeof h==='function'){h(d,from,players.get(from));return true;}
   return false;
 }
 function v7Update(dt,now,t){
@@ -8099,6 +8123,25 @@ ACH.push(
   {id:'sea10',ic:'🌊',tr:'Sezon Yolcusu',en:'Season Traveller',d:['Sezon yolunda 10. kademe','Reach tier 10 of the Season Path'],t:()=>seasonTier()>=10,g:600,ti:['Sezon Yolcusu','Season Traveller']},
   {id:'titan',ic:'🚀',tr:'Titan Kaptanı',en:'Titan Captain',d:['Titan denizaltısını satın al','Buy the Titan submarine'],t:()=>save.owned.includes(15),g:1000,ti:['Titan Kaptanı','Titan Captain']}
 );
+/* ---- üst şerit: açılıp kapanır (tercih hatırlanır; telefonda varsayılan kapalı) ---- */
+{
+  const grp=document.querySelector('.hud .side:last-child');
+  if(grp){
+    const tg=document.createElement('button');tg.className='btn';tg.id='hudTg';tg.setAttribute('aria-label','Üst şerit / Top bar');grp.insertBefore(tg,grp.firstChild);
+    let col=store.get('aqua-hudc');col=col===null?isTouch:col==='1';
+    const apply=()=>{grp.classList.toggle('collapsed',col);tg.textContent=col?'☰':'✕';tg.title=col?'Düğmeleri aç / Show buttons':'Düğmeleri gizle / Hide buttons';};
+    tg.onclick=()=>{col=!col;store.set('aqua-hudc',col?'1':'0');apply();};apply();
+  }
+}
+/* ---- görev paneli: açılıp kapanır (tercih hatırlanır) ---- */
+{
+  const qp=$('questP'),hd=qp&&qp.querySelector('.catHead');
+  if(hd){
+    const b=document.createElement('button');b.className='qTg';hd.appendChild(b);
+    const ap=()=>{const m=store.get('aqua-qmin')==='1';qp.classList.toggle('min',m);b.textContent=m?'▸':'▾';b.title=m?'Görevleri aç / Show quests':'Görevleri gizle / Hide quests';};
+    b.onclick=e=>{e.stopPropagation();store.set('aqua-qmin',store.get('aqua-qmin')==='1'?'0':'1');ap();};ap();
+  }
+}
 /*V7-APPEND*/
 requestAnimationFrame(loop);
 </script>

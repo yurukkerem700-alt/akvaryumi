@@ -228,6 +228,7 @@ Ayrıntılı inceleme ve yol haritası: [`GERCEKCILIK.md`](GERCEKCILIK.md).
 
 **Yeni modlar**: 👑 **Tepe Hakimi** (halkada tek başına kal, halka 50 sn'de bir taşınır; tek başına düşman baskısı) · 💀 **Muhafız Akını** (6 muhafızı sırayla yen) · 📅 **Günlük Meydan Okuma** (herkeste aynı 2 değiştirici, eşit denizaltı). Dalga modlarında her temizlenen dalgadan sonra **3 perkten 1'ini** seçersin (hasar, gövde, hız, vampir, son nefes…).
 **Rekabet**: online rekabetçi maçlarda (takım, kapmaca, av, yarış, tepe) ELO benzeri **derece** (Bronz → Efsane); 15 yeni başarım.
+**Mobil (yatay ekran)**: sol başparmakta sürüş çubuğu + ▲▼⚡, sağ başparmakta ateş kümesi; kısa ekranlarda (<430 px yükseklik) düğmeler otomatik küçülür, ayarlardan %80–140 ölçeklenir ve **sol el düzeni** her şeyi aynalar. Üst şerit yalnızca temel düğmeleri (harita, ışık, bakış, ayarlar…) gösterir; diğerleri **⋯** altında toplanır. Silah paneli yok: ⇄ ve 🔫 düğmeleri silah/mühimmat döndürür, perk paneli küçük ve tek satırdır.
 **Performans**: zayıf cihazlarda otomatik düşük kalite, CDN ön yüklemesi, görsellerde önbellek başlığı, 30 FPS tasarruf modu.
 
 ### Yeni sürüm yayınlarken

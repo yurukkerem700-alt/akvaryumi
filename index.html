@@ -286,9 +286,8 @@ body.crew #cockpit{display:none!important}
 .qi .qt{display:flex;justify-content:space-between;gap:6px}.rq{border:0;background:rgba(255,255,255,.1);color:#cfe6ef;border-radius:6px;font-size:11px;cursor:pointer;padding:1px 6px;flex:none}.rq:hover{background:rgba(255,255,255,.22)}
 @media (orientation:portrait){.touch #musicBtn{display:none}}
 /* v7: ayarlar, temalar, nişangâh, erişilebilirlik */
-#pkP{position:fixed;left:50%;bottom:168px;transform:translateX(-50%);z-index:8;display:none;gap:6px;flex-wrap:nowrap;justify-content:center;width:min(520px,calc(100vw - 20px));padding:6px 8px;border-radius:12px;border-color:rgba(255,213,108,.35);opacity:.92}
+#pkP{position:fixed;left:50%;bottom:168px;transform:translateX(-50%);z-index:8;display:none;gap:6px;flex-wrap:wrap;justify-content:center;width:min(520px,calc(100vw - 20px));padding:5px 8px;border-radius:12px;border-color:rgba(255,213,108,.35);opacity:.92}
 #qsNote{position:fixed;left:12px;bottom:230px;z-index:6;max-width:300px;padding:8px 11px;border-radius:10px;font-size:11px;line-height:1.45;pointer-events:none;transition:opacity .8s}#qsNote b{display:block;color:var(--cyan);font-size:10px;letter-spacing:1px;margin-bottom:2px}
-.touch #pkP{bottom:auto;top:96px}
 .pkC{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 5px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff;font:inherit;cursor:pointer}.pkC:hover{border-color:var(--gold);background:rgba(255,213,108,.12)}
 .pkC kbd{font:inherit;font-size:9px;color:var(--muted)}.pkC i{font-style:normal;font-size:18px}.pkC b{font-size:11px}.pkC span{font-size:9.5px;color:#c6dfe7;text-align:center;line-height:1.35}
 .seaG{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:5px;margin:6px 0}.seaC{position:relative;height:50px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:#fff;font:inherit;cursor:default;padding:0}.seaC i{font-style:normal;font-size:19px}.seaC small{position:absolute;left:4px;top:2px;font-size:9px;color:var(--muted)}
@@ -307,8 +306,18 @@ body.cb{--green:#4aa8ff}body.cb .cross.lock{border-color:#ffb000}
 body.noflash #flashV,body.noflash #nukeCrack{display:none!important}
 body.big{font-size:118%}body.big .btn,body.big .stat,body.big #wpn .slot,body.big .qi{font-size:112%}
 body.compact .stat.opt,body.compact #questP,body.compact #catalogP,body.compact .hint{display:none!important}
-body.lefty #joy{left:auto;right:24px}body.lefty .tb{right:auto;left:14px}body.lefty .tb.l{right:auto;left:78px}body.lefty .tvb{left:auto;right:calc(176px + env(safe-area-inset-left))}
-.tb button{width:calc(54px*var(--bs));height:calc(54px*var(--bs))}#joy{width:calc(120px*var(--bs));height:calc(120px*var(--bs))}
+/* mobil yatay düzen: ölçek ayarı + sol el aynalaması; kısa ekranlarda düğmeler otomatik küçülür */
+#touch .tfire{transform:scale(var(--bsx,1));transform-origin:100% 100%}
+#touch .tvb{transform:scale(var(--bsx,1));transform-origin:0 100%}
+.touch #joy{transform:scale(var(--bsx,1));transform-origin:0 100%}
+body.lefty #touch .tfire{right:auto;left:calc(14px + env(safe-area-inset-left));transform-origin:0 100%}
+body.lefty #touch .tfire .fire{right:auto;left:0}
+body.lefty #touch .tfire .sm{right:auto;left:22px;transform:rotate(calc(var(--a) * -1)) translateX(var(--r,126px)) rotate(var(--a))}
+body.lefty.touch #joy{left:auto;right:calc(18px + env(safe-area-inset-right));transform-origin:100% 100%}
+body.lefty #touch .tvb{left:auto;right:calc(176px + env(safe-area-inset-right));transform-origin:100% 100%}
+#touch .ttop button.x2{display:none}#touch .ttop.open button.x2{display:block}
+.touch #bigBan{top:19%}.touch #bigBan b{font-size:18px;letter-spacing:1px}.touch #bigBan span{font-size:11px}
+.touch #pkP{bottom:auto;top:98px;width:min(400px,calc(100vw - 300px));gap:4px;padding:4px 6px}.touch .pkC span,.touch .pkC kbd{display:none}.touch .pkC{padding:4px;flex-direction:row;gap:5px}.touch .pkC i{font-size:16px}.touch .pkC b{font-size:10px}
 #cfgM .card{width:min(860px,100%)}
 .cfgTabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 12px}.cfgTabs .btn{padding:8px 11px}.cfgTabs .btn.on{background:var(--cyan);color:#03131a;border-color:transparent}
 .cfgR{display:flex;align-items:center;gap:12px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}.cfgR>span{flex:1 1 200px;min-width:0}.cfgR small{display:block;color:var(--muted);font-size:10.5px;margin-top:2px;line-height:1.35}
@@ -377,7 +386,7 @@ body.lefty #joy{left:auto;right:24px}body.lefty .tb{right:auto;left:14px}body.le
 <div id="touch">
   <div id="joy"><i id="joyK"></i></div>
   <div class="tvb"><button data-t="down">▼</button><button data-t="up">▲</button><button data-t="boost">⚡</button></div>
-  <div class="ttop"><button data-t="cat">📖</button><button data-t="room" id="roomB">👥</button><button data-t="map">🗺</button><button data-t="chatb" id="chatB">💬</button><button data-t="light">💡</button><button data-t="food">🍤</button><button data-t="quest">🎯</button><button data-t="view">👁</button><button data-t="inside">🚶</button><button data-t="gar">🏪</button><button data-t="prof">🏆</button><button data-t="cfg">⚙</button><button data-t="photo">📷</button><button data-t="ping">📍</button><button data-t="crew" id="crewB">🤝</button><button data-t="help">❓</button></div>
+  <div class="ttop"><button data-t="cat" class="x2">📖</button><button data-t="food" class="x2">🍤</button><button data-t="quest" class="x2">🎯</button><button data-t="inside" class="x2">🚶</button><button data-t="gar" class="x2">🏪</button><button data-t="prof" class="x2">🏆</button><button data-t="photo" class="x2">📷</button><button data-t="crew" id="crewB" class="x2">🤝</button><button data-t="help" class="x2">❓</button><button data-t="room" id="roomB">👥</button><button data-t="chatb" id="chatB">💬</button><button data-t="ping">📍</button><button data-t="map">🗺</button><button data-t="light">💡</button><button data-t="view">👁</button><button data-t="cfg">⚙</button><button data-t="more">⋯</button></div>
   <div class="tin"><button data-t="act" id="actB">🪑</button><button data-t="run" id="runB">🏃</button><button data-t="seat" id="seatB" title="koltuk">💺</button></div>
   <div class="tfire">
     <button class="fire" data-t="fire" id="fireB">🚀</button>
@@ -474,7 +483,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.19-1',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.19-2',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -4769,11 +4778,11 @@ if(isTouch){
   canvas.addEventListener('pointermove',e=>{if(e.pointerId!==lid||!running)return;if(IN.on){IN.cy-=(e.clientX-tx)*.005;IN.cp=clamp(IN.cp+(e.clientY-ty)*.004,IN.fpv?-1.2:-.55,IN.fpv?1.2:1.05);tx=e.clientX;ty=e.clientY;return;}camYaw-=(e.clientX-tx)*.005*CFG.sens/100;camPitch=pitchClamp(camPitch+(e.clientY-ty)*.004*CFG.sens/100*(CFG.invY?-1:1));tx=e.clientX;ty=e.clientY;});
   const endL=e=>{if(e.pointerId===lid)lid=null;};canvas.addEventListener('pointerup',endL);canvas.addEventListener('pointercancel',endL);
   let fireIv=null;const stopFire=()=>{clearInterval(fireIv);fireIv=null;};
-  const ACT={swv:doShock,sonar:doSonar,food:doFood,light:toggleLight,shield:doShield,repair:doRepair,map:()=>toggleMap(),chatb:()=>{if(net.mode!=='solo')openChat();},cat:toggleCatalog,room:()=>$('roomP').classList.toggle('open'),wpn:()=>cycleWeapon(1),amm:()=>cycleAmmo(),net:doNet,melee:doMelee,spc:doSpecial,quest:()=>$('questP').classList.toggle('open'),view:()=>{if(IN.on){IN.fpv=!IN.fpv;toast(IN.fpv?T.viewFp:T.viewTp);}else toggleView();},gar:()=>toggleGarage(),help:()=>startTutorial(),prof:()=>toggleProfile(),cfg:()=>toggleCfg(),photo:doPhoto,ping:doPing,crew:doBoard,
+  const ACT={swv:doShock,sonar:doSonar,food:doFood,light:toggleLight,shield:doShield,repair:doRepair,map:()=>toggleMap(),chatb:()=>{if(net.mode!=='solo')openChat();},cat:toggleCatalog,room:()=>$('roomP').classList.toggle('open'),wpn:()=>cycleWeapon(1),amm:()=>cycleAmmo(),net:doNet,melee:doMelee,spc:doSpecial,quest:()=>$('questP').classList.toggle('open'),view:()=>{if(IN.on){IN.fpv=!IN.fpv;toast(IN.fpv?T.viewFp:T.viewTp);}else toggleView();},gar:()=>toggleGarage(),help:()=>startTutorial(),prof:()=>toggleProfile(),cfg:()=>toggleCfg(),more:()=>document.querySelector('.ttop').classList.toggle('open'),photo:doPhoto,ping:doPing,crew:doBoard,
     inside:()=>{if(IN.on)exitInterior();else enterInterior();},act:()=>inInteract(),seat:()=>{if(IN.on&&IN.mode==='walk')exitInterior();},run:()=>{vk.run=vk.run?0:1;$('runB').classList.toggle('on',!!vk.run);}};
   const TOG={up:1,down:1,boost:1};
   document.querySelectorAll('#touch button').forEach(b=>{const t=b.dataset.t;
-    b.addEventListener('pointerdown',e=>{e.preventDefault();if(t==='gun'){gunHeld=true;return;}if(t==='fire'){const wasN=netArmed;fireWeapon();if(weapon===0&&!wasN){stopFire();fireIv=setInterval(fireWeapon,160);}}else if(ACT[t])ACT[t]();else if(TOG[t]){vk[t]=vk[t]?0:1;if(vk[t]&&t==='up')vk.down=0;if(vk[t]&&t==='down')vk.up=0;syncTog();}else vk[t]=1;});
+    b.addEventListener('pointerdown',e=>{e.preventDefault();if(b.classList.contains('x2'))document.querySelector('.ttop').classList.remove('open');if(t==='gun'){gunHeld=true;return;}if(t==='fire'){const wasN=netArmed;fireWeapon();if(weapon===0&&!wasN){stopFire();fireIv=setInterval(fireWeapon,160);}}else if(ACT[t])ACT[t]();else if(TOG[t]){vk[t]=vk[t]?0:1;if(vk[t]&&t==='up')vk.down=0;if(vk[t]&&t==='down')vk.up=0;syncTog();}else vk[t]=1;});
     const up=()=>{if(t==='gun')gunHeld=false;if(t==='fire')stopFire();if(t in vk&&!TOG[t])vk[t]=0;};b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up);});
 }
 
@@ -7060,7 +7069,7 @@ $('garageM').addEventListener('click',e=>{
   persist();renderGarage();renderQuests();
 });
 applyLang();
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+addEventListener('resize',()=>{try{applyCfg();}catch{}camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
 addEventListener('beforeunload',()=>{try{net.peer&&net.peer.destroy();}catch{}});
 /* yalnızca yerel test için (localhost + ?test=1) */
 if(qs.get('test')==='1'&&/^(localhost|127\.0\.0\.1)$/.test(location.hostname))window.__ev=c=>eval(c);
@@ -7487,7 +7496,7 @@ const XHCOL=['#ffffff','#6fe0ff','#7ef0b9','#ffd56c','#ff5a4a','#ff8fd0'];
 function applyCfg(){
   const R=document.documentElement.style,th=THEMES[clamp(CFG.theme|0,0,THEMES.length-1)],B=document.body.classList;
   R.setProperty('--cyan',th.c);R.setProperty('--gold',th.g);R.setProperty('--panel','rgba('+th.p+',.64)');
-  R.setProperty('--hs',CFG.hud/100);R.setProperty('--hop',CFG.hudOp/100);R.setProperty('--bs',CFG.btn/100);R.setProperty('--xs',CFG.xhs/100);R.setProperty('--xc',XHCOL[CFG.xhc]||XHCOL[0]);
+  R.setProperty('--hs',CFG.hud/100);R.setProperty('--hop',CFG.hudOp/100);R.setProperty('--bsx',(CFG.btn/100)*(isTouch&&innerHeight<430?.86:1));R.setProperty('--xs',CFG.xhs/100);R.setProperty('--xc',XHCOL[CFG.xhc]||XHCOL[0]);
   for(let i=1;i<4;i++)B.toggle('xh'+i,CFG.xh===i);
   B.toggle('compact',!!CFG.compact);B.toggle('lefty',!!CFG.lefty);B.toggle('big',!!CFG.big);B.toggle('cb',!!CFG.cb);B.toggle('noflash',!CFG.flash);
   if(master)master.gain.value=muted?0:.55*CFG.vol/100;if(mus.out)mus.out.gain.value=mus.on?CFG.mus/100:0;
@@ -7886,7 +7895,7 @@ function offerPerks(n=0){
   if(n<5&&enemies.some(e=>!e.dead&&Math.hypot(e.x-sub.position.x,e.y-sub.position.y,e.z-sub.position.z)<90+e.r)){setTimeout(()=>offerPerks(n+1),3000);return;}
   const pool=PERKS.filter(p=>!(p.rare&&Math.random()>.35)).sort(()=>Math.random()-.5);pkCh=pool.slice(0,3);pkOpen=true;pkT=12;
   const el=$('pkP');el.style.display='flex';
-  el.innerHTML=`<div class="k" style="width:100%;text-align:center">⭐ ${esc(tl('PERK SEÇ','CHOOSE A PERK'))} <span id="pkTm"></span></div>`+pkCh.map((p,i)=>`<button class="pkC" data-p="${i}"><kbd>${i+1}</kbd><i>${p.ic}</i><b>${esc(tl(p.tr,p.en))}</b><span>${esc(p.d[lang==='tr'?0:1])}</span></button>`).join('');
+  el.innerHTML=`<div class="k" style="width:100%;text-align:center">⭐ ${esc(tl('PERK SEÇ','CHOOSE A PERK'))} <span id="pkTm"></span></div>`+pkCh.map((p,i)=>`<button class="pkC" data-p="${i}" title="${esc(p.d[lang==='tr'?0:1])}"><kbd>${i+1}</kbd><i>${p.ic}</i><b>${esc(tl(p.tr,p.en))}</b><span>${esc(p.d[lang==='tr'?0:1])}</span></button>`).join('');
 }
 function closePerks(){pkOpen=false;const el=$('pkP');if(el)el.style.display='none';}
 function pickPerk(i){

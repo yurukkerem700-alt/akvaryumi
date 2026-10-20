@@ -1,9 +1,9 @@
 /* Akvaryum Seferi — çevrimdışı önbellek + arka planda sürüm indirme.
    Yeni sürümde VER değerini artır (index.html içindeki BUILD ve version.json ile aynı olmalı).
    Yeni service worker kurulurken dosyaları arka planda indirir; kullanıcı menüde GÜNCELLE'ye basınca devreye girer. */
-const VER='2026.10.19-3';
+const VER='2026.10.20-1';
 const CACHE='akvaryum-'+VER;
-const CORE=['./','index.html','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','cover.webp','og-image.jpg'];
+const CORE=['expedition.css','ocean.mjs','./','index.html','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','cover.webp','og-image.jpg'];
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>Promise.all(CORE.map(u=>c.add(new Request(u,{cache:'reload'})).catch(()=>{})))).then(()=>{if(!self.registration.active)self.skipWaiting();}));
 });

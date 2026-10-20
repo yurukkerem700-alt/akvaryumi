@@ -351,9 +351,12 @@ body.lefty #touch .tvb{right:auto;left:calc(198px + env(safe-area-inset-left));t
 .emG{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}.emG button{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:20px;cursor:pointer;color:#fff}.emG button.on{border-color:var(--cyan);background:rgba(111,224,255,.18)}.emG button.lock{opacity:.35;cursor:not-allowed;font-size:11px}
 .stG{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0 14px}.stG div{padding:10px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:10px;letter-spacing:1px;color:var(--muted);font-weight:800}.stG b{display:block;margin-top:3px;font-size:18px;letter-spacing:0;color:#fff}
 </style>
+<link rel="stylesheet" href="expedition.css">
 </head>
 <body>
 <div id="game"></div>
+<div id="navInstrument" aria-hidden="true"><span id="navLabel">ROTA</span> <b id="navHeading">000°</b><div class="navTicks"></div></div>
+<aside id="oceanInstrument" aria-label="Seyir verileri"><header id="oceanTitle">SEYİR / CANLI VERİ</header><div class="oceanRow"><span id="flowLabel">AKINTI</span><b id="flowRead">—</b></div><div class="oceanRow"><span id="pressureLabel">BASINÇ</span><b id="pressureRead">—</b></div><div class="oceanRow"><span id="lightLabel">GÜN IŞIĞI</span><b id="lightRead">—</b></div><div class="noiseTrack"><i id="oceanNoise"></i></div><footer id="noiseRead">—</footer></aside>
 <div class="cross" id="cross"><i></i></div><div id="heat"><i></i></div><div id="roleTag"></div><div class="aimInfo" id="aimInfo"></div><div id="flashV"></div><div id="nukeCrack"></div><div id="hurtV"></div><div id="inkV"></div>
 <div id="tags"></div><div id="inFade"></div><div id="inRoom"></div><div id="inPrompt"></div>
 <div id="cockpit"><div id="ckInner"><svg id="ckFrame"></svg><div id="ckGlass"></div><svg id="ckDash"></svg></div></div>
@@ -430,7 +433,7 @@ body.lefty #touch .tvb{right:auto;left:calc(198px + env(safe-area-inset-left));t
   <div class="card">
     <div class="updbar" id="updBar"><span data-i="updMsg">Yeni sürüm hazır!</span><button class="btn gold" id="updBtn" data-i="updBtn">GÜNCELLE</button></div>
     <div class="hero"><img src="cover.webp" alt="Akvaryum Seferi — Derinlikleri Keşfet" width="1600" height="900" decoding="async" fetchpriority="high"></div>
-    <div class="eyebrow">YÖRÜKHAN ORIGINAL · 3D · ONLINE CO-OP &amp; PVP</div>
+    <div class="eyebrow">YÖRÜKHAN STÜDYO / LIVING DEPTHS · 08</div>
     <h1 data-i="title">Akvaryum Seferi</h1>
     <p data-i="desc"></p>
     <div class="row">
@@ -443,7 +446,7 @@ body.lefty #touch .tvb{right:auto;left:calc(198px + env(safe-area-inset-left));t
       <div class="joinBox"><input class="txt" id="codeIn" maxlength="5" autocomplete="off"><button class="btn" id="joinBtn" data-i="join">KATIL</button></div>
     </div>
     <div class="mrow"><span class="k" data-i="modeL">OYUN MODU</span><div class="msel" id="modeSel"></div><div class="mdesc" id="modeDesc"></div><label class="eqL"><input type="checkbox" id="eqIn"> <span data-i="eqL">EŞİT DENİZALTI (online: herkes aynı güçte)</span></label></div>
-    <div class="row act" style="margin:0 0 10px"><button class="btn gold" id="garBtn2" data-i="garageBtn">🏪 TERSANE</button><button class="btn" id="profBtn2" data-i="profBtn">🏆 PROFİL</button><button class="btn" id="cfgBtn2">⚙ AYARLAR</button><span class="k" style="align-self:center">🪙 <b class="goldV">0</b></span><button class="btn" id="worldBtn"></button><button class="btn" id="tutBtn" data-i="tutBtn">📖 NASIL OYNANIR? (ÖĞRETİCİ)</button><button class="btn" id="qBtn">⚙ GRAFİK</button><button class="btn" id="installBtn" data-i="install">📲 UYGULAMAYI YÜKLE</button></div>
+    <div class="row act" style="margin:0 0 10px"><button class="btn gold" id="garBtn2" data-i="garageBtn">TERSANE</button><button class="btn" id="profBtn2" data-i="profBtn">PROFİL</button><button class="btn" id="cfgBtn2">AYARLAR</button><span class="k" style="align-self:center">🪙 <b class="goldV">0</b></span><button class="btn" id="worldBtn"></button><button class="btn" id="tutBtn" data-i="tutBtn">NASIL OYNANIR?</button><button class="btn" id="qBtn">GRAFİK</button><button class="btn" id="installBtn" data-i="install">UYGULAMAYI YÜKLE</button></div>
     <div class="status" id="lobbyStatus"></div>
     <div class="grid">
       <div class="tip"><b data-i="t1h"></b><span data-i="t1"></span></div>
@@ -505,7 +508,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.19-5',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.20-1',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -539,6 +542,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js" crossorigin>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
 <script type="module">
+import {oceanCurrent,CURRENT_GLSL,solarLight,headingDegrees,pressureBar,advectVelocity} from './ocean.mjs';
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 window.__aquaOK=true;
@@ -546,8 +550,8 @@ window.__aquaOK=true;
 /* ================= Metinler ================= */
 const $=id=>document.getElementById(id);
 const TEXT={
-tr:{title:'Akvaryum Seferi',desc:'Kocaman bir cam akvaryumun içinde denizaltınla süzül, 27 canlı türünü keşfet, 12 farklı biyomu gez, su yüzeyine çıkıp yıldızlı gökyüzünü izle ve köpekbalıklarına, elektrikli yılan balıklarına, dev kalamarlara, piranhalara karşı hayatta kal. Torpido ve mayınlarla kayaları, gemileri, sütunları yık. Oda kur, kodu gönder: online modda birbirinize de zarar verirsiniz. Sunucu yok: oyuncular tarayıcıdan tarayıcıya doğrudan bağlanır.',
-nameL:'KAPTAN ADI',colorL:'DENİZALTI RENGİ',modeL:'OYUN MODU',eqL:'EŞİT DENİZALTI (online: herkes aynı güçte, modüller açık)',profBtn:'🏆 PROFİL',solo:'TEK BAŞINA KEŞFET',host:'ODA KUR (ONLINE)',join:'KATIL',codePh:'KOD',
+tr:{title:'Akvaryum Seferi',desc:'Yüzeyin altında yaşayan bir dünya. Akıntıyı oku, sessizce ilerle; resiflerden karanlık mağaralara kendi seferini çiz. 27 tür, 12 biyom. Tek başına ya da mürettebatınla.',
+nameL:'KAPTAN ADI',colorL:'DENİZALTI RENGİ',modeL:'OYUN MODU',eqL:'EŞİT DENİZALTI (online: herkes aynı güçte, modüller açık)',profBtn:'PROFİL',solo:'TEK BAŞINA KEŞFET',host:'ODA KUR (ONLINE)',join:'KATIL',codePh:'KOD',
 t1h:'Sürüş',t1:'WASD sür ve dön · Q/E yüksel/alçal (yüzeye çık: gökyüzü, orada sabit durursun!) · SHIFT hızlan · Telefonda ▲ ▼ ⚡ tek dokunuşla açılıp kapanır · I / 🚶 denizaltının içine gir: kaptan olarak odalarda dolaş, koltuğa oturup E ile sür',t2h:'Kamera',t2:'Oyuna tıkla, fareyle etrafa bak · tekerlek: yakınlaştır',t3h:'Silahlar',t3:'Sol tık ateş · 1 torpido · 2 salvo · 3 mayın · 4 EMP · 5/C kalkan · 6/R tamir · 7/V şok · 8/N ağı hazırla (sol tık fırlatır) · 9/X ya da sağ tık yakın saldırı · 0/J denizaltının özel silahı · SPACE sonar · F yem · B bakış · T katalog · U ☢ nükleer torpido (Tersane\'den; KEJDERYA kodu sınırsız) · O sessiz seyir · makineli top 360° döner',t4h:'Online',t4:'8 kişiye kadar · 7 mod: Serbest, Ekip, Hayatta Kalma, Takım Savaşı, Hazine Kapmaca, Yarış, Av Turnuvası · Z işaret · H arkadaşının denizaltısına bin · Tab skor · ENTER sohbet',
 foot:'Online mod, bağlantıyı kurmak için yalnızca ücretsiz ve herkese açık PeerJS eşleştirme hizmetini kullanır; oyun verisi doğrudan oyuncular arasında akar. Oda sahibi çıkarsa oda kapanır.',
 battery:'BATARYA',torp:'TORPİDO',noTorp:'Torpido kalmadı — tüpler dolduruluyor…',hit:' vuruldu!',lock:'KİLİTLENDİ',torpBy:' torpido fırlattı',depth:'DERİNLİK',speed:'HIZ',species:'TÜRLER',catalog:'TÜR KATALOĞU',room:'ODA KODU',copy:'DAVET LİNKİNİ KOPYALA',copied:'Davet linki kopyalandı',copyManual:'Kodu arkadaşına söyle: ',zone:'BÖLGE',menu:'MENÜ',
@@ -556,13 +560,13 @@ connecting:'Odaya bağlanılıyor…',worldBig:'AKVARYUM: DEV (PC)',worldSmall:'
 found:'YENİ TÜR KEŞFEDİLDİ',by:'Keşfeden: ',byYou:'Keşfeden: sen',allFound:'Tebrikler! Akvaryumdaki 27 türün hepsi keşfedildi!',sonar:'Sonar darbesi',sonarCd:'Sonar şarj oluyor…',food:'Yem bırakıldı — balıklar geliyor!',foodCd:'Yem hazırlanıyor…',lightOn:'Işıklar açık',lightOff:'Işıklar kapalı',chatPh:'Mesaj yaz · ENTER gönder · ESC kapat',map:'AKVARYUM HARİTASI',mapClose:'M ya da ESC ile kapat',you:'sen',start:'Sefer başladı! Oyuna tıklayıp fareyle bakabilirsin.',sonarBy:' sonar gönderdi',foodBy:' yem bıraktı',leave:'Menüye dönmek sefer bağlantısını kapatır. Emin misin?',
 hull:'GÖVDE',w1:'TORPİDO',w2:'SALVO',w3:'MAYIN',w4:'EMP',w5:'KALKAN',w6:'TAMİR',w7:'ŞOK',swvOn:'ŞOK DALGASI!',swvCd:'Şok dalgası şarj oluyor…',shieldOn:'Kalkan açık!',shieldCd:'Kalkan şarj oluyor…',shieldDown:'Kalkan kırıldı!',repairStart:'Tamir başladı…',repairFull:'Gövde zaten tam',noKit:'Tamir kiti kalmadı — yenisi hazırlanıyor…',repairDone:'Tamir tamamlandı',kitGain:'+1 tamir kiti',rotHint:'Daha rahat oynamak için telefonu yatay tut',noMine:'Mayın kalmadı — yenisi hazırlanıyor…',mineDrop:'Mayın bırakıldı',empCd:'EMP şarj oluyor…',lowBat:'EMP için batarya yetersiz',stunned:'Sistemler devre dışı!',salvoNeed:'Salvo için en az 3 torpido gerek',slain:' yok edildi!',youSunk:'DENİZALTIN BATTI',respawnIn:'Yeniden doğuyor:',
 sunk:(v,k)=>v+', '+k+' tarafından batırıldı',
-install:'📲 UYGULAMAYI YÜKLE',iosHint:'iPhone/iPad: Paylaş → Ana Ekrana Ekle',surfaced:'Yüzeydesin — gece gökyüzü ve yıldızlar!',noSurfFire:'Yüzeyde torpido atılamaz — biraz dal',surface:'YÜZEY',
+install:'UYGULAMAYI YÜKLE',iosHint:'iPhone/iPad: Paylaş → Ana Ekrana Ekle',surfaced:'Yüzeydesin — gece gökyüzü ve yıldızlar!',noSurfFire:'Yüzeyde torpido atılamaz — biraz dal',surface:'YÜZEY',
 w8:'AĞ',w9:'YAKIN',netCd:'Ağ hazırlanıyor…',netOn:'Ağ fırlatıldı!',netReadyH:'AĞ ATEŞLEMEYE HAZIR',netReadyS:'Nişan al · SOL TIK ile fırlat · 8/N ile vazgeç',netReadyT:'Nişan al · ATEŞ düğmesiyle fırlat · 🕸 ile vazgeç',netStow:'Ağ toplandı',netEmpty:'Ağa balık takılmadı',netFish:n=>'🐟 '+n+' balık yakalandı!',netCaught:'Ağda yakalandı: ',netted:'AĞA YAKALANDIN!',meleeCd:'Yakın saldırı hazırlanıyor…',battEmpty:'Batarya bitti — hızlanma kapandı',discShort:'keşfedildi',
-quests:'GÖREVLER',questDone:'Görev tamamlandı! +',garage:'TERSANE',garageBtn:'🏪 TERSANE',garageSub:'Denizaltı ve cephane geliştirmeleri — görev ödülleriyle satın al',close:'KAPAT',subsH:'DENİZALTILAR',upH:'GELİŞTİRMELER',equip:'SEÇ',equipped:'SEÇİLİ',buy:'SATIN AL',upgrade:'GELİŞTİR',maxed:'MAKS',needGold:'Yeterli altın yok',boughtSub:'Yeni denizaltı hazır!',boughtUp:'Geliştirme tamamlandı!',
+quests:'GÖREVLER',questDone:'Görev tamamlandı! +',garage:'TERSANE',garageBtn:'TERSANE',garageSub:'Denizaltı ve cephane geliştirmeleri — görev ödülleriyle satın al',close:'KAPAT',subsH:'DENİZALTILAR',upH:'GELİŞTİRMELER',equip:'SEÇ',equipped:'SEÇİLİ',buy:'SATIN AL',upgrade:'GELİŞTİR',maxed:'MAKS',needGold:'Yeterli altın yok',boughtSub:'Yeni denizaltı hazır!',boughtUp:'Geliştirme tamamlandı!',
 u_ammo:'Cephane kapasitesi',u_reload:'Yeniden yükleme',u_armor:'Zırh',u_motor:'Motor',u_battery:'Batarya verimi',hullL:'Gövde',torpL:'Torpido',mineL:'Mayın',spdL:'Hız',
 updMsg:'Yeni sürüm indirildi — yüklemek için güncelle',updBtn:'GÜNCELLE',viewFp:'Birinci şahıs bakış',viewTp:'Üçüncü şahıs bakış',
 sTime:'SÜRE',sScore:'TOPLAM SKOR',sFish:'ÖLDÜRÜLEN BALIK',sRep:'AVCI RAPORU',sNone:'Henüz av yok',sEn:'Düşman',sDisc:'Keşif',sStr:'Yapı',sGold:'Altın',
-rotT:'Telefonu yan çevir',rotD:'Akvaryum Seferi yatay (yan) oynanır. Ekran dikey kalıyorsa telefonun otomatik döndürme kilidini aç.',qLbl:'GRAFİK',qLow:'DÜŞÜK (AKICI)',qMid:'ORTA',qHigh:'YÜKSEK',qSet:'Grafik değişti, oyun yenileniyor…',tutBtn:'📖 NASIL OYNANIR? (ÖĞRETİCİ)',tutNext:'İLERİ →',tutBack:'← GERİ',tutSkip:'ATLA',tutDone:'BİTİR ✓',tutOk:'✓ Harika!',tutStepOf:'ADIM',tutDoIt:'👉 Şimdi sen dene!',
+rotT:'Telefonu yan çevir',rotD:'Akvaryum Seferi yatay (yan) oynanır. Ekran dikey kalıyorsa telefonun otomatik döndürme kilidini aç.',qLbl:'GRAFİK',qLow:'DÜŞÜK (AKICI)',qMid:'ORTA',qHigh:'YÜKSEK',qSet:'Grafik değişti, oyun yenileniyor…',tutBtn:'NASIL OYNANIR?',tutNext:'İLERİ →',tutBack:'← GERİ',tutSkip:'ATLA',tutDone:'BİTİR ✓',tutOk:'✓ Harika!',tutStepOf:'ADIM',tutDoIt:'👉 Şimdi sen dene!',
 tut:[
 ['Hoş geldin kaptan!','Denizaltını telefonda 1 dakikada öğren. Gerçek düğmelere dokunarak dene — öğretici sırasında hiçbir şey seni batıramaz.'],
 ['Sürüş çubuğu','Sol baş parmağınla çubuğu it: yukarı ileri, aşağı geri, sağa-sola dönüş.'],
@@ -582,8 +586,8 @@ inDeskT:'Bilgisayar (Chrome / Edge)',inDeskS:['Adres çubuğunun sağındaki <b>
 inAppN:'Bu sayfa bir uygulamanın (Instagram, WhatsApp, TikTok…) içindeki tarayıcıda açık, burada yükleme çalışmaz. Sağ üstteki <b>⋯</b> menüsünden <b>Tarayıcıda aç</b>\'ı seç, sonra tekrar dene.',
 
 zones:{ice:'Buzul Kutbu',volcano:'Yanardağ Bacaları',abyss:'Karanlık Uçurum',crystal:'Kristal Mağaraları',lagoon:'Turkuaz Lagün',sunken:'Batık Şehir',bluehole:'Mavi Okyanus',canyon:'Kızıl Kanyon',trench:'Derin Çukur',temple:'Kayıp Tapınak',graveyard:'Gemi Mezarlığı',dunes:'Kum Tepeleri',coral:'Mercan Bahçesi',kelp:'Yosun Ormanı',grass:'Deniz Çayırı',wreck:'Batık Gemi Çukuru',arch:'Kaya Kemerleri',jelly:'Denizanası Koyu',open:'Açık Su'}},
-en:{title:'Aquarium Expedition',desc:'Glide through a gigantic glass aquarium in your submarine, discover 27 species, explore 12 biomes, surface to watch the starry night sky and survive sharks, electric eels, giant squids and piranhas. Smash rocks, ships and pillars with torpedoes and mines. Open a room and share the code: in online mode you can hurt each other too. No server: players connect browser to browser.',
-nameL:'CAPTAIN NAME',colorL:'SUBMARINE COLOR',modeL:'GAME MODE',eqL:'EQUAL SUBS (online: everyone equally strong, all modules)',profBtn:'🏆 PROFILE',solo:'EXPLORE SOLO',host:'HOST ROOM (ONLINE)',join:'JOIN',codePh:'CODE',
+en:{title:'Aquarium Expedition',desc:'A living world beneath the surface. Read the current, run quietly and chart your own expedition, from reefs to dark caverns. 27 species, 12 biomes. Alone or with your crew.',
+nameL:'CAPTAIN NAME',colorL:'SUBMARINE COLOR',modeL:'GAME MODE',eqL:'EQUAL SUBS (online: everyone equally strong, all modules)',profBtn:'PROFILE',solo:'EXPLORE SOLO',host:'HOST ROOM (ONLINE)',join:'JOIN',codePh:'CODE',
 t1h:'Driving',t1:'WASD drive & turn · Q/E rise/dive (reach the surface: night sky, you float there!) · SHIFT boost · On phones ▲ ▼ ⚡ toggle with one tap · I / 🚶 go inside the sub: walk the rooms as the captain, sit in the seat with E to drive',t2h:'Camera',t2:'Click the game, look with the mouse · wheel: zoom',t3h:'Weapons',t3:'Left click fire · 1 torpedo · 2 salvo · 3 mine · 4 EMP · 5/C shield · 6/R repair · 7/V shock · 8/N ready the net (left click throws) · 9/X or right click melee · 0/J sub special weapon · SPACE sonar · F food · B view · T catalog · U ☢ nuclear torpedo (Shipyard; code KEJDERYA = unlimited) · O silent running · the machine gun turrets rotate 360°',t4h:'Online',t4:'Up to 8 players · 7 modes: Free Roam, Co-op, Survival, Team Battle, Treasure Grab, Race, Hunt Cup · Z ping · H board a friend\'s sub · Tab scores · ENTER chat',
 foot:'Online mode only uses the free public PeerJS matchmaking service to open the connection; game data flows directly between players. The room closes if the host leaves.',
 battery:'BATTERY',torp:'TORPEDO',noTorp:'Out of torpedoes — reloading tubes…',hit:' hit!',lock:'LOCKED',torpBy:' fired a torpedo',depth:'DEPTH',speed:'SPEED',species:'SPECIES',catalog:'SPECIES CATALOG',room:'ROOM CODE',copy:'COPY INVITE LINK',copied:'Invite link copied',copyManual:'Tell your friend the code: ',zone:'ZONE',menu:'MENU',
@@ -594,11 +598,11 @@ hull:'HULL',w1:'TORPEDO',w2:'SALVO',w3:'MINE',w4:'EMP',w5:'SHIELD',w6:'REPAIR',w
 sunk:(v,k)=>v+' was sunk by '+k,
 install:'📲 INSTALL THE APP',iosHint:'iPhone/iPad: Share → Add to Home Screen',surfaced:'Surfaced — the night sky and the stars!',noSurfFire:'Cannot fire torpedoes at the surface — dive a little',surface:'SURFACE',
 w8:'NET',w9:'MELEE',netCd:'Net is reloading…',netOn:'Net launched!',netReadyH:'NET READY TO FIRE',netReadyS:'Aim · LEFT CLICK to throw · 8/N to cancel',netReadyT:'Aim · press FIRE to throw · 🕸 to cancel',netStow:'Net stowed',netEmpty:'No fish in the net',netFish:n=>'🐟 '+n+' fish caught!',netCaught:'Caught in the net: ',netted:'YOU ARE NETTED!',meleeCd:'Melee is recharging…',battEmpty:'Battery empty — boost off',discShort:'discovered',
-quests:'QUESTS',questDone:'Quest complete! +',garage:'SHIPYARD',garageBtn:'🏪 SHIPYARD',garageSub:'Submarine and ammo upgrades — buy them with quest rewards',close:'CLOSE',subsH:'SUBMARINES',upH:'UPGRADES',equip:'EQUIP',equipped:'EQUIPPED',buy:'BUY',upgrade:'UPGRADE',maxed:'MAX',needGold:'Not enough gold',boughtSub:'New submarine ready!',boughtUp:'Upgrade complete!',
+quests:'QUESTS',questDone:'Quest complete! +',garage:'SHIPYARD',garageBtn:'SHIPYARD',garageSub:'Submarine and ammo upgrades — buy them with quest rewards',close:'CLOSE',subsH:'SUBMARINES',upH:'UPGRADES',equip:'EQUIP',equipped:'EQUIPPED',buy:'BUY',upgrade:'UPGRADE',maxed:'MAX',needGold:'Not enough gold',boughtSub:'New submarine ready!',boughtUp:'Upgrade complete!',
 u_ammo:'Ammo capacity',u_reload:'Reload speed',u_armor:'Armor',u_motor:'Engine',u_battery:'Battery efficiency',hullL:'Hull',torpL:'Torpedo',mineL:'Mine',spdL:'Speed',
 updMsg:'A new version was downloaded — update to install it',updBtn:'UPDATE',viewFp:'First-person view',viewTp:'Third-person view',
 sTime:'TIME',sScore:'TOTAL SCORE',sFish:'FISH HUNTED',sRep:'HUNTER REPORT',sNone:'No hunts yet',sEn:'Enemies',sDisc:'Found',sStr:'Structures',sGold:'Gold',
-rotT:'Rotate your phone',rotD:'Aquarium Expedition is played in landscape. If the screen stays upright, turn off your phone\'s rotation lock.',qLbl:'GRAPHICS',qLow:'LOW (SMOOTH)',qMid:'MEDIUM',qHigh:'HIGH',qSet:'Graphics changed, reloading…',tutBtn:'📖 HOW TO PLAY (TUTORIAL)',tutNext:'NEXT →',tutBack:'← BACK',tutSkip:'SKIP',tutDone:'FINISH ✓',tutOk:'✓ Great!',tutStepOf:'STEP',tutDoIt:'👉 Now you try!',
+rotT:'Rotate your phone',rotD:'Aquarium Expedition is played in landscape. If the screen stays upright, turn off your phone\'s rotation lock.',qLbl:'GRAPHICS',qLow:'LOW (SMOOTH)',qMid:'MEDIUM',qHigh:'HIGH',qSet:'Graphics changed, reloading…',tutBtn:'HOW TO PLAY',tutNext:'NEXT →',tutBack:'← BACK',tutSkip:'SKIP',tutDone:'FINISH ✓',tutOk:'✓ Great!',tutStepOf:'STEP',tutDoIt:'👉 Now you try!',
 tut:[
 ['Welcome aboard, captain!','Learn your submarine on a phone in one minute. Try the real buttons — nothing can sink you during the tutorial.'],
 ['Drive stick','Push the stick with your left thumb: up is forward, down is reverse, left/right turns.'],
@@ -682,6 +686,8 @@ function applyLang(){
   T=TEXT[lang];document.documentElement.lang=lang;
   document.querySelectorAll('[data-i]').forEach(el=>{const v=T[el.dataset.i];if(typeof v==='string')el.textContent=v;});
   $('codeIn').placeholder=T.codePh;$('chatIn').placeholder=T.chatPh;$('langBtn').textContent=lang==='tr'?'EN':'TR';
+  const navButtons={catBtn:['TÜRLER','SPECIES'],viewBtn:['BAKIŞ','VIEW'],inBtn:['KABİN','CABIN'],profBtn:['PROFİL','PROFILE'],garBtn:['TERSANE','SHIPYARD'],cfgBtn:['AYARLAR','SETTINGS']};
+  for(const [id,names] of Object.entries(navButtons)){const b=$(id);b.textContent=names[lang==='en'?1:0];b.setAttribute('aria-label',b.textContent);}
   renderCatalog();renderPlayers();renderWpn();renderQuests();drawSign();if(garageOpen())renderGarage();qLabel();renderModeSel();renderQChat();if(profOpen())renderProfile();try{if(running)layoutCockpit();}catch{}
   {const wb=$('worldBtn');if(wb){wb.textContent='🌊 '+(BIGW?T.worldBig:T.worldSmall);wb.title=T.worldTip;}}
 }
@@ -759,18 +765,18 @@ const fill=new THREE.DirectionalLight(0x6fd8ff,1.1);fill.position.set(40,-10,30)
 
 /* Shader enjeksiyonu: su kostikleri + sallanma animasyonları */
 let FLOORG=null;
-const U={t:{value:0},cam:{value:new THREE.Vector3()},bend:{value:[new THREE.Vector4(0,0,0,0),new THREE.Vector4(0,0,0,0),new THREE.Vector4(0,0,0,0)]}};
+const U={day:{value:1},t:{value:0},cam:{value:new THREE.Vector3()},bend:{value:[new THREE.Vector4(0,0,0,0),new THREE.Vector4(0,0,0,0),new THREE.Vector4(0,0,0,0)]}};
 /* denizaltı (ve yakındaki oyuncular) geçerken yosunlar ve otlar yana eğilir: xyz = dünya konumu, w = etki yarıçapı */
-const BENDV='for(int bi=0;bi<3;bi++){vec4 bq=uBend[bi];if(bq.w>0.){vec3 bd=ip-bq.xyz;float bl=length(bd.xz);float bf=smoothstep(bq.w,0.,bl)*(1.-smoothstep(18.,34.,abs(bd.y)));if(bf>0.){vec2 bu=bd.xz/max(bl,.3);transformed.x+=bu.x*bf*1.1*position.y*position.y;transformed.z+=bu.y*bf*1.1*position.y*position.y;}}}';
+const BENDV='vec2 flow=oceanFlow(ip.xz,uT);transformed.xz+=flow*position.y*position.y*1.7;for(int bi=0;bi<3;bi++){vec4 bq=uBend[bi];if(bq.w>0.){vec3 bd=ip-bq.xyz;float bl=length(bd.xz);float bf=smoothstep(bq.w,0.,bl)*(1.-smoothstep(18.,34.,abs(bd.y)));if(bf>0.){vec2 bu=bd.xz/max(bl,.3);transformed.x+=bu.x*bf*1.1*position.y*position.y;transformed.z+=bu.y*bf*1.1*position.y*position.y;}}}';
 const CAUS=`float causF(vec2 uv){vec2 p=mod(uv*6.28318,6.28318)-250.;vec2 i=p;float c=1.;float inten=.005;for(int n=0;n<4;n++){float t=uT*.32*(1.-(3.5/float(n+1)));i=p+vec2(cos(t-i.x)+sin(t+i.y),sin(t-i.y)+cos(t+i.x));c+=1./length(vec2(p.x/(sin(i.x+t)/inten),p.y/(cos(i.y+t)/inten)));}c/=4.;c=1.17-pow(c,1.4);return pow(abs(c),8.);}\n`;
 function patch(mat,key,{v='',caus=0,fx='',skin=0}={}){
   mat.onBeforeCompile=sh=>{
-    sh.uniforms.uT=U.t;
+    sh.uniforms.uT=U.t;sh.uniforms.uDay=U.day;
     sh.uniforms.uBend=U.bend;
-    sh.vertexShader='uniform float uT;\nuniform vec4 uBend[3];\nvarying vec3 vWp;\n'+(skin?'attribute float aF;varying vec3 vOp;varying vec3 vOn;varying float vF;\n':'')+sh.vertexShader
+    sh.vertexShader='uniform float uT;\nuniform vec4 uBend[3];\nvarying vec3 vWp;\n'+CURRENT_GLSL+'\n'+(skin?'attribute float aF;varying vec3 vOp;varying vec3 vOn;varying float vF;\n':'')+sh.vertexShader
       .replace('#include <begin_vertex>','#include <begin_vertex>\n'+(skin?'vOp=position;vOn=normal;vF=aF;\n':'')+'#ifdef USE_INSTANCING\nvec3 ip=instanceMatrix[3].xyz;\n#else\nvec3 ip=vec3(0.);\n#endif\nfloat ph=float(gl_InstanceID)*2.37;\n'+v)
       .replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n{vec4 wq=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nwq=instanceMatrix*wq;\n#endif\nvWp=(modelMatrix*wq).xyz;}');
-    sh.fragmentShader='uniform float uT;\nvarying vec3 vWp;\n'+(skin?SKIN_H:'')+(caus&&!isTouch?CAUS:'')+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n'+(caus?'{float cz='+(isTouch?'pow(.5+.5*sin(vWp.x*.55+uT*.9+sin(vWp.z*.4+uT*.5)*1.6)*sin(vWp.z*.5-uT*.7),3.)':'causF(vWp.xz*.034)')+'*smoothstep(-48.,34.,vWp.y);totalEmissiveRadiance+=diffuseColor.rgb*vec3(.55,.85,1.)*cz*'+caus.toFixed(2)+';}':'')+fx);
+    sh.fragmentShader='uniform float uT;uniform float uDay;\nvarying vec3 vWp;\n'+(skin?SKIN_H:'')+(caus&&!isTouch?CAUS:'')+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n'+(caus?'{float cz='+(isTouch?'pow(.5+.5*sin(vWp.x*.55+uT*.9+sin(vWp.z*.4+uT*.5)*1.6)*sin(vWp.z*.5-uT*.7),3.)':'causF(vWp.xz*.034)')+'*exp(-max(0.,36.-vWp.y)/46.)*uDay;totalEmissiveRadiance+=diffuseColor.rgb*vec3(.55,.85,1.)*cz*'+caus.toFixed(2)+';}':'')+fx);
   };
   mat.customProgramCacheKey=()=>key;
   return mat;
@@ -927,7 +933,7 @@ let silentRun=false,leak=false,thermoWas=false;
 const DIURNAL=new Set(['clown','tang','angel','butterfly','seahorse','puffer','lion']);
 function nightAt(t){const ph=((t/720)%1+1)%1;return sm(.6,.72,ph)*(1-sm(.93,1,ph));}
 function updateEnv(dt){
-  NIGHT=nightAt(worldTime());
+  NIGHT=nightAt(worldTime());U.day.value=solarLight(NIGHT,0);
   if(running&&(NIGHT>.5)!==(nightWas>.5)){toast(NIGHT>.5?'🌙 '+tl('Gece oldu — resif balıkları saklanıyor','Night falls — reef fish take cover'):'🌅 '+tl('Şafak söktü','Dawn breaks'));}
   nightWas=NIGHT;
   const e=ZENV[zoneAt(camera.position.x,camera.position.z)]||[0x0c7390,.0056,1],k=1-Math.exp(-dt*1.2);
@@ -1251,9 +1257,9 @@ const TINTS=[null,'#a89c80','#b5d8c8','#c88a6a','#8fb4d8','#cfe6f4','#c8a8ec','#
 const rays=[];let snowPts=null;
 {
   /* tek draw call: 300 ayrı mesh yerine tek InstancedMesh; sallanma köşe gölgelendiricisinde (örnek başına faz) */
-  const mat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,uniforms:{uT:U.t},
+  const mat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,uniforms:{uT:U.t,uDay:U.day},
     vertexShader:'attribute float aPh;uniform float uT;varying vec2 vUv;varying float vF;void main(){vUv=uv;vec3 p=position;p.x+=sin(uT*.2+aPh)*.04*p.y;p.z+=cos(uT*.17+aPh)*.04*p.y;vec4 mv=modelViewMatrix*instanceMatrix*vec4(p,1.);vec3 n=normalize(normalMatrix*mat3(instanceMatrix)*normal);vF=abs(dot(n,normalize(-mv.xyz)));gl_Position=projectionMatrix*mv;}',
-    fragmentShader:'uniform float uT;varying vec2 vUv;varying float vF;void main(){float a=pow(vUv.y,1.6)*vF*vF*.085*(.75+.25*sin(uT*.6+vUv.x*6.28));gl_FragColor=vec4(.8,.97,1.,a);}'});
+    fragmentShader:'uniform float uT;uniform float uDay;varying vec2 vUv;varying float vF;void main(){float a=pow(vUv.y,1.6)*vF*vF*.085*(.75+.25*sin(uT*.6+vUv.x*6.28));gl_FragColor=vec4(.8,.97,1.,a*uDay);}'});
   const L=[];for(let i=0;i<150*WS;i++)if(!(isTouch&&i%QC.shaft))L.push(i);
   const rm=new THREE.InstancedMesh(new THREE.CylinderGeometry(3,9.5,65,isTouch?10:20,1,true),mat,L.length),ph=new Float32Array(L.length);
   L.forEach((_,i)=>{const h=rr(55,74),k=rr(.7,1.25);_m.compose(_v.set(rr(-HX+15,HX-15),SURF-h/2,rr(-HZ+12,HZ-12)),_q.setFromEuler(_e.set(rr(-.12,.12),0,rr(-.12,.12))),_s.set(k,h/65,k));rm.setMatrixAt(i,_m);ph[i]=R()*6;});
@@ -1281,7 +1287,7 @@ function updateBubbles(dt,t){
   const ecx=camera.position.x,ecz=camera.position.z;
   for(const e of emitters){const ex=e.x-ecx,ez=e.z-ecz;if(ex*ex+ez*ez>32400)continue;e.acc+=e.rate*dt*(isTouch?.5:1);while(e.acc>1){e.acc--;spawnBubble(e.x+Math.random()*.4-.2,e.y,e.z+Math.random()*.4-.2,.08+Math.random()*.16);}}
   const dk=Math.exp(-2.4*dt);
-  for(let i=0;i<BMAX;i++){if(!bub.live[i])continue;bub.y[i]+=(bub.v[i]+bub.vy[i])*dt;
+  for(let i=0;i<BMAX;i++){if(!bub.live[i])continue;oceanCurrent(bub.x[i],bub.z[i],t,WATER_FLOW);bub.x[i]+=WATER_FLOW.x*dt;bub.z[i]+=WATER_FLOW.z*dt;bub.y[i]+=(bub.v[i]+bub.vy[i])*dt;
     if(bub.vx[i]||bub.vy[i]||bub.vz[i]){bub.x[i]=clamp(bub.x[i]+bub.vx[i]*dt,-HX+.3,HX-.3);bub.z[i]=clamp(bub.z[i]+bub.vz[i]*dt,-HZ+.3,HZ-.3);bub.vx[i]*=dk;bub.vy[i]*=dk;bub.vz[i]*=dk;}
     if(bub.y[i]>SURF-.2){bub.live[i]=0;_m.makeScale(0,0,0);bubMesh.setMatrixAt(i,_m);continue;}
     const s=bub.s[i];_m.makeScale(s,s*.85,s);_m.setPosition(bub.x[i]+Math.sin(t*3+bub.p[i])*.18,bub.y[i],bub.z[i]+Math.cos(t*2.6+bub.p[i])*.18);bubMesh.setMatrixAt(i,_m);}
@@ -3155,6 +3161,7 @@ const plantGrid=new Map(),PGC=6;let pgBuilt=false;
 const plantKey=(i,j)=>(i+400)*1000+(j+400);
 function plantGridBuild(){plantGrid.clear();for(const f of flora){if(!f.soft||!f.o)continue;const k=plantKey(Math.floor(f.x/PGC),Math.floor(f.z/PGC));let a=plantGrid.get(k);if(!a){a=[];plantGrid.set(k,a);}a.push(f);}pgBuilt=true;}
 /* kesilmiş yaprak/kamış parçaları: suda yavaşça batar, akıntıyla sürüklenir */
+const WATER_FLOW={x:0,z:0};
 const CUT_MAX=240,cuts=[];
 const cutMesh=(()=>{const g=new THREE.PlaneGeometry(.22,1,1,3);g.translate(0,.5,0);const m=new THREE.InstancedMesh(g,new THREE.MeshStandardMaterial({color:0xffffff,roughness:.85,side:THREE.DoubleSide}),CUT_MAX);m.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(CUT_MAX*3),3);m.count=0;m.frustumCulled=false;scene.add(m);return m;})();
 const _cpt=new THREE.Vector3(),_cq=new THREE.Quaternion(),_cm=new THREE.Matrix4(),_cs=new THREE.Vector3(),_cc=new THREE.Color();
@@ -3171,7 +3178,7 @@ function updateCuts(dt){
   for(let i=cuts.length-1;i>=0;i--){
     const c=cuts[i];c.age+=dt;if(c.age>c.life){cuts.splice(i,1);continue;}
     const fh=floorQ(c.p.x,c.p.z)+.05;
-    if(c.p.y>fh){c.v.multiplyScalar(Math.exp(-1.3*dt));c.v.y-=.55*dt;c.p.addScaledVector(c.v,dt);_cq.setFromAxisAngle(c.ax,c.w*dt*Math.min(1,c.v.length()));c.q.premultiply(_cq);}
+    if(c.p.y>fh){oceanCurrent(c.p.x,c.p.z,worldTime(),WATER_FLOW);advectVelocity(c.v,WATER_FLOW,dt,1.3);c.v.y*=Math.exp(-1.3*dt);c.v.y-=.55*dt;c.p.addScaledVector(c.v,dt);_cq.setFromAxisAngle(c.ax,c.w*dt*Math.min(1,c.v.length()));c.q.premultiply(_cq);}
     else{c.p.y=fh;c.v.set(0,0,0);}
   }
   cutMesh.count=cuts.length;
@@ -3341,7 +3348,7 @@ function updateSnow(dt,t){
   if(!snow.init){snow.init=true;for(let i=0;i<SNOW_N;i++){P[i*3]+=cx;P[i*3+1]+=cy;P[i*3+2]+=cz;}}
   m.visible=true;m.material.opacity=clamp(.3+.55*dk,0,.85);
   for(let i=0;i<SNOW_N;i++){
-    const k=i*3;let x=P[k]+snow.dx[i]*dt+Math.sin(t*.4+i)*.02*dt*10,y=P[k+1]-snow.vy[i]*dt,z=P[k+2]+Math.cos(t*.3+i*1.7)*.02*dt*10;
+    const k=i*3;oceanCurrent(P[k],P[k+2],t,WATER_FLOW);let x=P[k]+WATER_FLOW.x*dt+snow.dx[i]*dt+Math.sin(t*.4+i)*.02*dt*10,y=P[k+1]-snow.vy[i]*dt,z=P[k+2]+WATER_FLOW.z*dt+Math.cos(t*.3+i*1.7)*.02*dt*10;
     if(x-cx>SNOW_R)x-=2*SNOW_R;else if(x-cx<-SNOW_R)x+=2*SNOW_R;
     if(z-cz>SNOW_R)z-=2*SNOW_R;else if(z-cz<-SNOW_R)z+=2*SNOW_R;
     if(y-cy>SNOW_RY)y-=2*SNOW_RY;else if(y-cy<-SNOW_RY)y+=2*SNOW_RY;
@@ -3885,7 +3892,7 @@ function addPuff(x,y,z,color,vx,vy,vz,s0,s1,op,life=12){
 }
 function updatePuffs(dt){
   for(let i=puffs.length-1;i>=0;i--){const p=puffs[i];p.age+=dt;const k=p.age/p.life;
-    p.v.multiplyScalar(Math.exp(-1.1*dt));p.s.position.addScaledVector(p.v,dt);p.s.scale.setScalar(p.s0+(p.s1-p.s0)*(1-Math.exp(-p.age*.5)));
+    oceanCurrent(p.s.position.x,p.s.position.z,worldTime(),WATER_FLOW);advectVelocity(p.v,WATER_FLOW,dt,1.1);p.v.y*=Math.exp(-1.1*dt);p.s.position.addScaledVector(p.v,dt);p.s.scale.setScalar(p.s0+(p.s1-p.s0)*(1-Math.exp(-p.age*.5)));
     p.s.material.opacity=p.op*sm(0,.06,k)*(1-sm(.45,1,k));
     if(k>=1){scene.remove(p.s);p.s.material.dispose();puffs.splice(i,1);}}
 }
@@ -5028,7 +5035,7 @@ const _tmp=new THREE.Vector3(),_fwd=new THREE.Vector3();
 const syncTog=()=>document.querySelectorAll('#touch .tvb button').forEach(b=>b.classList.toggle('on',!!vk[b.dataset.t]));
 /* Akıntı: konum ve zamana göre yavaşça değişen büyük ölçekli su hareketi (m/s); denizaltıyı, kesilmiş bitkileri ve duman bulutlarını sürükler */
 const CUR={x:0,z:0};
-function curAt(x,z,t,o){o=o||CUR;o.x=.55*Math.sin(t*.021+x*.0042+z*.0031)+.2*Math.sin(t*.057-z*.011);o.z=.55*Math.cos(t*.017-x*.0033+z*.0047)+.2*Math.cos(t*.049+x*.009);return o;}
+function curAt(x,z,t,o){return oceanCurrent(x,z,t,o||CUR);}
 let ballast=0,yawVel=0,bumpCd=0,creakCd=3;
 /* sert çarpma: hıza orantılı gövde hasarı, gürültü ve sarsıntı (düşük hızda sürtünme zarar vermez) */
 function hullBump(sp,c){
@@ -5149,7 +5156,16 @@ function updateCamera(dt){
   if(shake>.002){const sk=shake*CFG.shake/100;camera.position.x+=rr(-1,1)*sk*.5;camera.position.y+=rr(-1,1)*sk*.5;camera.rotateZ(rr(-1,1)*sk*.03);shake*=Math.exp(-5*dt);}
 }
 let lastZoneQ='';
+function updateOceanHUD(){
+  const d=Math.max(0,SURF-sub.position.y),c=oceanCurrent(sub.position.x,sub.position.z,worldTime(),WATER_FLOW),en=lang==='en';
+  $('navLabel').textContent=en?'HEADING':'ROTA';$('navHeading').textContent=String(Math.round(headingDegrees(subYaw))%360).padStart(3,'0')+'°';
+  $('oceanTitle').textContent=en?'NAVIGATION / LIVE':'SEYİR / CANLI VERİ';$('flowLabel').textContent=en?'CURRENT':'AKINTI';$('pressureLabel').textContent=en?'PRESSURE':'BASINÇ';$('lightLabel').textContent=en?'SUNLIGHT':'GÜN IŞIĞI';
+  $('flowRead').textContent=(Math.hypot(c.x,c.z)*1.94384).toFixed(1)+' kn';$('pressureRead').textContent=pressureBar(d).toFixed(1)+' bar';$('lightRead').textContent=Math.round(solarLight(NIGHT,d)*100)+'%';
+  const n=clamp(NOISE.base/18,0,1);$('oceanNoise').style.width=(n*100)+'%';$('oceanNoise').style.background=n>.65?'#d6a67f':'#acccb5';
+  $('noiseRead').textContent=en?(n>.65?'HIGH PROPELLER NOISE':n>.2?'ENGINE NOISE':'QUIET RUNNING'):(n>.65?'YÜKSEK PERVANE GÜRÜLTÜSÜ':n>.2?'MOTOR GÜRÜLTÜSÜ':'SESSİZ SEYİR');
+}
 function updateHUD(spd){
+  updateOceanHUD();
   $('battery').textContent=Math.round(battery)+'%';$('batteryBar').style.width=battery+'%';
   $('depth').textContent=sub.position.y>SURF-1.4?T.surface:Math.max(0,Math.round(SURF-sub.position.y))+' m';$('speed').textContent=(spd*1.94).toFixed(0)+' kn';
   {const z=zoneAt(sub.position.x,sub.position.z);$('zone').textContent=T.zones[z];if(z!==lastZoneQ){lastZoneQ=z;if(z!=='open')qEvent('zone',z);}}

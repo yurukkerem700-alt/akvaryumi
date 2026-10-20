@@ -48,3 +48,16 @@ body.inside #navInstrument,body.inside #oceanInstrument{display:none}
 .touch #oceanInstrument{display:none!important}.touch #navInstrument{top:55px;font-size:8px}.touch #navInstrument b{font-size:13px}.touch #navInstrument .navTicks{width:140px;height:6px}
 .touch #lobby>.card{display:flex;padding:18px}.touch #lobby .card>.hero{display:none}.touch #lobby .card>.eyebrow{order:-2;margin:0 0 10px}.touch #lobby .card>h1{order:-1;font-size:34px;margin:0 0 12px}.touch #lobby .card>p{display:none}.touch #lobby .card>.modes{display:flex;flex-wrap:wrap}.touch #lobby .card>.modes>.btn{flex:1}.touch #lobby .joinBox{flex:1;min-width:200px}.touch #lobby .grid{display:none}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* Safe centering keeps the top of long menus reachable on short displays. */
+#lobby{align-items:safe center}
+#lobby .msel button{padding:11px 6px;font-size:10px;min-height:38px}
+#lobby .msel button em{display:none}
+#lobby .msel button.on{background:#b4d8c8}
+#oceanInstrument{bottom:auto;top:90px}
+body:has(#catalogP:not(.hide):not([style*="display: none"])) #oceanInstrument{visibility:hidden}
+#swatches input[type=color]{width:24px;height:24px;border:1px solid var(--line);padding:0;background:transparent;border-radius:50%;overflow:hidden}
+.touch #lobby .card>.row:not(.act){order:1;margin-bottom:14px}
+.touch #lobby .card>.modes{order:2;margin-bottom:14px;padding-top:14px}
+.touch #lobby .card>.mrow{order:3}
+.touch #lobby .card>.act{order:4}
+.touch #lobby .card>.status,.touch #lobby .card>.foot{order:5}

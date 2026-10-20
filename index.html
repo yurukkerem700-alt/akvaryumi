@@ -503,7 +503,7 @@ sp.addEventListener('pointerdown',go);addEventListener('keydown',go,{once:true})
 </script>
 <script>
 setTimeout(function(){if(!window.__aquaOK)document.getElementById('err').style.display='grid';},15000);
-window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='SCRIPT')document.getElementById('err').style.display='grid';},true);
+window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='SCRIPT'&&e.target.type==='module'&&!window.__aquaOK)document.getElementById('err').style.display='grid';},true);
 </script>
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
@@ -546,6 +546,8 @@ import {oceanCurrent,CURRENT_GLSL,solarLight,headingDegrees,pressureBar,advectVe
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 window.__aquaOK=true;
+// A slow connection can recover after the initial watchdog timeout.
+document.getElementById('err').style.display='none';
 
 /* ================= Metinler ================= */
 const $=id=>document.getElementById(id);
@@ -683,7 +685,7 @@ const cleanColor=c=>COLORS.includes(c)||(typeof c==='string'&&/^#[0-9a-f]{6}$/i.
 const num=(v,d=0)=>Number.isFinite(+v)?+v:d;
 
 function applyLang(){
-  T=TEXT[lang];document.documentElement.lang=lang;
+  T=TEXT[lang];document.documentElement.lang=lang;$('cfgBtn2').textContent=lang==='en'?'SETTINGS':'AYARLAR';
   document.querySelectorAll('[data-i]').forEach(el=>{const v=T[el.dataset.i];if(typeof v==='string')el.textContent=v;});
   $('codeIn').placeholder=T.codePh;$('chatIn').placeholder=T.chatPh;$('langBtn').textContent=lang==='tr'?'EN':'TR';
   const navButtons={catBtn:['TÜRLER','SPECIES'],viewBtn:['BAKIŞ','VIEW'],inBtn:['KABİN','CABIN'],profBtn:['PROFİL','PROFILE'],garBtn:['TERSANE','SHIPYARD'],cfgBtn:['AYARLAR','SETTINGS']};
@@ -6047,10 +6049,11 @@ function enterGame(){
   running=true;document.body.classList.add('run');layoutCockpit();audioInit();sub.rotation.set(0,subYaw,0,'YXZ');hull=HULL_MAX;dead=false;renderWpn();
   $('lobby').style.display='none';$('cross').style.display='block';
   ['catalogP','radarP','zoneTag','questP'].forEach(id=>$(id).style.display='');renderQuests();
+  if(!isTouch){$('catalogP').classList.add('hide');$('questP').classList.add('min');}
   $('hint').style.display=isTouch?'none':'';setTimeout(()=>$('hint').style.opacity='0',14000);
   $('chat').style.display=net.mode==='solo'?'none':'flex';
   if(isTouch){$('touch').style.display='block';$('roomB').style.display=$('chatB').style.display=net.mode==='solo'?'none':'';}
-  const spawnA=Math.random()*6.28;sub.position.set(Math.cos(spawnA)*10,-4,8+Math.sin(spawnA)*6);
+  const spawnA=Math.random()*6.28;sub.position.set(Math.cos(spawnA)*10,-4,8+Math.sin(spawnA)*6);updateOceanHUD();
   renderCatalog();renderPlayers();
   if(net.mode==='solo'&&!tutOn)toast(T.start);
   if(isTouch&&net.mode==='solo'&&!tutOn&&!store.get('aqua-tut'))setTimeout(()=>{if(running&&!tutOn)startTutorial();},900);

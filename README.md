@@ -1,3 +1,16 @@
+## 21.10.2026 — Açık av sahası ve dalgıç
+
+- Akvaryumun yatay genişliği önceki sürümün iki katı; derinlik ekseni ve nüfus bütçesi korundu. Sınırdaki yapay kum yükseltisi kaldırıldı, çerçeveli camlar belirginleştirildi.
+- Daha geniş, aşınmış kaya ağızlı mağaralar; daha güçlü gün ışığı, daha uzak görüş ve geniş ölçekli doğal taban çanakları.
+- Makineli top: 0,038 saniye temel atış aralığı, 185 m/s çıkış hızı, daha düşük sürüklenme, daha uzun ömür ve daha yüksek hasar. Isınma yok; namlu çıkışı nişan noktasına yönelir.
+- Tür, boyut ve zırh yapısına bağlı dayanıklılık; bosslar serbest dolaşır, balık avlar ve yakın rakip bosslarla savaşır. Ekosistem ölümleri oyuncuya boss ödülü kazandırmaz.
+- Deniz marulu, kırmızı dallı yosun ve uzun şerit yosun siluetleri. Torpido basıncı bitkinin tüm yüksekliğini dikkate alır; kopan parçalar akıntıda sürüklenir. Yakındaki yapılar hasar alır ve desteklerini kaybedince çöker.
+- **H:** çapayı bırak/topla. **V:** dal / 14 m yakınken denizaltıya bin. **WASD:** bakış yönünde yüz ve yana hareket. **Q/E:** alçal/yüksel. **Shift:** hızlı yüz. **B:** birinci/üçüncü kişi.
+- Dalgıçta **1/2/3:** tüfek/mızrak/yumruk; sol tık saldırı, **F:** yakındaki hazineyi al veya çevreyi tara. Oksijen su altında azalır, yüzeyde yenilenir. Dalgıç öldükten üç saniye sonra park edilmiş denizaltıda doğar; denizaltının canı ayrı tutulur.
+- Dalış düğmeleri dokunmatik ekranda da bulunur. Maç modlarında dalış kapalıdır; serbest keşif ve işbirliği modlarında kullanılabilir. Uzak oyuncunun dalgıcı ve çapalanmış denizaltısı ayrı gösterilir.
+
+Doğrulama: `node --test tests/ocean.test.mjs`; izole localhost `?test=1` Playwright bağlamında `tests/expedition.browser.mjs` ve `tests/deep-flow.browser.mjs`. Test kancası yalnızca localhost üzerinde açılır; gerçek kullanıcı kaydıyla çalıştırılmaz.
+
 # Akvaryum Seferi
 
 ![Akvaryum Seferi — Derinlikleri Keşfet](cover.webp)

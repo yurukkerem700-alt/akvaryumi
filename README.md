@@ -1,3 +1,11 @@
+## 21.10.2026-3 — Canlı dengesi, mağara hasarı ve katı yüzeyler
+
+Mağara sürüleri artık normal canlı dizinine kayıtlıdır: mermi, torpido, mızrak ve yumruk hasarı alır, ölünce görünür örnekleri kaldırılır. 27 türün ayrı can, zırh, saldırı gücü, tepki biçimi ve yüzme hızı vardır; bireyin boyutu bu değerleri ölçekler. Patlama/özel silahların koşulsuz öldürme yolları hasar hesabına bağlandı. Çekiç başlı köpekbalıkları yakın hedeflere saldırır; saldırıya uğrayan türler karşılık verir veya kaçar. Nişan alınan canlının kalan canı gösterilir.
+
+Denizaltı, dalgıç ve kamera için süpürülmüş çarpışma kontrolü; duvar ve lentolarda aralıklı tek küre yerine yüzeyi kaplayan çarpışma örnekleri eklendi. İki uzun taraftaki YÖRÜKHAN GAMES panosu canlı süre, skor ve av raporuyla geri geldi. Yeni göstergeler kalıcı Göstergeleri kapat/aç düğmesiyle gizlenebilir.
+
+Önceki performans düzeltmeleri korunur. Ek doğrulama: `tests/combat-solids.browser.mjs` mağara hasarı, büyük canlıların tek atışa dayanması, saldırı/kaçış, hızlı hareket ve kamera çarpışması, duvar kenarı, pano içeriği ve gösterge düğmesini izole localhost bağlamında sınar.
+
 ## 21.10.2026 — Açık av sahası ve dalgıç
 
 - Akvaryumun yatay genişliği önceki sürümün iki katı; derinlik ekseni ve nüfus bütçesi korundu. Sınırdaki yapay kum yükseltisi kaldırıldı, çerçeveli camlar belirginleştirildi.

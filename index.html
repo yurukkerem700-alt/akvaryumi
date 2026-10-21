@@ -509,7 +509,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.21-1',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.21-2',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -767,7 +767,7 @@ scene.background=WATER.clone();
 scene.fog=new THREE.FogExp2(WATER,.0056*QC.vis);
 const renderer=new THREE.WebGLRenderer({antialias:!isTouch,powerPreference:'high-performance'});
 const PR_DPR=Math.min(window.devicePixelRatio||1,2),PRQ=isTouch&&QC.pr;
-const PR_MAX=PRQ?Math.min(PR_DPR,PRQ[1]):PR_DPR,PR_MIN=PRQ?Math.min(PRQ[0],PR_MAX):(isTouch?.7:.9);let prCur=PRQ?Math.min(PR_MAX,PRQ[2]):Math.min(PR_MAX,isTouch?1.25:1.75);
+const PR_MAX=PRQ?Math.min(PR_DPR,PRQ[1]):PR_DPR,PR_MIN=PRQ?Math.min(PRQ[0],PR_MAX):(isTouch?.65:.7);let prCur=PRQ?Math.min(PR_MAX,PRQ[2]):Math.min(PR_MAX,isTouch?1.1:1.25);
 const GOV_SLOW=QC.cap?.042:.027,GOV_FAST=QC.cap?.0345:.0185;
 renderer.setPixelRatio(prCur);
 renderer.setSize(innerWidth,innerHeight);
@@ -857,7 +857,7 @@ let signCv=null,signTex=null;
 {
   const ZT=[{b:[300,545,-305,-175],c:[.86,.93,.98],k:.8},{b:[-545,-300,-305,-175],c:[.03,.025,.025],k:.97},{b:[-545,-300,175,305],c:[.2,.25,.32],k:.7},{b:[300,545,175,305],c:[.38,.27,.6],k:.6},{b:[-295,295,-305,-175],c:[.98,.96,.88],k:.55},{b:[-295,295,175,305],c:[.58,.55,.5],k:.5},{b:[300,545,-170,170],c:[.7,.82,.9],k:.45},{b:[-545,-300,-170,170],c:[.8,.4,.24],k:.8}],_zc=new THREE.Color();
   for(const q of ZT)q.b=q.b.map((v,i)=>v*WS*(i<2?2:1));
-  const g=new THREE.PlaneGeometry(TW,TD,Math.round((isTouch?QC.seg[0]:560)*SEGK),Math.round((isTouch?QC.seg[1]:320)*SEGK));g.rotateX(-Math.PI/2);
+  const g=new THREE.PlaneGeometry(TW,TD,Math.round((isTouch?QC.seg[0]:380)*SEGK),Math.round((isTouch?QC.seg[1]:217)*SEGK));g.rotateX(-Math.PI/2);
   const _gz=new THREE.Color(),_alg=new THREE.Color(.21,.4,.17),_alg2=new THREE.Color(.12,.3,.22),_grv=new THREE.Color(.44,.43,.4),_shl=new THREE.Color(.96,.93,.86);
   const p=g.attributes.position,col=new Float32Array(p.count*3),c=new THREE.Color();
   for(let i=0;i<p.count;i++){
@@ -887,7 +887,7 @@ let signCv=null,signTex=null;
 }
 /* Su yüzeyi */
 const surfaceMat=stdMat({color:0x9fe9ff,emissive:0x1b8fb0,emissiveIntensity:.55,transparent:true,opacity:.62,roughness:.15,metalness:.2,side:THREE.DoubleSide,depthWrite:false},'surf',{v:'transformed.z+=sin(position.x*.07+uT*.8)*.45+cos(position.y*.09+uT*.6)*.35+sin((position.x+position.y)*.19+uT*1.4)*.15;',caus:2.2});
-{const s=new THREE.Mesh(new THREE.PlaneGeometry(TW,TD,Math.round((isTouch?110:220)*SEGK),Math.round((isTouch?63:126)*SEGK)),surfaceMat);s.rotation.x=-Math.PI/2;s.position.y=SURF;s.renderOrder=3;scene.add(s);}
+{const s=new THREE.Mesh(new THREE.PlaneGeometry(TW,TD,Math.round((isTouch?100:160)*SEGK),Math.round((isTouch?58:92)*SEGK)),surfaceMat);s.rotation.x=-Math.PI/2;s.position.y=SURF;s.renderOrder=3;scene.add(s);}
 
 /* ================= Gökyüzü: yıldızlar, ay, kayan yıldızlar, aurora (yalnızca su üstünden görünür) ================= */
 const skyMat=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,depthTest:false,fog:false,uniforms:{uT:U.t},
@@ -3038,6 +3038,7 @@ const hullLen=()=>{const D=SD[tierNow()];return (D.nose-D.tail)*(CREW.pilot?((pl
 /* üçüncü şahıs: kamera uzaklığı gövde boyuna göre (uzun denizaltı ekranı kaplamasın) */
 const camD=()=>fp&&!CREW.pilot?0:Math.max(camDist*Math.max(1,(CREW.pilot?((players.get(CREW.pilot)||{}).sc||1)*1.3:subSc)*.85),camDist/11*(hullLen()*.85+6));
 function enemyBodyHit(e,p,extra=0){
+  const bx=p.x-e.x,by=p.y-e.y,bz=p.z-e.z,br=Math.max(e.r,e.cfg.sc*6)+extra+1;if(bx*bx+by*by+bz*bz>br*br)return false;
   if((e.cfg.base||e.type)!=='eel')return Math.hypot(p.x-e.x,p.y-e.y,p.z-e.z)<e.r+extra;
   const scale=e.cfg.sc,cp=Math.cos(e.pitch),sn=Math.sin(e.yaw),cs=Math.cos(e.yaw),L=e.cfg.boss?8.4:6.4,wt=worldTime();
   for(let i=0;i<=32;i++){const z=-L/2+(L+.7)*i/32,k=1-sm(-4.3,3.6,z),x=Math.sin(wt*3.2+z*1.5)*.55*k,y=Math.cos(wt*2.1+z*1.1)*.1*k;
@@ -3163,12 +3164,27 @@ function fireGun(){
 /* süpürme testi: mermi bir adımda aldığı yolun doğru parçasıyla hedef arasındaki en yakın uzaklık (hızlı mermi ince hedeflerden tünellemez) */
 let SEG_T=0;
 function segD2(cx,cy,cz,ax,ay,az,bx,by,bz){const dx=bx-ax,dy=by-ay,dz=bz-az,l=dx*dx+dy*dy+dz*dz;let t=l>1e-9?((cx-ax)*dx+(cy-ay)*dy+(cz-az)*dz)/l:0;t=t<0?0:t>1?1:t;SEG_T=t;const x=ax+dx*t-cx,y=ay+dy*t-cy,z=az+dz*t-cz;return x*x+y*y+z*z;}
+/* Dynamic creature broadphase. One rebuild per simulation frame, shared by every bullet and boss. */
+const fishGrid=new Map(),FISH_CELL=48;let fishGridFrame=-1,fishGridRadius=1;
+function fishGridBuild(){
+  if(fishGridFrame===frameN)return;fishGridFrame=frameN;fishGridRadius=1;
+  for(const bucket of fishGrid.values())bucket.length=0;
+  const wt=worldTime();
+  for(let i=0;i<creatures.length;i++){const c=creatures[i];if(c.deadUntil>wt||!Number.isFinite(c.wx)||c.wx>1e5)continue;
+    const key=Math.floor(c.wx/FISH_CELL)+','+Math.floor(c.wz/FISH_CELL);let a=fishGrid.get(key);if(!a){a=[];fishGrid.set(key,a);}a.push(i);fishGridRadius=Math.max(fishGridRadius,hitR(c)||1);
+  }
+}
+function nearCreatureIds(x,z,r){
+  fishGridBuild();const out=[],radius=r+fishGridRadius;
+  const ix=Math.floor((x-radius)/FISH_CELL),ex=Math.floor((x+radius)/FISH_CELL),iz=Math.floor((z-radius)/FISH_CELL),ez=Math.floor((z+radius)/FISH_CELL);
+  for(let i=ix;i<=ex;i++)for(let j=iz;j<=ez;j++){const a=fishGrid.get(i+','+j);if(a)for(const id of a)out.push(id);}return out;
+}
 function bulletHit(b,wt){
   const p=b.p;HI.i=-1;HI.si=-1;
   if(p.y<floorQ(p.x,p.z,p.y)+.12||p.y>SURF-.15||Math.abs(p.x)>HX-.3||Math.abs(p.z)>HZ-.3)return 'env';
   for(const c of colsAt(p.x,p.z)){const dx=p.x-c.x,dy=p.y-c.y,dz=p.z-c.z;if(dx*dx+dy*dy+dz*dz<c.r*c.r*.8){HI.si=c.st?c.st.id:-1;if(c.bone)boneHit(p,c);return HI.si>=0?'s':'env';}}
   if(b.own){
-    for(let i=0;i<creatures.length;i++){const c=creatures[i];if(i===b.last||c.deadUntil>wt||c.wx>1e5)continue;const dx=p.x-c.wx,dy=p.y-c.wy,dz=p.z-c.wz,r=hitR(c)*.8+.12;if(segD2(c.wx,c.wy,c.wz,b.px,b.py,b.pz,p.x,p.y,p.z)<r*r){HI.i=i;p.set(b.px+(p.x-b.px)*SEG_T,b.py+(p.y-b.py)*SEG_T,b.pz+(p.z-b.pz)*SEG_T);return 'c';}}
+    for(const i of nearCreatureIds((b.px+p.x)*.5,(b.pz+p.z)*.5,Math.hypot(p.x-b.px,p.z-b.pz)*.5+.5)){const c=creatures[i];if(i===b.last||c.deadUntil>wt||c.wx>1e5)continue;const dx=p.x-c.wx,dy=p.y-c.wy,dz=p.z-c.wz,r=hitR(c)*.8+.12;if(segD2(c.wx,c.wy,c.wz,b.px,b.py,b.pz,p.x,p.y,p.z)<r*r){HI.i=i;p.set(b.px+(p.x-b.px)*SEG_T,b.py+(p.y-b.py)*SEG_T,b.pz+(p.z-b.pz)*SEG_T);return 'c';}}
     for(const e of enemies){if(e.dead)continue;const dx=p.x-e.x,dy=p.y-e.y,dz=p.z-e.z,r=e.r+.4;if(enemyBodyHit(e,p,.6)){HI.i=e.i;return 'e';}}
     for(const o of players.values())if(!o.dead&&!o.cr&&pvpOK(o.id)&&o.sub.g.position.distanceTo(p)<2.6*(o.sc||1))return 'p';
   }else if(b.age>.04&&!dead&&!CREW.pilot&&pvpOK(b.by)&&sub.position.distanceTo(p)<2.5*subSc)return 'me';
@@ -3614,7 +3630,7 @@ function deepTick(dt,t){
     }
     if(m.deepLid)m.deepLid.rotation.x+=((m.orbGone?-1.35:0)-m.deepLid.rotation.x)*(1-Math.exp(-dt*2));
   }
-  for(const o of DEEP_FISH){o.fish.visible=!o.m.gone&&camera.position.distanceTo(new THREE.Vector3(o.q.x,o.q.y,o.q.z))<100;if(!o.fish.visible)continue;
+  for(const o of DEEP_FISH){o.fish.visible=!o.m.gone&&(camera.position.x-o.q.x)**2+(camera.position.y-o.q.y)**2+(camera.position.z-o.q.z)**2<10000;if(!o.fish.visible)continue;
     for(let i=0;i<o.count;i++){const a=t*(o.sp==='moray'?.2:.09)+i*2.399,r=2+i%3;_v.set(o.q.x+Math.cos(a)*r,o.q.y-2+Math.sin(a*.7+i)*2,o.q.z+Math.sin(a)*r);_q.setFromEuler(_e.set(0,-a,0));_s.setScalar(o.scale);_m.compose(_v,_q,_s);o.fish.setMatrixAt(i,_m);if(running&&_v.distanceTo(sub.position)<8)tryDiscover(o.sp);}o.fish.instanceMatrix.needsUpdate=true;
   }
 }
@@ -4385,7 +4401,7 @@ function updateEnemyView(dt){
   for(const e of enemies){
     if(e.dead)continue;
     if(!auth){const k=1-Math.exp(-9*dt);e.x+=(e.nx-e.x)*k;e.y+=(e.ny-e.y)*k;e.z+=(e.nz-e.z)*k;e.yaw=angLerp(e.yaw,e.nyaw,k);e.pitch+=(e.npitch-e.pitch)*k;e.flash=Math.max(0,e.flash-dt);}
-    const m=e.mesh;m.position.set(e.x,e.y,e.z);m.rotation.set(e.pitch,e.yaw,e.st===8?Math.sin(now*.01+e.i)*.5:0,'YXZ');
+    const m=e.mesh,dx=e.x-camera.position.x,dy=e.y-camera.position.y,dz=e.z-camera.position.z,range=460+e.cfg.sc*6;m.visible=dx*dx+dy*dy+dz*dz<range*range;if(!m.visible)continue;m.position.set(e.x,e.y,e.z);m.rotation.set(e.pitch,e.yaw,e.st===8?Math.sin(now*.01+e.i)*.5:0,'YXZ');
     const fl=e.flash>0?e.flash*3:0;let r=fl,g=fl*.3,b=fl*.3;
     if(e.type==='eel'){const ch=e.st===5?.7+.5*Math.sin(now*.05):e.st===6?2:e.st===8?.4*Math.random():0;r+=ch*.2;g+=ch*.55;b+=ch*.9;}
     else if(e.st===2){r+=.5+.3*Math.sin(now*.04);}
@@ -5468,7 +5484,7 @@ function drawMap(){
    mc.fillStyle='#dfeff5';mc.fillText('⌂ '+tl('Antik harabe','Ancient ruin')+'  '+save.ruins.length+'/'+RUINS.length,ox+10,oy+42);mc.fillText('🏺 '+tl('Müze','Museum')+'  '+save.relics.length+'/'+RELICS.length,ox+10,oy+62);}
 }
 
-let govAcc=0,govN=0,govUp=0,aimT=0,signT=0;
+let govAcc=0,govN=0,govUp=0,aimT=0,signT=0,radarPaintT=0,cockpitPaintT=0;
 /* ================= Denizaltı içi: yürüyen kaptan, odalar, kapılar, şoför koltuğu ================= */
 /* I tuşu / 🚶: koltuktan kalkıp denizaltının içinde dolaşırsın. Koltuğa gidip E ile oturunca dümene geçersin.
    İç mekân ayrı bir sahnedir; ön camda dışarısı gerçek zamanlı görüntülenir (render hedefi). */
@@ -6081,8 +6097,8 @@ function animHuman(dt,t){
   h.LL.hp.rotation.set(thL,0,-.02);h.RL.hp.rotation.set(thR,0,.02);h.LL.kn.rotation.x=knL;h.RL.kn.rotation.x=knR;h.LL.an.rotation.x=anL;h.RL.an.rotation.x=anR;
 }
 function govern(rd){
-  if(rd>.12||document.hidden)return;
-  govAcc+=rd;if(++govN<40)return;
+  if(document.hidden||!(rd>0))return;rd=Math.min(rd,.25);
+  govAcc+=rd;if(++govN<(rd>.08?12:40))return;
   const avg=govAcc/govN;govAcc=0;govN=0;let nx=prCur;
   if(avg>GOV_SLOW&&prCur>PR_MIN){nx=Math.max(PR_MIN,prCur-.15);govUp=0;}
   else if(avg<GOV_FAST&&prCur<PR_MAX){if(++govUp>=3){nx=Math.min(PR_MAX,prCur+.1);govUp=0;}}
@@ -6134,12 +6150,12 @@ function loop(){
     discT+=dt;if(discT>.25&&!dead){discT=0;checkDiscover(9);}
     netT+=dt;if(netT>1/12){netT=0;if(!dead)sendState();}
     hudT+=dt;if(hudT>.1){hudT=0;updateHUD(spd);}
-    if(!isTouch||frameN%3===0)drawRadar(now);if($('mapM').style.display==='grid')drawMap();
+    if(now-radarPaintT>100){radarPaintT=now;drawRadar(now);if($('mapM').style.display==='grid')drawMap();}
   }
   if(running)updateTreasures(dt,now,t);
   v4Update(dt,now,t);v5Update(dt,now,t);v7Update(dt,now,t);v7Track(dt);v7Weapons(dt,now);
   if(running&&MS.mode==='ship')shipInterior(dt,now*.001);
-  if(running&&!IN.on)updateCockpit(now,spd);
+  if(running&&!IN.on&&!DIVE.on&&now-cockpitPaintT>50){cockpitPaintT=now;updateCockpit(now,spd);}
   if(IN.on){if(!isTouch||frameN%2===0){renderer.setRenderTarget(IN.rt);renderer.render(scene,camera);renderer.setRenderTarget(null);}renderer.render(IN.scene,IN.cam);}
   else ptime('çizim',()=>renderer.render(scene,camera));
   perfShow(dt);
@@ -8727,9 +8743,9 @@ function bossHunt(e,player,pd,dt){
   if(!e.cfg.boss)return false;
   e.huntCd=Math.max(0,(e.huntCd||0)-dt);e.scanCd=(e.scanCd||0)-dt;
   if(e.scanCd<=0){
-    e.scanCd=.65;e.prey=null;let best=Math.min(260,pd*.8);
+    e.scanCd=.65+(e.i%7)*.035;e.prey=null;let best=Math.min(260,pd*.8);
     for(const other of enemies){if(other===e||other.dead||!other.cfg.boss)continue;const d=Math.hypot(other.x-e.x,other.y-e.y,other.z-e.z);if(d<best){best=d;e.prey={enemy:other};}}
-    if(!e.prey){for(let i=0;i<creatures.length;i++){const c=creatures[i];if(c.deadUntil>worldTime()||c.wx>1e5||hitR(c)>e.r*.7)continue;const d=Math.hypot(c.wx-e.x,c.wy-e.y,c.wz-e.z);if(d<best){best=d;e.prey={fish:c,index:i};}}}
+    if(!e.prey){const wt=worldTime();for(const i of nearCreatureIds(e.x,e.z,best)){const c=creatures[i];if(c.deadUntil>wt||c.wx>1e5||hitR(c)>e.r*.7)continue;const d=Math.hypot(c.wx-e.x,c.wy-e.y,c.wz-e.z);if(d<best){best=d;e.prey={fish:c,index:i};}}}
   }
   const prey=e.prey;if(!prey||pd<e.r+24)return false;
   const q=prey.enemy||prey.fish;if(prey.enemy?q.dead:q.deadUntil>worldTime()){e.prey=null;return false;}

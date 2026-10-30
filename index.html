@@ -510,7 +510,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.21-3',reg=null,ready=false,busy=false;
+  var BUILD='2026.10.21-4',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -2499,7 +2499,7 @@ function fillQuests(){while(save.quests.length<3)save.quests.push(newQuest());}
 function questText(q){
   const tr=lang==='tr';
   switch(q.k){
-    case 'en':return tr?q.n+' '+ETYPE[q.a].tr+' avla':'Hunt '+q.n+' '+ETYPE[q.a].en;
+    case 'en':{const e=ETYPE[q.a];return e?(tr?q.n+' '+e.tr+' avla':'Hunt '+q.n+' '+e.en):(tr?q.n+' düşman avla':'Hunt '+q.n+' enemies');}
     case 'fish':return tr?q.n+' balık avla':'Hunt '+q.n+' fish';
     case 'sp':{const s=SPECIES[SP_IDX[q.a]];return tr?q.n+' '+s.tr+' avla':'Hunt '+q.n+' '+s.en;}
     case 'disc':return tr?q.n+' yeni tür keşfet':'Discover '+q.n+' new species';

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Akvaryum Seferi</string>
+    <string name="title_activity_main">Akvaryum Seferi</string>
+    <string name="package_name">com.keremyuruk.akvaryumseferi</string>
+    <string name="custom_url_scheme">com.keremyuruk.akvaryumseferi</string>
+</resources>

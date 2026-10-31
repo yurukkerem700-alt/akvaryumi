@@ -1,0 +1,8 @@
+{
+  "appId": "com.keremyuruk.akvaryumseferi",
+  "appName": "Akvaryum Seferi",
+  "webDir": "www",
+  "backgroundColor": "#04202e",
+  "android": { "allowMixedContent": false },
+  "ios": { "contentInset": "never", "limitsNavigationsToAppBoundDomains": false }
+}

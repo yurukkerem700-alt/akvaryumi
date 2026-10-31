@@ -1,0 +1,50 @@
+{
+  "name": "akvaryum-seferi-store",
+  "version": "2026.10.31",
+  "private": true,
+  "description": "Akvaryum Seferi — Google Play, App Store ve Steam paketleme",
+  "main": "electron/main.cjs",
+  "author": "Kerem Yuruk",
+  "scripts": {
+    "prepare:www": "node scripts/prepare-www.mjs",
+    "cap:sync": "npm run prepare:www && cap sync",
+    "android:aab": "npm run cap:sync && cd android && ./gradlew bundleRelease",
+    "desktop:dev": "npm run prepare:www && electron .",
+    "desktop:build": "npm run prepare:www && electron-builder --win --linux --dir"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.0",
+    "@capacitor/core": "^7.4.0",
+    "@capacitor/ios": "^7.4.0",
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^7.4.0",
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.keremyuruk.akvaryumseferi",
+    "productName": "Akvaryum Seferi",
+    "directories": {
+      "output": "dist-desktop"
+    },
+    "files": [
+      "electron/**",
+      "www/**",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "dir"
+      ]
+    },
+    "linux": {
+      "target": [
+        "dir"
+      ],
+      "category": "Game"
+    }
+  }
+}

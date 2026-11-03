@@ -1,3 +1,68 @@
+## 03.11.2026-7 — Güvenli geçitler ve mobil arayüz
+
+- Mağara merkez rotalarını kesen çevre kayaları kazı hacmine göre hem görünümden hem fiziksel çarpışmadan kaldırılır. Desteksiz kalan parçalar başlangıçta temizlenir. Mağara duvarı, kapı ve mühür çarpışmaları korunur.
+- Mağaraların temel yarıçapı 36 m oldu; kurtarılabilir ekipman ana geçit hacminin dışında üretilir. 16 denizaltının gövde merkezi, burun ve kıç örnekleri 14 mağarada toplam 26.208 süpürülmüş hareketle sınanır. Mühürlü girişler testten önce normal yapı yıkım işleviyle açılır; kapılar normal mekanizmayla açılır.
+- Uzak mağara kabukları, iç ayrıntılar, yuvalar ve istasyonlar görünür çevreye göre çizilir. Aynı açık su/havza/mağara kontrol akışında son kare çizim çağrısı 593'ten 409'a düştü; bu FPS ölçümü değildir.
+- Mobilde gösterge düğmesi ile açılır menü çakışması ve dalış panelinin menü düğmelerini örtmesi düzeltildi. Sefer defteri başlangıçta gizlidir; kapatma düğmesi kaydırırken erişilebilir kalır. Hedef listesi odaktayken sürüş başlamaz.
+- Dil değişikliği hem üst düğmeden hem mobil ayarlar ekranından yeni sefer kontrollerine uygulanır.
+
+## 03.11.2026-6 — Kurtarma seferleri
+
+- On keşif bölgesine toplam 30 kalıcı kurtarma hedefi eklendi: araştırma dronu, kargo sandığı ve örnek tüpleri.
+- Sonar yakındaki ekipmanı 20 saniye işaretler. Denizaltıyla yaklaşık 10 m, dalgıçla 4 m yakınında F veya KURTAR düğmesini kullan. Düşük hızda 3 saniye konumunu koru; vinç hattı ekipmanı araca çeker. Hızlanınca veya uzaklaşınca kurtarma iptal olur, ekipman yerine döner ve çarpışması geri gelir.
+- Kurtarılan ekipman 120 altın, 40 deneyim, skor ve hazine görevi ilerlemesi verir. Her buluntu kayda yazılır ve bir kez ödül verir. Sefer defterinde bölge başına kurtarma sayısı görünür.
+- Araştırması tamamlanan bölgenin yönlendirmesi saha istasyonuna geçer; ikmal konumunu bulmak kolaylaşır.
+
+## 03.11.2026-5 — Derinlik radarı ve güvenli solo menüler
+
+- Radar yakınlığında üç eksendeki gerçek mesafe kullanılır. Yüzlerce metre alttaki veya üstteki canlılar yatay olarak yakın diye görünmez; ölü temaslar gizlenir. Yakın düşmanlarda yukarı/aşağı işareti vardır.
+- Solo oyunda harita, sefer defteri, ayarlar, profil veya tersane açıkken ve sekme arka plandayken simülasyon durur. Oyun saati de dondurulur; menüden çıkarken balık konumları ve süreler ileri atlamaz. Çevrimiçi dünya bu menülerde durmaz.
+- Harita veya sefer defteri açıkken klavye/oyun kolu saldırıları işlenmez; kapatma kontrolleri korunur.
+- Kalıcı araştırma ilerlemesi ve SON SEFERDEN DEVAM ET, gerçek sayfa yenilemesiyle doğrulandı; ödül tekrarı yok.
+
+### Tekrarlanabilir doğrulama
+
+`npm ci` ardından `npm test` saf fonksiyon testlerini, `npm run test:browser` tarayıcı kontrollerini çalıştırır. Windows'ta kurulu Edge kullanılır; diğer sistemlerde Playwright Chromium kurulumu gerekir. Her kontrol ayrı geçici tarayıcı bağlamında başlar. Test sunucusu localhost üzerinde rastgele bir port açar ve `.mjs` dosyalarını doğru MIME türüyle sunar. Three.js bağımlılığı testte yerel npm paketinden sağlanır; gerçek kullanıcı kaydı kullanılmaz. Testler için PWA devre dışıdır, normal oyunda çevrimdışı önbellek korunur.
+
+## 03.11.2026-4 — Araştırma seferleri, saha istasyonları ve taban akışı
+
+- Havza araştırması: haritala → sonar kullan → 60 m çevrede 3 m/s altında 8 saniye ölçüm yap. Araştırma bir kez 300 altın verir ve kayda yazılır. Hızlanınca veya bölgeden uzaklaşınca ölçüm ilerlemesi düşer.
+- Araştırması biten havzada saha istasyonu kullanılabilir. İstasyona 20 m içinde, 2 m/s altında yaklaş ve F ya da dokunmatik düğmeyi kullan. Yakında düşman varsa ikmal yapılmaz. Kullanım gövdenin %40'ını, 60 batarya puanını ve en fazla iki torpidoyu yeniler; 120 saniye bekleme süresi vardır.
+- Sefer defteri tüm bölgelerin keşif/sonar/araştırma durumunu ve rota seçimini sunar. Haritada bölgeye tıklanarak hedef seçilir; rota çizilir. Mağara içindeyken çıkış düğmesi önceki güvenli merkez noktaya yönlendirir; otomatik pilot değildir.
+- Son serbest solo sefer konumu 15 saniyede bir ve sayfadan çıkarken kaydedilir. Ana menüden SON SEFERDEN DEVAM ET ile dönülür. Dalgıçta, ölü durumdayken veya maç modunda konum üzerine yazılmaz. Güvenlik sınırlarının dışındaki bozuk konumlar reddedilir.
+- Taban 396 parçaya ayrılır; görünür çevreye göre etkinleşir. Renk/konum tamponları paylaşılır, nükleer etkinin renk güncellemeleri korunur. Merkez kontrolünde 2.229.840 indeksin 98.304'ü etkin kaldı (~%95.6 daha az taban indeksi); bu bir FPS artışı ölçümü değildir.
+- Hedef listesi veya metin alanı odaktayken oyun tuşları işlenmez. Dil değişiminde yeni kontroller de güncellenir. Kayıttaki keşif anahtarlarının üst sınırı yeni sefer aşamalarını koruyacak şekilde artırıldı.
+
+## 03.11.2026-3 — İki kat genişlik ve altı yeni bölge
+
+- Akvaryum yatay genişliği 2240×WS → 4480×WS: önceki yerel sürümün tam iki katı. Derinlik ekseni ve eski bölge konumları korunur; tabanın yatay örnek sayısı da iki katına çıkarılarak eski arazi örnek aralığı korunur.
+- Yeni bölgeler: Bazalt Sırtları, Sıcak Baca Sahası, Batık Kaldera, Kireçtaşı Labirenti, Heyelan Kanyonu ve Dış Kıta Sahanlığı. Her bölgenin farklı taban profili, kaya dağılımı, su paleti, canlı topluluğu ve açık mağarası vardır. Toplam 10 havza/keşif alanı, 14 mağara, 42 mağara canlı grubu ve 34 ayrılmış devriye yuvası.
+- Kaya sütunlarının tekdüze halka düzeni kaldırıldı; bölgeye göre asimetrik kümeler, katmanlı çıkıntılar ve kanyon duvarları oluşturuldu. Kaya geometrisinde ortak köşe normalleri yumuşatıldı.
+- Poly Haven Rock Face 03 kayalık taramasının 1K renk/yükseklik haritaları kullanılır. Dünya koordinatlarında üç yönden örnekleme, kabartı normal hesabı ve mineral katmanları sayesinde büyütülen kayalarda UV gerilmesi azaltılır. Kaynak ve CC0 bilgileri: assets/geology/CREDITS.md. Yaklaşık 1.2 MB ek indirme; PWA önbelleğinde saklanır.
+- Baca sahasının mineral bulutları yalnızca yakın çevrede üretilir; lav ışığı verilmez. Dayanak: https://oceanservice.noaa.gov/facts/vents.html . Bunlar tam bir ısı/kimya simülasyonu değildir.
+- Keşif panelindeki hedef seçimi tüm 10 alana mesafe ve yön verir; harita yeni bölgeleri gösterir.
+- Eski mağara girişlerine ikinci kez uygulanan koordinat ölçeği kaldırıldı. Girişler ve bütün merkez rotaları akvaryum sınırları içinde doğrulanır.
+
+## 03.11.2026-2 — Okyanus keşfi: tasarım, yuvalar ve devriyeler
+
+- Mağara girişleri doğru biyom ölçeğine taşındı; yeni yuvalar derin havza ve çukur kenarında. Sekiz mağara genişleyen odalar ve içeri yönelen iniş rotaları kullanır.
+- Dört havzada kaya kuleleri, mağaralarda 24 yuva nişi ve 24 canlı grubu vardır. Mürenler kaya kenarında saklanır; nautilus ve fener balıkları farklı rotalarda gezinir. Gürültüye tepki ve sakinleşme yumuşatılır; yaralanma tepkisi geçit sınırında tutulur.
+- Her havzada iki devriye, her mağarada rotaya bağlı bir yılan balığı için ayrılmış toplam 16 düşman yuvası vardır. Yaklaşınca etkinleşir; oda sahibi yönetir, maç modlarında temizlenir. Havza tabanının 42 m yakınına girmek 240 altın verir; aynı kayıt tekrar ödül alamaz.
+- Derinlik paneli en yakın havzayı ve taban mesafesini gösterir. Mağaralarda akıntı zayıflar; derinlikle güneş ışığı azalır. Deniz çayırı ve kelp 100 m üzerindeki derinliklerde üretilmez.
+- Işık modeli NOAA'nın açıklamasını temel alan bir oyun yaklaşımıdır: https://oceanservice.noaa.gov/facts/light_travel.html . Abisal Çukur bir yer adıdır; bilimsel abisal derinlik simülasyonu değildir. Denizaltı performansı ve basınç dayanımı mevcut oyun dengesini kullanır.
+
+Kapsam ve sınırlar: Üretilen kaya ve mağara geometrisi gerçek zamanlı prosedüreldir; referans fotoğraflarla aynı görsel kalite iddiası yoktur. Nişler fiziksel üreme/yavru simülasyonu içermez. Ağ eşleştirme ve iki gerçek cihazla uçtan uca bağlantı ayrıca doğrulanmamıştır. Yerel değişiklikler yayınlanmamıştır.
+
+Doğrulama: `node --test tests/ocean.test.mjs tests/depths.test.mjs`; izole localhost bağlamında `tests/ocean-expedition.browser.mjs`, `tests/combat-solids.browser.mjs`, `tests/deep-flow.browser.mjs`. Mobil dokunmatik açılışında sekiz mağara, 24 yuva grubu ve dört keşif alanı doğrulandı.
+
+## 03.11.2026 — Okyanus derinlikleri, faz 1
+
+Açık tabana Büyük Okyanus Yarığı, Abisal Çukur, Derin Balık Havzası ve Kırık Sırt Geçidi eklendi. Arazi yüksekliği ve hareket/hasar taban sorguları aynı deterministik alanı kullanır. Mevcut altı mağaranın inişi 155 metreden 310 metreye, temel yarıçapı 25 metreden 32 metreye çıkarıldı. İki yeni açık mağara, mevcut canlı hasar ve keşif sistemiyle birlikte eklendi. Haritada derin alan adları gösterilir. Ağ konum sınırı yeni derinliklere uyarlandı; PWA sürümü 2026.11.03-1.
+
+Bu faz oynanabilir coğrafya altyapısıdır. Referanslardaki görsel kalite, ayrıntılı yuva davranışı ve fizik/ekoloji iyileştirmeleri sonraki fazlardır. Yeni düşman dalgası veya savaş etkinliği eklenmedi; mevcut canlılarla çatışma sistemi kullanılır.
+
+Doğrulama: `node --test tests/ocean.test.mjs tests/depths.test.mjs`.
+
 ## 21.10.2026-3 — Canlı dengesi, mağara hasarı ve katı yüzeyler
 
 Mağara sürüleri artık normal canlı dizinine kayıtlıdır: mermi, torpido, mızrak ve yumruk hasarı alır, ölünce görünür örnekleri kaldırılır. 27 türün ayrı can, zırh, saldırı gücü, tepki biçimi ve yüzme hızı vardır; bireyin boyutu bu değerleri ölçekler. Patlama/özel silahların koşulsuz öldürme yolları hasar hesabına bağlandı. Çekiç başlı köpekbalıkları yakın hedeflere saldırır; saldırıya uğrayan türler karşılık verir veya kaçar. Nişan alınan canlının kalan canı gösterilir.

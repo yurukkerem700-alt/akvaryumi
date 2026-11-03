@@ -17,7 +17,7 @@ export async function checkExpedition(page){
     const away=e.x;e.st=0;e.wp=null;wander(e,8,1);a.roaming=Math.abs(e.x-away)>0;
     return a;
   })()`));
-  assert.equal(result.width,2);assert.equal(result.depth,1);
+  assert.equal(result.width,4);assert.equal(result.depth,1);
   for(const [key,value] of Object.entries(result))if(!['width','depth'].includes(key))assert.equal(value,true,key+JSON.stringify(result));
   return result;
 }

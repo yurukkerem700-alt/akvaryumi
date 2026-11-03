@@ -510,7 +510,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.10.21-3',reg=null,ready=false,busy=false;
+  var BUILD='2026.11.03-7',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -544,9 +544,11 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js" crossorigin>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
 <script type="module">
+import {surveyStep,safeResume} from './expeditions.mjs';
+import {oceanRelief,OCEAN_SITES,nestMotion,deepLight} from './depths.mjs';
 import {oceanCurrent,CURRENT_GLSL,solarLight,headingDegrees,pressureBar,advectVelocity} from './ocean.mjs';
 import * as THREE from 'three';
-import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
 window.__aquaOK=true;
 // A slow connection can recover after the initial watchdog timeout.
 document.getElementById('err').style.display='none';
@@ -694,6 +696,7 @@ function applyLang(){
   for(const [id,names] of Object.entries(navButtons)){const b=$(id);b.textContent=names[lang==='en'?1:0];b.setAttribute('aria-label',b.textContent);}
   renderCatalog();renderPlayers();renderWpn();renderQuests();drawSign();if(garageOpen())renderGarage();qLabel();renderModeSel();renderQChat();if(profOpen())renderProfile();try{if(running)layoutCockpit();}catch{}
   {const wb=$('worldBtn');if(wb){wb.textContent='🌊 '+(BIGW?T.worldBig:T.worldSmall);wb.title=T.worldTip;}}
+  updateOceanLanguage();
 }
 
 /* ================= Sabitler ve yardımcılar ================= */
@@ -701,7 +704,7 @@ function applyLang(){
 /* Telefon: küçük akvaryum (1120×640, eski boyut); bilgisayar: dev akvaryum (2240×1280). ?dunya=buyuk|kucuk ile zorlanır. Aynı odadaki herkes aynı boyutta olmalı: oda kodu büyük harfle başlıyorsa dev, rakamla başlıyorsa küçük akvaryum. */
 const BIGW=qs.get('dunya')==='buyuk'?true:qs.get('dunya')==='kucuk'?false:!isTouch;
 const WS=(BIGW?2:1)*Math.SQRT2,DS=BIGW?8:2,DN=n=>Math.round(n*DS),SEGK=BIGW?1.5:1.2;
-const TW=2240*WS,TD=640*WS,HX=TW/2,HZ=TD/2,SURF=36,BASE=-32,TANK_BOTTOM=-135,DEEP_LIMIT=-360;
+const TW=4480*WS,TD=640*WS,HX=TW/2,HZ=TD/2,SURF=36,BASE=-32,TANK_BOTTOM=-620,DEEP_LIMIT=-820;
 const DEEP_CAVES=[],DEEP_GRID=new Map(),DEEP_FISH=[];
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const sm=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
@@ -729,7 +732,7 @@ function floorH(x,z){
   h+=(vnoise(x*.008+40,z*.008-20)-.5)*17+(vnoise(x*.05-3,z*.05+8)-.5)*2.2;                                                  // geniş kum tepeleri ve çanaklar
   h+=(Math.sin(x*.21+vnoise(x*.035,z*.035)*11)*.5+.5)*.38*(.4+vnoise(x*.02+9,z*.02));                                      // kum dalgacıkları
   const ex=Math.max(0,Math.abs(x)-HX+20)/20,ez=Math.max(0,Math.abs(z)-HZ+16)/16;h-=28*gauss(X,Z,210,-90,65,32)+52*gauss(X,Z,-420,220,65,42);h+=0; // glass boundaries: no artificial sand berm
-  return Math.max(h,TANK_BOTTOM+2.6);
+  return Math.max(h+oceanRelief(x,z,WS),TANK_BOTTOM+2.6);
 }
 /* Çalışma zamanı sorguları için tembel doldurulan 2 m'lik yükseklik ızgarası (floorH ile aynı sonuç, çok daha ucuz) */
 const FG=2,FGX=Math.ceil(TW/FG)+4,FGZ=Math.ceil(TD/FG)+4,fgrid=new Float32Array(FGX*FGZ).fill(NaN);
@@ -750,6 +753,12 @@ function registerDeepCave(m){
 }
 function carveEntrances(){const p=FLOORG.attributes.position;for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i);p.setY(i,deepFloor(x,z,Infinity,floorH(x,z)));}p.needsUpdate=true;FLOORG.computeVertexNormals();FLOORG.computeBoundingSphere();}
 const ZONES=[
+  {id:'frontier0',x:[-1055,-865],z:[-250,-130]},
+  {id:'frontier1',x:[-835,-645],z:[120,240]},
+  {id:'frontier2',x:[-895,-705],z:[-80,40]},
+  {id:'frontier3',x:[605,795],z:[-250,-130]},
+  {id:'frontier4',x:[805,995],z:[120,240]},
+  {id:'frontier5',x:[915,1105],z:[-60,60]},
   {id:'wreck',x:[-32,32],z:[-62,-2]},{id:'coral',x:[38,128],z:[-74,-4]},{id:'kelp',x:[-128,-48],z:[-74,6]},
   {id:'grass',x:[-42,42],z:[16,76]},{id:'arch',x:[52,128],z:[14,76]},{id:'jelly',x:[-128,-50],z:[16,76]},
   {id:'trench',x:[150,270],z:[-150,-30]},{id:'temple',x:[-270,-140],z:[-150,-50]},{id:'graveyard',x:[140,270],z:[40,150]},{id:'dunes',x:[-270,-140],z:[50,150]},
@@ -783,7 +792,7 @@ const sun=new THREE.DirectionalLight(0xfaffff,2.6);sun.position.set(-30,80,-20);
 const fill=new THREE.DirectionalLight(0x6fd8ff,1.1);fill.position.set(40,-10,30);scene.add(fill);
 
 /* Shader enjeksiyonu: su kostikleri + sallanma animasyonları */
-let FLOORG=null;
+let FLOORG=null;const TERRAIN={tiles:[],mesh:null,time:0};
 const U={day:{value:1},t:{value:0},cam:{value:new THREE.Vector3()},bend:{value:[new THREE.Vector4(0,0,0,0),new THREE.Vector4(0,0,0,0),new THREE.Vector4(0,0,0,0)]}};
 /* denizaltı (ve yakındaki oyuncular) geçerken yosunlar ve otlar yana eğilir: xyz = dünya konumu, w = etki yarıçapı */
 const BENDV='vec2 flow=oceanFlow(ip.xz,uT);transformed.xz+=flow*position.y*position.y*1.7;for(int bi=0;bi<3;bi++){vec4 bq=uBend[bi];if(bq.w>0.){vec3 bd=ip-bq.xyz;float bl=length(bd.xz);float bf=smoothstep(bq.w,0.,bl)*(1.-smoothstep(18.,34.,abs(bd.y)));if(bf>0.){vec2 bu=bd.xz/max(bl,.3);transformed.x+=bu.x*bf*1.1*position.y*position.y;transformed.z+=bu.y*bf*1.1*position.y*position.y;}}}';
@@ -859,7 +868,7 @@ let signCv=null,signTex=null;const scoreBoards=[];
 {
   const ZT=[{b:[300,545,-305,-175],c:[.86,.93,.98],k:.8},{b:[-545,-300,-305,-175],c:[.03,.025,.025],k:.97},{b:[-545,-300,175,305],c:[.2,.25,.32],k:.7},{b:[300,545,175,305],c:[.38,.27,.6],k:.6},{b:[-295,295,-305,-175],c:[.98,.96,.88],k:.55},{b:[-295,295,175,305],c:[.58,.55,.5],k:.5},{b:[300,545,-170,170],c:[.7,.82,.9],k:.45},{b:[-545,-300,-170,170],c:[.8,.4,.24],k:.8}],_zc=new THREE.Color();
   for(const q of ZT)q.b=q.b.map((v,i)=>v*WS*(i<2?2:1));
-  const g=new THREE.PlaneGeometry(TW,TD,Math.round((isTouch?QC.seg[0]:380)*SEGK),Math.round((isTouch?QC.seg[1]:217)*SEGK));g.rotateX(-Math.PI/2);
+  const g=new THREE.PlaneGeometry(TW,TD,Math.round((isTouch?QC.seg[0]:380)*SEGK*2),Math.round((isTouch?QC.seg[1]:217)*SEGK));g.rotateX(-Math.PI/2);
   const _gz=new THREE.Color(),_alg=new THREE.Color(.21,.4,.17),_alg2=new THREE.Color(.12,.3,.22),_grv=new THREE.Color(.44,.43,.4),_shl=new THREE.Color(.96,.93,.86);
   const p=g.attributes.position,col=new Float32Array(p.count*3),c=new THREE.Color();
   for(let i=0;i<p.count;i++){
@@ -875,7 +884,7 @@ let signCv=null,signTex=null;const scoreBoards=[];
     col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;
   }
   g.setAttribute('color',new THREE.BufferAttribute(col,3));g.computeVertexNormals();
-  FLOORG=g;scene.add(new THREE.Mesh(g,stdMat({vertexColors:true,roughness:1},'floor',{caus:1.25})));
+  FLOORG=g;TERRAIN.mesh=new THREE.Mesh(g,stdMat({vertexColors:true,roughness:1},'floor',{caus:1.25}));scene.add(TERRAIN.mesh);
   // cam paneller
   const glassMat=new THREE.MeshStandardMaterial({color:0xd8fbff,transparent:true,opacity:.18,roughness:.05,metalness:.2,side:THREE.DoubleSide,depthWrite:false});
   const gy=(SURF+4+TANK_BOTTOM)/2,gh=SURF+4-TANK_BOTTOM;
@@ -928,6 +937,7 @@ const NIGHT_BG=new THREE.Color(0x0a1a2c),HC_UNDER=new THREE.Color(0xcff6ff),HC_N
 const SURF_UNDER=new THREE.Color(0x9fe9ff),SURF_NIGHT=new THREE.Color(0x1f5f80);
 /* Bölgeye göre su rengi / sis / ışık (renk, yoğunluk, ışık katsayısı) */
 const ZENV={ice:[0x3aa6c8,.0048,1.1],volcano:[0x4a2a2a,.0085,.8],abyss:[0x04162a,.012,.42],crystal:[0x2b2f80,.0075,.85],lagoon:[0x1fc0c6,.0034,1.2],sunken:[0x0e5f80,.006,.95],bluehole:[0x0a5fb0,.0042,1],canyon:[0x6a3d34,.0075,.9]};
+for(const [i,r] of OCEAN_SITES.slice(4).entries()){ZENV['frontier'+i]=r.kind==='limestone'?[0x255563,.0045,1]:r.kind==='vents'?[0x15303a,.008,.7]:r.kind==='shelf'?[0x255568,.004,1]:[0x163344,.006,.8];}
 const envCol=WATER.clone(),envTgt=new THREE.Color();let envD=.0056,envL=1,aboveWater=false,skyK=0;
 function splash(x,z,v){
   const k=clamp(v/8,.3,1);
@@ -970,6 +980,7 @@ function updateEnv(dt){
   {const tt=worldTime(),slot=Math.floor(tt/360),f=tt/360-slot,k=AMBS[slot%AMBS.length];AMB.k=k;AMB.i=sm(0,.1,f)*(1-sm(.82,1,f));
    if(running&&AMB.i>.3&&AMB.said!==slot&&k!=='none'){AMB.said=slot;toast(k==='bloom'?'🌿 '+tl('Plankton çiçeklenmesi — görüş azaldı, dev planktonla beslenenler yaklaşıyor','Plankton bloom — visibility drops, filter feeders gather'):k==='bleach'?'🪸 '+tl('Mercan beyazlaşması — resif stres altında','Coral bleaching — the reef is under stress'):'✨ '+tl('Mercan toplu yumurtlaması — gece resife bak','Mass coral spawning — watch the reef at night'));}
    const bl=k==='bleach'?AMB.i:0;for(const m of CORALMATS){m.emissive.setScalar(.32*bl);m.color.setScalar(1-.18*bl);}
+   if(!above){const light=deepLight(SURF-camera.position.y);sun.intensity*=light;hemi.intensity*=.12+.88*light;scene.fog.color.multiplyScalar(.18+.82*light);scene.background.copy(scene.fog.color);for(const r of rays)r.visible=r.userData.keep&&light>.25;}
    caveDark(dt,above);
    if(k==='bloom'&&!above){scene.fog.density*=1+.9*AMB.i;scene.fog.color.lerp(_bloomCol,.3*AMB.i);scene.background.copy(scene.fog.color);}
    if(k==='spawn'&&running&&!above&&NIGHT>.35&&AMB.i>.15){const z=zoneAt(camera.position.x,camera.position.z);if(z==='coral'||z==='lagoon'||z==='arch'||z==='sunken'){const n=(dt*(isTouch?18:42)*AMB.i)+Math.random();for(let i=0;i<n&&i<3;i++){const x=camera.position.x+rr(-38,38),zz=camera.position.z+rr(-38,38);spawnBubble(x,floorQ(x,zz)+rr(.3,1.4),zz,.025+Math.random()*.03,rr(-.12,.12),rr(.25,.7),rr(-.12,.12));}}}}
@@ -978,9 +989,10 @@ function updateEnv(dt){
 /* ================= Kayalar ve kemerler ================= */
 const pk2l=a=>a[(R()*a.length)|0];
 function rockGeo(seed){
-  const g=new THREE.IcosahedronGeometry(1,isTouch?1:2),p=g.attributes.position;
+  let g=new THREE.IcosahedronGeometry(1,isTouch?1:2);const p=g.attributes.position;
   for(let i=0;i<p.count;i++){_v.fromBufferAttribute(p,i);const k=.78+Math.sin(_v.x*3.1+seed)*.12+Math.cos(_v.y*4.3+seed*2)*.1+Math.sin(_v.z*5.2+seed)*.08;_v.multiplyScalar(k);p.setXYZ(i,_v.x,_v.y,_v.z);}
-  g.computeVertexNormals();return g;
+  g.deleteAttribute('normal');g.deleteAttribute('uv');g=mergeVertices(g,1e-4);g.computeVertexNormals();
+  const rp=g.attributes.position,uv=new Float32Array(rp.count*2);for(let i=0;i<rp.count;i++){uv[i*2]=Math.atan2(rp.getZ(i),rp.getX(i))/(Math.PI*2)+.5;uv[i*2+1]=rp.getY(i)*.5+.5;}g.setAttribute('uv',new THREE.BufferAttribute(uv,2));return g;
 }
 {
   const lists=[[],[],[]],rc=['#5d6a6c','#6c665c','#4f5c63','#7a7466','#58625a'];
@@ -1014,14 +1026,14 @@ function rockGeo(seed){
 {
   const kelpParts=[];for(let k=0;k<3;k++){const g=new THREE.PlaneGeometry(.9,1,1,18);g.translate(0,.5,0);const p=g.attributes.position;for(let i=0;i<p.count;i++){const y=p.getY(i);p.setX(i,p.getX(i)*(1-y*.35)+Math.sin(y*14+k)*.18);}g.rotateY(k*Math.PI/3);kelpParts.push(g);}
   const kelpGeo=merge(kelpParts);kelpGeo.computeVertexNormals();
-  const kl=[];const addK=(x,z)=>{const y=floorH(x,z);const h=Math.min(rr(18,46),SURF-3-y);kl.push({x,y,z,ry:rr(0,6),sx:rr(.9,1.4),sy:h,sz:1,c:['#3f8f3a','#5f8f2a','#2f7a45','#7a8f2a'][(R()*4)|0]});};
+  const kl=[];const addK=(x,z)=>{const y=floorH(x,z);if(SURF-y>100)return;const h=Math.min(rr(18,46),SURF-3-y);kl.push({x,y,z,ry:rr(0,6),sx:rr(.9,1.4),sy:h,sz:1,c:['#3f8f3a','#5f8f2a','#2f7a45','#7a8f2a'][(R()*4)|0]});};
   for(let i=0;i<DN(260);i++){const [x,z]=zp('kelp');addK(x,z);}
   for(let i=0;i<420*WS;i++){const x=rr(-HX+6,HX-6),z=(R()<.5?-1:1)*rr(HZ-12,HZ-5);addK(x,z);}
   const sway='float sw=sin(uT*.9+ip.x*.21+ip.z*.17+position.y*2.2)*2.2+sin(uT*1.7+ip.z*.3)*.5;transformed.x+=sw*position.y*position.y;transformed.z+=cos(uT*.7+ip.x*.13+position.y*1.8)*1.3*position.y*position.y;'+BENDV;
   lowCount(regFlora(inst(kelpGeo,stdMat({roughness:.8,side:THREE.DoubleSide},'kelp',{v:sway,caus:.6}),thinOrder(kl),true),kl,4.5,true),1);
   const grassParts=[];for(let k=0;k<3;k++){const g=new THREE.PlaneGeometry(.2,1,1,5);g.translate(rr(-.2,.2),.5,rr(-.2,.2));g.rotateY(k*Math.PI/3);grassParts.push(g);}
   const grassGeo=merge(grassParts);
-  const gl=[];const addG=(x,z)=>gl.push({x,y:floorH(x,z)-.05,z,ry:rr(0,6),sx:rr(.8,1.3),sy:rr(1.2,3.6),sz:rr(.8,1.3),c:['#4c9a3c','#6aa23a','#3b8a4a','#8aa83a'][(R()*4)|0]});
+  const gl=[];const addG=(x,z)=>{if(SURF-floorH(x,z)>100)return;gl.push({x,y:floorH(x,z)-.05,z,ry:rr(0,6),sx:rr(.8,1.3),sy:rr(1.2,3.6),sz:rr(.8,1.3),c:['#4c9a3c','#6aa23a','#3b8a4a','#8aa83a'][(R()*4)|0]});};
   for(let i=0;i<DN(2600);i++){const [x,z]=zp('grass');addG(x,z);}
   for(let p=0;p<DN(300);p++){const cx=rr(-HX+10,HX-10),cz=rr(-HZ+10,HZ-10);const zn=zoneAt(cx,cz);for(let i=0;i<30;i++){const gx=cx+rr(-5,5),gz=cz+rr(-5,5);if(zn!=='ice'&&zn!=='volcano'&&zn!=='crystal'&&zn!=='canyon')addG(gx,gz);}}
   lowCount(regFlora(inst(grassGeo,stdMat({roughness:.9,side:THREE.DoubleSide},'grass',{v:'transformed.x+=sin(uT*1.3+ip.x*.4+ip.z*.3)*.45*position.y*position.y;transformed.z+=cos(uT*1.1+ip.z*.35)*.3*position.y*position.y;',caus:.7}),thinOrder(gl),true),gl,6,true),.5);
@@ -1131,7 +1143,7 @@ const chestPos=new THREE.Vector3();let chestGroup=null;
 
 /* ================= Zenginleştirme: yosun çayırları, deniz yaşamı, antik harabeler ================= */
 const R2=mulberry32(918273),r2=(a,b)=>a+R2()*(b-a),pk2=a=>a[(R2()*a.length)|0];
-const lush=(x,z)=>{const zn=zoneAt(x,z);return zn!=='ice'&&zn!=='volcano'&&zn!=='abyss'&&zn!=='crystal'&&zn!=='canyon';};
+const lush=(x,z)=>{const zn=zoneAt(x,z);if(SURF-floorH(x,z)>100)return false;return zn!=='ice'&&zn!=='volcano'&&zn!=='abyss'&&zn!=='crystal'&&zn!=='canyon';};
 const meadowF=(x,z)=>vnoise(x*.04+11,z*.04-5)*.65+vnoise(x*.13,z*.13+2)*.35;
 const TSPOTS=[];   // hazine yerleşimleri: {type,x,y,z,ry,id}
 /* Antik harabeler: ring = sütun halkası, rows = sütun sırası, wall = duvar parçası, st = heykel, gate = kapı, steps = tiyatro basamağı */
@@ -1658,6 +1670,10 @@ function addSchool(sp,n,ax,ay,az,amp,fr,spread,minAlt,opt={}){
   for(let i=0;i<26;i++){const [x,z]=zp(['kelp','grass','lagoon','kelp','jelly'][i%5]);addSchool('seadragon',1,x,floorH(x,z)+rr(3,7),z,[3,1,3],[rr(.12,.22),rr(.15,.25),rr(.12,.22)],0,2,{foodie:false});}
   for(let i=0;i<10;i++){const [x,z]=zp('abyss');addSchool('blobfish',1,x,floorH(x,z)+1.5,z,[12,.4,9],[rr(.04,.07),rr(.08,.12),rr(.04,.07)],0,1,{foodie:false});}
   }
+}
+for(const region of OCEAN_SITES.slice(4)){
+  const x=region.x*WS*2,z=region.z*WS,y=floorH(x,z);
+  for(const [sp,n,height] of [[region.kind==='shelf'?'manta':'nautilus',3,14],['angler',3,5],['moray',2,2]])addSchool(sp,n,x,y+height,z,[35,3,22],[.035,.05,.03],5,2,{foodie:false});
 }
 creatures.forEach((c,i)=>{c.deadUntil=-1e9;c.ry=0;c.sc=1;c.k=i;c.cap1=-1;c.capN=null;});
 const specMesh={};
@@ -2381,8 +2397,11 @@ const keys={},vk={fwd:0,turn:0,up:0,down:0,boost:0,run:0};
 const teamDisc=new Map(),pendingDisc=new Set();
 const players=new Map();// uzaktaki oyuncular
 const net={mode:'solo',peer:null,conns:new Map(),host:null,myId:'me',code:null,offset:0,bestRtt:1e9};
-const worldTime=()=>(performance.now()+net.offset)/1000;
-let sonarReveal={until:0,x:0,z:0};
+const WORLD_CLOCK={paused:0,start:null};
+const worldTime=()=>((net.mode==='solo'?((WORLD_CLOCK.start??performance.now())-WORLD_CLOCK.paused):performance.now())+net.offset)/1000;
+function setWorldPaused(paused){const now=performance.now();if(paused&&WORLD_CLOCK.start===null)WORLD_CLOCK.start=now;else if(!paused&&WORLD_CLOCK.start!==null){WORLD_CLOCK.paused+=now-WORLD_CLOCK.start;WORLD_CLOCK.start=null;}}
+function shouldPauseExpedition(){return running&&net.mode==='solo'&&(document.hidden||$('mapM').style.display==='grid'||expeditionJournal.style.display==='grid'||cfgOpen()||profOpen()||garageOpen());}
+let sonarReveal={until:0,x:0,y:0,z:0};
 let HULL_MAX=250,TORP_MAX=6,MINE_MAX=3,TORP_RELOAD=4.5,spdMul=1,subSc=1,drainMul=1,regenMul=1,fp=store.get('aqua-fp')!=='0',frameN=0,curMine=false;
 let hull=HULL_MAX,swvCd=0,dead=false,deadT=0,invuln=0,hurtT=0,inkT=0,stunT=0,lastHit={by:null,t:-1e9},shieldT=0,shieldHp=0,shieldCd=0,shieldFlash=0,repairT=0,kits=3,kitReload=0,weapon=0,mineAmmo=3,mineReload=0,mineSeq=0,empCd=0,netEnT=0;
 const kills=new Map(),blastLog=[];
@@ -2428,7 +2447,7 @@ try{const o=JSON.parse(store.get(SAVE_KEY)||'null');if(o&&typeof o==='object'){
   save.owned=Array.isArray(o.owned)?[...new Set(o.owned.filter(i=>Number.isInteger(i)&&i>=0&&i<SUBS.length).concat(0))]:[0];
   save.tier=save.owned.includes(o.tier)?o.tier:0;
   for(const k in save.up)save.up[k]=clamp(Math.floor(num(o.up&&o.up[k])),0,UPG_MAX);
-  save.relics=Array.isArray(o.relics)?o.relics.filter(x=>typeof x==='string').slice(0,20):[];save.tech=Array.isArray(o.tech)?o.tech.filter(Number.isInteger).slice(0,60):[];save.myst=Array.isArray(o.myst)?o.myst.filter(x=>typeof x==='string').slice(0,40):[];save.ruins=Array.isArray(o.ruins)?o.ruins.filter(x=>typeof x==='string').slice(0,40):[];save.loot=Math.max(0,Math.floor(num(o.loot)));
+  save.relics=Array.isArray(o.relics)?o.relics.filter(x=>typeof x==='string').slice(0,20):[];save.tech=Array.isArray(o.tech)?o.tech.filter(Number.isInteger).slice(0,60):[];save.myst=Array.isArray(o.myst)?o.myst.filter(x=>typeof x==='string').slice(0,128):[];save.ruins=Array.isArray(o.ruins)?o.ruins.filter(x=>typeof x==='string').slice(0,40):[];save.loot=Math.max(0,Math.floor(num(o.loot)));
   save.quests=Array.isArray(o.quests)?o.quests.filter(validQuest).slice(0,3).map(q=>({k:q.k,a:q.a,n:q.n,p:Math.min(q.p,q.n),r:q.r})):[];}}catch{}
 const persist=()=>store.set(SAVE_KEY,JSON.stringify(save));
 const refreshGold=()=>document.querySelectorAll('.goldV').forEach(e=>{e.textContent=save.gold;});
@@ -2649,8 +2668,8 @@ function sonarEffect(x,y,z,color){const m=new THREE.Mesh(sonarGeo,sonarMat.clone
 function doSonar(){
   if(!running)return;if(!shipCan('sonar')){shipDeny('sonar');return;}if(sonarCd>0){toast(T.sonarCd);return;}
   sonarCd=4*mxF('scd');gearKick(local,'sonar',GD.sonar);const p=sub.position;sonarEffect(p.x,p.y,p.z,me.color);sfx.sonar();toast(T.sonar);
-  sonarReveal={until:performance.now()+7000,x:p.x,z:p.z};checkDiscover(30);{const n=revealTreasures(p,170*mxF('srad'));if(n)setTimeout(()=>toast('📡 '+tl(n+' hazine işareti sonarda!',n+' treasure signals on sonar!')),700);}
-  mystSonar(p);
+  sonarReveal={until:performance.now()+7000,x:p.x,y:p.y,z:p.z};checkDiscover(30);{const n=revealTreasures(p,170*mxF('srad'));if(n)setTimeout(()=>toast('📡 '+tl(n+' hazine işareti sonarda!',n+' treasure signals on sonar!')),700);}
+  mystSonar(p);oceanSurveyPulse(p);oceanSalvageScan(p);
   sendNet({t:'sonar',p:[+p.x.toFixed(2),+p.y.toFixed(2),+p.z.toFixed(2)]});
 }
 function doFood(){
@@ -3500,14 +3519,52 @@ const MDEF=[
   {id:'cave4',kind:'cave',zone:'volcano',sealed:0,R:12,th:'lava',ic:'🕳',tr:'Magma Mağarası',en:'Magma Cave',bonus:220,lore:12},
   {id:'cave5',kind:'cave',zone:'sunken',sealed:1,R:13,th:'cyan',ic:'🕳',tr:'Mühürlü Mağara',en:'Sealed Cave',bonus:300,lore:13},
   {id:'cave6',kind:'cave',zone:'bluehole',sealed:1,R:14,th:'cyan',ic:'🕳',tr:'Mavi Mağara',en:'Blue Cave',bonus:320,lore:13},
+  {id:'nursery',kind:'cave',zone:'bluehole',sealed:0,R:18,th:'cyan',ic:'🕳',tr:'Derin Balık Yuvaları',en:'Deep Nursery',bonus:350,lore:12},
+  {id:'riftden',kind:'cave',zone:'abyss',sealed:0,R:20,th:'amber',ic:'🕳',tr:'Uçurum Sığınağı',en:'Rift Refuge',bonus:400,lore:12},
+  {id:'frontier0',kind:'cave',zone:'bluehole',sealed:0,R:16,th:'amber',ic:'🕳',tr:'Bazalt Geçitleri',en:'Basalt Passages',bonus:400,lore:12,oceanSite:4},
+  {id:'frontier1',kind:'cave',zone:'bluehole',sealed:0,R:17,th:'lava',ic:'🕳',tr:'Baca Altı Galerisi',en:'Vent Gallery',bonus:400,lore:12,oceanSite:5},
+  {id:'frontier2',kind:'cave',zone:'bluehole',sealed:0,R:18,th:'cyan',ic:'🕳',tr:'Kaldera Mahzeni',en:'Caldera Vault',bonus:400,lore:12,oceanSite:6},
+  {id:'frontier3',kind:'cave',zone:'bluehole',sealed:0,R:16,th:'ice',ic:'🕳',tr:'Kireçtaşı Tünelleri',en:'Limestone Tunnels',bonus:400,lore:12,oceanSite:7},
+  {id:'frontier4',kind:'cave',zone:'bluehole',sealed:0,R:17,th:'amber',ic:'🕳',tr:'Heyelan Sığınağı',en:'Landslide Refuge',bonus:400,lore:12,oceanSite:8},
+  {id:'frontier5',kind:'cave',zone:'bluehole',sealed:0,R:18,th:'cyan',ic:'🕳',tr:'Sahanlık Mağarası',en:'Shelf Cavern',bonus:400,lore:12,oceanSite:9},
   {id:'vault1',kind:'vault',zone:'temple',sealed:1,ic:'🏺',tr:'Gömülü Mabet',en:'Buried Shrine',bonus:260,lore:13},
   {id:'vault2',kind:'vault',zone:'lagoon',sealed:1,ic:'🏺',tr:'Batık Kutsal Oda',en:'Sunken Sanctum',bonus:260,lore:13},
   {id:'vault3',kind:'vault',zone:'arch',sealed:1,ic:'🏺',tr:'Kemerin Altındaki Oda',en:'Chamber Beneath the Arch',bonus:240,lore:13}
 ];
 const MYSTS=[];
 const boneMat=stdMat({roughness:.88,flatShading:true,vertexColors:true},'bone',{caus:.8});
-const rockRelief=(()=>{const c=document.createElement('canvas');c.width=c.height=256;const ctx=c.getContext('2d'),im=ctx.createImageData(256,256);for(let y=0;y<256;y++)for(let x=0;x<256;x++){const k=(y*256+x)*4,v=clamp(125+24*Math.sin(y*.37+Math.sin(x*.08)*3)+18*Math.sin(x*1.4+y*.92)+13*Math.sin(x*2.7-y*1.1),0,255);im.data[k]=im.data[k+1]=im.data[k+2]=v;im.data[k+3]=255;}ctx.putImageData(im,0,0);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(6,4);return t;})();
+const rockRelief=(()=>{const c=document.createElement('canvas');c.width=c.height=256;const ctx=c.getContext('2d'),im=ctx.createImageData(256,256);for(let y=0;y<256;y++)for(let x=0;x<256;x++){const k=(y*256+x)*4,v=clamp(85+65*vnoise(x*.055,y*.055)+40*vnoise(x*.18+9,y*.18)+22*vnoise(x*.6,y*.6)+18*Math.sin(y*.27+vnoise(x*.035,y*.035)*6),0,255);im.data[k]=im.data[k+1]=im.data[k+2]=v;im.data[k+3]=255;}ctx.putImageData(im,0,0);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(6,4);return t;})();
 const caveRockMat=stdMat({roughness:.96,flatShading:true},'cavernRock',{caus:.5});
+const scannedRockColor=new THREE.TextureLoader().load('./assets/geology/rock-color.jpg');scannedRockColor.colorSpace=THREE.SRGBColorSpace;
+const scannedRockHeight=new THREE.TextureLoader().load('./assets/geology/rock-height.jpg');
+for(const t of [scannedRockColor,scannedRockHeight]){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());}
+function geologyMaterial(){
+  const mat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.97,side:THREE.DoubleSide});
+  mat.onBeforeCompile=shader=>{
+    shader.uniforms.uGeology={value:scannedRockHeight};shader.uniforms.uGeoColor={value:scannedRockColor};
+    shader.vertexShader='varying vec3 vGeology;\n'+shader.vertexShader;
+    shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+      vec4 geoWorld=vec4(transformed,1.);
+      #ifdef USE_INSTANCING
+      geoWorld=instanceMatrix*geoWorld;
+      #endif
+      vGeology=(modelMatrix*geoWorld).xyz;`);
+    shader.fragmentShader='uniform sampler2D uGeology;uniform sampler2D uGeoColor; varying vec3 vGeology;\n'+shader.fragmentShader;
+    shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+      vec3 gn=abs(normalize(cross(dFdx(vGeology),dFdy(vGeology))));gn/=max(.001,gn.x+gn.y+gn.z);
+      float grain=texture2D(uGeology,vGeology.yz*.16).r*gn.x+texture2D(uGeology,vGeology.xz*.16).r*gn.y+texture2D(uGeology,vGeology.xy*.16).r*gn.z;
+      float layers=.94+.06*sin(vGeology.y*.8+grain*5.);
+      vec3 rockColor=texture2D(uGeoColor,vGeology.yz*.16).rgb*gn.x+texture2D(uGeoColor,vGeology.xz*.16).rgb*gn.y+texture2D(uGeoColor,vGeology.xy*.16).rgb*gn.z;
+      diffuseColor.rgb*=mix(vec3(.8),rockColor*2.2,.75)*(.8+.4*grain)*layers;`);
+    shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
+      vec3 gp=-vViewPosition,gsx=dFdx(gp),gsy=dFdy(gp);
+      vec3 gr1=cross(gsy,normal),gr2=cross(normal,gsx);
+      float gdet=dot(gsx,gr1);
+      vec3 ggrad=sign(gdet)*(dFdx(grain)*gr1+dFdy(grain)*gr2);
+      normal=normalize(abs(gdet)*normal-.16*ggrad);`);
+  };
+  mat.customProgramCacheKey=()=> 'ocean-geology-v1';return mat;
+}
 const glowBasic=c=>new THREE.MeshBasicMaterial({color:c});
 const CAVE_TH={amber:[0xffa03a,0xffd27a],ice:[0xcfeeff,0x7fd8ff],violet:[0xb06aff,0xff7ad8],lava:[0xff5a14,0xffb040],cyan:[0x38ffd8,0x38b6ff]};
 function mystSpot(zone){
@@ -3565,12 +3622,12 @@ const CAVE_ROCK={amber:['#4a3f38','#554740','#3e342f'],ice:['#4a5560','#55616c',
 function caveBuild(m){
   const th=CAVE_TH[m.th]||CAVE_TH.cyan,pal=CAVE_ROCK[m.th]||CAVE_ROCK.cyan;
   m.id='depth-'+m.id;m.bonus+=1200;
-  const Rr=25+(m.R-12)*.6,step=8,main=[],n=42,phase=m.x*.017+m.z*.011;
-  let x=m.x,z=m.z,a=m.ry,prevY=null;
+  const Rr=36+(m.R-12)*.6,step=8,main=[],n=42,phase=m.x*.017+m.z*.011;
+  let x=m.x,z=m.z,a=Math.atan2(-m.z,-m.x)+Math.sin(m.x)*.3,prevY=null;
   for(let i=0;i<=n;i++){
-    const f=.92+.12*Math.sin(i*.28+phase)+.36*Math.exp(-(((i-22)/4)**2))+.55*Math.exp(-(((i-37)/4)**2));
+    const f=.96+.1*Math.sin(i*.28+phase)+.65*Math.exp(-(((i-22)/4)**2))+.75*Math.exp(-(((i-37)/4)**2));
     let ground=-1e9;for(const u of [-1,-.5,0,.5,1])ground=Math.max(ground,floorH(x-Math.sin(a)*Rr*f*u,z+Math.cos(a)*Rr*f*u));
-    let y=floorH(m.x,m.z)+Rr*.62-155*Math.pow(i/n,1.05)+Math.sin(i*.21)*2;prevY=y;
+    let y=Math.max(DEEP_LIMIT+Rr*2,floorH(m.x,m.z)+Rr*.62-310*Math.pow(i/n,1.05)+Math.sin(i*.21)*2);prevY=y;
     main.push({x,y,z,a,f});a+=Math.sin(i*.31+phase)*.035;
     if(Math.abs(x+Math.cos(a)*step)>HX-70||Math.abs(z+Math.sin(a)*step)>HZ-70)a+=.16;
     x+=Math.cos(a)*step;z+=Math.sin(a)*step;
@@ -3588,7 +3645,7 @@ function caveBuild(m){
     }
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.setIndex(idx);const uv=[];for(let i=0;i<rings;i++)for(let j=0;j<=K;j++)uv.push(j/K,i*.13);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();
-  const mat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,side:THREE.DoubleSide,bumpMap:rockRelief,bumpScale:.12});
+  const mat=geologyMaterial();
   const shell=new THREE.Mesh(g,mat);scene.add(shell);m.rockMesh=shell;m.dome=null;
   /* Collision samples track the visible skin. They leave the centre clear for a Titan. */
   const cols=[];for(let i=0;i<rings;i++)for(let j=0;j<24;j++){
@@ -3654,7 +3711,7 @@ function buildDeepRuins(m){
   m.cx=q.x;m.cz=q.z;m.orbY=floor+2.8;m.orb.position.set(q.x,m.orbY,q.z);m.spr.position.copy(m.orb.position);
   for(const [sp,index,count] of [['moray',10,3],['nautilus',24,5],['angler',36,7]]){
     const q=m.path[index],cfg=SPEC_CFG[sp],mat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.7,emissive:sp==='angler'?0x050908:0});
-    const fish=new THREE.InstancedMesh(GEO_NEW[sp](),mat,count);fish.frustumCulled=false;scene.add(fish);const group={m,sp,q,fish,count,scale:(cfg.s||1)*.8,targets:[]};
+    const fish=new THREE.InstancedMesh(GEO_NEW[sp](),mat,count);fish.frustumCulled=false;scene.add(fish);const group={m,sp,q,fish,count,scale:(cfg.s||1)*.8,targets:[],shelter:0};
     for(let j=0;j<count;j++){const c={sp,deep:true,group,deepIndex:j,size:.8,sc:group.scale,k:creatures.length,deadUntil:-1e9,yaw:0,ry:0,pitch:0,pos:new THREE.Vector3(q.x,q.y-2,q.z),off:new THREE.Vector3(),wx:q.x,wy:q.y-2,wz:q.z,a0:j*2.399,capN:null};creatures.push(c);group.targets.push(c);}DEEP_FISH.push(group);
   }
 }
@@ -3669,9 +3726,10 @@ function deepTick(dt,t){
     if(m.deepLid)m.deepLid.rotation.x+=((m.orbGone?-1.35:0)-m.deepLid.rotation.x)*(1-Math.exp(-dt*2));
   }
   for(const o of DEEP_FISH){
-    const dx=camera.position.x-o.q.x,dy=camera.position.y-o.q.y,dz=camera.position.z-o.q.z;o.fish.visible=!o.m.gone&&dx*dx+dy*dy+dz*dz<180*180;
+    const dx=camera.position.x-o.q.x,dy=camera.position.y-o.q.y,dz=camera.position.z-o.q.z;o.fish.visible=!o.m.gone&&dx*dx+dy*dy+dz*dz<180*180;if(o.nest)o.nest.visible=o.fish.visible;
+    const near=running&&!dead?Math.hypot(sub.position.x-o.q.x,sub.position.y-o.q.y,sub.position.z-o.q.z):Infinity;const alarm=clamp((32-near)/20,0,1)*(.35+clamp(subVel.length()/10,0,1)*.65);o.shelter=(o.shelter||0)+(alarm-(o.shelter||0))*(1-Math.exp(-dt*(alarm>(o.shelter||0)?2:.3)));
     for(let i=0;i<o.count;i++){const c=o.targets[i];if(c.deadUntil>t){o.fish.setMatrixAt(i,_zero);continue;}
-      const a=t*(o.sp==='moray'?.2:.09)+i*2.399,r=2+i%3;c.pos.set(o.q.x+Math.cos(a)*r,o.q.y-2+Math.sin(a*.7+i)*2,o.q.z+Math.sin(a)*r);c.off.multiplyScalar(Math.exp(-dt*.3));creatureReaction(c,dt,t);c.wx=c.pos.x+c.off.x;c.wy=c.pos.y+c.off.y;c.wz=c.pos.z+c.off.z;c.ry=c.reactUntil>t?c.yaw:-a;
+      const motion=nestMotion(o.sp,i,t,32-o.shelter*20,10);const lateral=motion.x,along=motion.z;c.pos.set(o.q.x-Math.sin(o.q.a)*lateral+Math.cos(o.q.a)*along,o.q.y+motion.y,o.q.z+Math.cos(o.q.a)*lateral+Math.sin(o.q.a)*along);const a=motion.yaw;c.off.multiplyScalar(Math.exp(-dt*.3));creatureReaction(c,dt,t);c.wx=c.pos.x+c.off.x;c.wy=c.pos.y+c.off.y;c.wz=c.pos.z+c.off.z;const side=-Math.sin(o.q.a)*(c.wx-o.q.x)+Math.cos(o.q.a)*(c.wz-o.q.z),lim=o.q.R*.65;if(Math.abs(side)>lim){const d=side-clamp(side,-lim,lim);c.wx+=Math.sin(o.q.a)*d;c.wz-=Math.cos(o.q.a)*d;}c.wy=clamp(c.wy,o.q.y-o.q.R*.55,o.q.y+o.q.R*.5);c.ry=c.reactUntil>t?c.yaw:o.q.a+a;
       _v.set(c.wx,c.wy,c.wz);_q.setFromEuler(_e.set(c.pitch,c.ry,0));_s.setScalar(o.scale);_m.compose(_v,_q,_s);o.fish.setMatrixAt(i,_m);if(running&&_v.distanceTo(sub.position)<8)tryDiscover(o.sp);
     }o.fish.instanceMatrix.needsUpdate=true;
   }
@@ -3703,7 +3761,8 @@ function sealMake(m,x,y,z,s){
   m.seal=st;m.sx=x;m.sy=y;m.sz=z;m.ss=s;
 }
 for(const d of MDEF){
-  const [x,z,fy]=mystSpot(d.zone),m=Object.assign({x,z,fy,ry:mr(0,6.28),revealed:false,rise:1,found:false},d);MYSTS.push(m);
+  const spot=mystSpot(d.zone);if(d.kind==='cave'){if(Number.isInteger(d.oceanSite)){const region=OCEAN_SITES[d.oceanSite];spot[0]=region.x*WS*2;spot[1]=(region.z+35)*WS;}if(d.id==='nursery'){spot[0]=430*WS*2;spot[1]=60*WS;}if(d.id==='riftden'){spot[0]=-420*WS*2;spot[1]=265*WS;}spot[2]=floorH(spot[0],spot[1]);}
+  const [x,z,fy]=spot,m=Object.assign({x,z,fy,ry:mr(0,6.28),revealed:false,rise:1,found:false},d);MYSTS.push(m);
   if(m.kind==='whale')whaleBuild(m);else if(m.kind==='cave')caveBuild(m);else vaultBuild(m);
   if(m.kind==='whale'){m.st=regStruct({kind:'bone',bone:1,x:m.x,y:m.baseY,z:m.z,r:m.sc*8,hp:12,cols:[],obj:m.g,dc:'#d9d3bf',color:'#d9d3bf',hard:!!m.sealed});}
   if(m.kind==='whale'&&m.sealed){m.g.visible=false;m.g.position.y=m.baseY-m.depth;m.rise=0;sealMake(m,m.x+Math.cos(m.ry)*m.sc*2,m.fy+m.sc*3,m.z-Math.sin(m.ry)*m.sc*2,m.sc*4.2);}
@@ -4429,7 +4488,7 @@ function updateEnemiesAI(dt){
     else{
       e.stT+=dt;e.cd-=dt;
       let tt=null,td=1e9;for(const a of tg){let d=Math.hypot(a.pos.x-e.x,a.pos.y-e.y,a.pos.z-e.z)/DIFF().ag;if(a.sl>1&&d>14)d*=a.sl;if(a.dc)d*=.45;if(d<td){td=d;tt=a;}}
-      if(!bossHunt(e,tt,td,dt))AI[e.type](e,tt,td,dt,tg);
+      if(!oceanPatrolAI(e,dt)&&!bossHunt(e,tt,td,dt))AI[e.type](e,tt,td,dt,tg);
     }
     {const mg=e.cfg.boss&&e.r>15?e.r*1.3:8;e.x=clamp(e.x,-HX+mg,HX-mg);e.z=clamp(e.z,-HZ+mg,HZ-mg);}e.y=clamp(e.y,floorQ(e.x,e.z,e.y)+(e.cfg.boss?e.r*.55:2.5),SURF-(e.cfg.boss?e.r*.5:4));
     for(const c of colsAt(e.x,e.z)){const dx=e.x-c.x,dy=e.y-c.y,dz=e.z-c.z,d2=dx*dx+dy*dy+dz*dz,rs=c.r+e.r*.5;if(d2<rs*rs&&d2>1e-4){const d=Math.sqrt(d2),k=(rs-d)/d;e.x+=dx*k;e.y+=dy*k;e.z+=dz*k;}}
@@ -5088,12 +5147,14 @@ canvas.addEventListener('wheel',e=>{if(IN.on){IN.dist=clamp(IN.dist+e.deltaY*.00
 const KEYMAP={arrowup:'w',arrowdown:'s',arrowleft:'a',arrowright:'d',pageup:'e',pagedown:'q'};
 addEventListener('keydown',e=>{
   if(chatOpen()){if(e.key==='Enter'){const m=$('chatIn').value.trim().slice(0,120);$('chatIn').value='';closeChat();if(m){playerMsg(me.name,me.color,m);sendNet({t:'chat',m});}}else if(e.key==='Escape')closeChat();return;}
-  if(document.activeElement&&document.activeElement.tagName==='INPUT')return;
+  if(document.activeElement&&(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)||document.activeElement.isContentEditable))return;
   if(cfgOpen()){if(e.key==='Escape'||e.key===',')toggleCfg(false);return;}
   if(garageOpen()){if(e.key==='Escape'||e.key.toLowerCase()==='g')toggleGarage(false);return;}
   if(profOpen()){if(e.key==='Escape'||e.key.toLowerCase()==='k')toggleProfile(false);return;}
   if(e.key==='Escape'&&$('loreCard').style.display==='block'){$('loreCard').style.display='none';return;}
   if(!running)return;
+  if($('mapM').style.display==='grid'){if(e.key==='Escape'||e.key.toLowerCase()==='m')toggleMap(false);return;}
+  if(expeditionJournal.style.display==='grid'){if(e.key==='Escape')expeditionJournal.style.display='none';return;}
   if(pkOpen&&(e.key==='1'||e.key==='2'||e.key==='3')){pickPerk(+e.key-1);e.preventDefault();return;}
   if(!e.repeat&&e.key.toLowerCase()==='h'&&!CREW.pilot){toggleAnchor();return;}
   if(!e.repeat&&e.key.toLowerCase()==='v'){toggleDive();return;}
@@ -5106,7 +5167,7 @@ addEventListener('keydown',e=>{
   if(e.repeat){keys[k]=true;return;}
   keys[k]=true;
   if(IN.on||IN.busy){if(!IN.busy)inKey(k);return;}
-  if(k===' ')doSonar();else if(k==='f')doFood();else if(k==='l')toggleLight();else if(k==='m')toggleMap();
+  if(k===' ')doSonar();else if(k==='f'){if(!oceanSalvageInteract()&&!oceanStationService())doFood();}else if(k==='l')toggleLight();else if(k==='m')toggleMap();
   else if(k.length===1&&k>='1'&&k<='9')setWeapon(+k-1);
   else if(k==='0'||k==='j')doSpecial();
   else if(k==='n')doNet();else if(k==='x')doMelee();else if(k==='y')fireWeapon();else if(k==='b')toggleView();else if(k==='i')enterInterior();else if(k==='t')toggleCatalog();else if(k==='g')toggleGarage();
@@ -5137,7 +5198,7 @@ function pollGamepad(dt){
   gpOn=true;
   const B=i=>!!(g.buttons[i]&&g.buttons[i].pressed),V=i=>g.buttons[i]?g.buttons[i].value:0,edge=i=>{const n=B(i),o=!!gpPrev[i];gpPrev[i]=n;return n&&!o;};
   if(!running){if(edge(0)||edge(9))$('soloBtn').click();return;}
-  if(garageOpen()||profOpen()||chatOpen()||$('mapM').style.display==='grid'){if(edge(1)||edge(9)){toggleGarage(false);toggleProfile(false);toggleMap(false);}for(let i=0;i<16;i++)gpPrev[i]=B(i);return;}
+  if(garageOpen()||profOpen()||cfgOpen()||expeditionJournal.style.display==='grid'||chatOpen()||$('mapM').style.display==='grid'){if(edge(1)||edge(9)){toggleGarage(false);toggleProfile(false);toggleCfg(false);expeditionJournal.style.display='none';toggleMap(false);}for(let i=0;i<16;i++)gpPrev[i]=B(i);return;}
   const lx=gpDz(g.axes[0]||0),ly=gpDz(g.axes[1]||0),rx=gpDz(g.axes[2]||0),ry=gpDz(g.axes[3]||0);
   vk.fwd=-ly;vk.turn=lx;
   if(IN.on){IN.cy-=rx*dt*2.8;IN.cp=clamp(IN.cp+ry*dt*2.2,IN.fpv?-1.2:-.55,IN.fpv?1.2:1.05);}
@@ -5160,7 +5221,7 @@ function pollGamepad(dt){
 function openChat(){if(document.pointerLockElement)document.exitPointerLock();$('chat').classList.add('typing');$('chatIn').style.display='block';$('chatIn').focus();}
 function closeChat(){$('chatIn').blur();$('chatIn').style.display='none';$('chat').classList.remove('typing');}
 function toggleMap(force){const open=force??$('mapM').style.display!=='grid';$('mapM').style.display=open?'grid':'none';if(open){drawMap();if(document.pointerLockElement)document.exitPointerLock();}}
-$('mapM').addEventListener('click',()=>toggleMap(false));
+$('mapM').addEventListener('click',e=>{oceanMapPick(e);toggleMap(false);});
 function toggleCatalog(){$('catalogP').classList.toggle(isTouch?'open':'hide');}
 function toggleView(){fp=!fp;store.set('aqua-fp',fp?'1':'0');camPitch=fp?0:.22;setFPVisible();toast(fp?T.viewFp:T.viewTp);}
 $('catX').addEventListener('click',()=>{if(isTouch)$('catalogP').classList.remove('open');else $('catalogP').classList.add('hide');});
@@ -5190,7 +5251,7 @@ const _tmp=new THREE.Vector3(),_fwd=new THREE.Vector3();
 const syncTog=()=>document.querySelectorAll('#touch .tvb button').forEach(b=>b.classList.toggle('on',!!vk[b.dataset.t]));
 /* Akıntı: konum ve zamana göre yavaşça değişen büyük ölçekli su hareketi (m/s); denizaltıyı, kesilmiş bitkileri ve duman bulutlarını sürükler */
 const CUR={x:0,z:0};
-function curAt(x,z,t,o){return oceanCurrent(x,z,t,o||CUR);}
+function curAt(x,z,t,o){const flow=oceanCurrent(x,z,t,o||CUR);const near=DEEP_GRID.get(Math.floor(x/64)+','+Math.floor(z/64));if(near)for(const q of near){if(q.m.gone||q.i<8)continue;if(Math.hypot(x-q.x,z-q.z,sub.position.y-q.y)<q.R){flow.x*=.24;flow.z*=.24;break;}}return flow;}
 let ballast=0,yawVel=0,bumpCd=0,creakCd=3;
 /* sert çarpma: hıza orantılı gövde hasarı, gürültü ve sarsıntı (düşük hızda sürtünme zarar vermez) */
 function hullBump(sp,c){
@@ -5335,7 +5396,7 @@ function updateHUD(spd){
   updateOceanHUD();
   $('battery').textContent=Math.round(battery)+'%';$('batteryBar').style.width=battery+'%';
   $('depth').textContent=sub.position.y>SURF-1.4?T.surface:Math.max(0,Math.round(SURF-sub.position.y))+' m';$('speed').textContent=(spd*1.94).toFixed(0)+' kn';
-  {const z=zoneAt(sub.position.x,sub.position.z);$('zone').textContent=T.zones[z];const near=DEEP_GRID.get(Math.floor(sub.position.x/64)+','+Math.floor(sub.position.z/64));if(near){let best=null,d=Infinity;for(const q of near){const n=Math.hypot(q.x-sub.position.x,q.y-sub.position.y,q.z-sub.position.z);if(n<q.R&&n<d){best=q;d=n;}}if(best&&best.i>7)$('zone').textContent=best.i<17?tl('İniş Galerisi','Descent Gallery'):best.i<31?tl('Batık Geçitler','Drowned Passages'):tl('Derin Mahzen','Deep Vault');}if(z!==lastZoneQ){lastZoneQ=z;if(z!=='open')qEvent('zone',z);}}
+  {const z=zoneAt(sub.position.x,sub.position.z);$('zone').textContent=T.zones[z]||(z.startsWith('frontier')?tl(OCEAN_SITES[4+Number(z.slice(8))].tr,OCEAN_SITES[4+Number(z.slice(8))].en):T.zones.open);const near=DEEP_GRID.get(Math.floor(sub.position.x/64)+','+Math.floor(sub.position.z/64));if(near){let best=null,d=Infinity;for(const q of near){const n=Math.hypot(q.x-sub.position.x,q.y-sub.position.y,q.z-sub.position.z);if(n<q.R&&n<d){best=q;d=n;}}if(best&&best.i>7)$('zone').textContent=best.i<17?tl('İniş Galerisi','Descent Gallery'):best.i<31?tl('Batık Geçitler','Drowned Passages'):tl('Derin Mahzen','Deep Vault');}if(z!==lastZoneQ){lastZoneQ=z;if(z!=='open')qEvent('zone',z);}}
   $('hull').textContent=Math.round(hull/HULL_MAX*100)+'%'+(shieldT>0?' 🛡':'')+(repairT>0?' 🔧':'');$('hullBar').style.width=hull/HULL_MAX*100+'%';updateWpnHUD();
   $('torp').textContent=torpAmmo+'/'+TORP_MAX;$('torpBar').style.width=(torpAmmo>=TORP_MAX?100:torpReload/TORP_RELOAD*100)+'%';
 }
@@ -5445,16 +5506,17 @@ function drawRadar(now){
   const sw=(now/1000*1.6)%(Math.PI*2);const grd=ctx.createConicGradient?ctx.createConicGradient(sw-Math.PI/2-.6,Rr,Rr):null;
   if(grd){grd.addColorStop(0,'rgba(111,224,255,0)');grd.addColorStop(.095,'rgba(111,224,255,.28)');grd.addColorStop(.1,'rgba(111,224,255,0)');ctx.fillStyle=grd;ctx.fillRect(0,0,S,S);}
   const reveal=now<sonarReveal.until,ra=reveal?clamp((sonarReveal.until-now)/2500,0,1):0;
-  for(const c of creatures){const dx=c.wx-p.x,dz=c.wz-p.z,d2=dx*dx+dz*dz;let a=0;
-    if(d2<22*22)a=.55;if(reveal){const ex=c.wx-sonarReveal.x,ez=c.wz-sonarReveal.z;if(ex*ex+ez*ez<45*45)a=Math.max(a,ra);}
+  for(const c of creatures){if(c.deadUntil>worldTime())continue;const dx=c.wx-p.x,dy=c.wy-p.y,dz=c.wz-p.z,d2=dx*dx+dy*dy+dz*dz;let a=0;
+    if(d2<22*22)a=.55;if(reveal){const ex=c.wx-sonarReveal.x,ey=c.wy-sonarReveal.y,ez=c.wz-sonarReveal.z;if(ex*ex+ey*ey+ez*ez<45*45)a=Math.max(a,ra);}
     if(a<=0||d2>range*range*1.1)continue;const [x,y]=tr2(c.wx,c.wz);ctx.globalAlpha=a;ctx.fillStyle=SPECIES[SP_IDX[c.sp]].col;ctx.beginPath();ctx.arc(x,y,c.sp==='turtle'||c.sp==='ray'?6:4,0,Math.PI*2);ctx.fill();}
   ctx.globalAlpha=1;
-  for(const e of enemies){if(e.dead)continue;const dx=e.x-p.x,dz=e.z-p.z,d2=dx*dx+dz*dz;if(d2>range*range*1.1)continue;
-    const sr=reveal&&(e.x-sonarReveal.x)**2+(e.z-sonarReveal.z)**2<45*45;if(d2>55*55&&!sr)continue;
-    const [x,y]=tr2(e.x,e.z);ctx.fillStyle=e.cfg.col;ctx.strokeStyle='#021820';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-9);ctx.lineTo(x+8,y+7);ctx.lineTo(x-8,y+7);ctx.closePath();ctx.fill();ctx.stroke();}
+  for(const e of enemies){if(e.dead)continue;const dx=e.x-p.x,dy=e.y-p.y,dz=e.z-p.z,d2=dx*dx+dy*dy+dz*dz;if(d2>range*range*1.1)continue;
+    const sr=reveal&&(e.x-sonarReveal.x)**2+(e.y-sonarReveal.y)**2+(e.z-sonarReveal.z)**2<45*45;if(d2>55*55&&!sr)continue;
+    const [x,y]=tr2(e.x,e.z);ctx.fillStyle=e.cfg.col;ctx.strokeStyle='#021820';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-9);ctx.lineTo(x+8,y+7);ctx.lineTo(x-8,y+7);ctx.closePath();ctx.fill();ctx.stroke();if(Math.abs(dy)>10){ctx.font='15px system-ui';ctx.fillText(dy>0?'↑':'↓',x+10,y+4);}}
   for(const m of mines){const [x,y]=tr2(m.pos.x,m.pos.z);ctx.fillStyle=m.own?'#ff6a4a':'#c9a227';ctx.fillRect(x-3,y-3,6,6);}
   for(const f of foods){const [x,y]=tr2(f.x,f.z);ctx.fillStyle='#ffd56c';ctx.fillRect(x-4,y-4,8,8);}
-  for(const t of TREAS){if(!t.alive)continue;const dx=t.x-p.x,dz=t.z-p.z,d2=dx*dx+dz*dz;if(d2>range*range*1.1)continue;const seen=t.seen>now;if(!seen&&d2>38*38)continue;const [x,y]=tr2(t.x,t.z),s2=seen?7:5;ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/4);ctx.fillStyle=t.type==='tech'?'#4ff0ff':'#ffd56c';ctx.strokeStyle='#021820';ctx.lineWidth=2;ctx.fillRect(-s2,-s2,s2*2,s2*2);ctx.strokeRect(-s2,-s2,s2*2,s2*2);ctx.restore();}
+  for(const t of TREAS){if(!t.alive)continue;const dx=t.x-p.x,dy=t.y-p.y,dz=t.z-p.z,d2=dx*dx+dy*dy+dz*dz;if(d2>range*range*1.1)continue;const seen=t.seen>now;if(!seen&&d2>38*38)continue;const [x,y]=tr2(t.x,t.z),s2=seen?7:5;ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/4);ctx.fillStyle=t.type==='tech'?'#4ff0ff':'#ffd56c';ctx.strokeStyle='#021820';ctx.lineWidth=2;ctx.fillRect(-s2,-s2,s2*2,s2*2);ctx.strokeRect(-s2,-s2,s2*2,s2*2);ctx.restore();}
+  for(const item of SALVAGE.items){if(item.done||item.seen<now||p.distanceTo(item.root.position)>range)continue;const [x,y]=tr2(item.root.position.x,item.root.position.z);ctx.strokeStyle='#b8d0c2';ctx.lineWidth=2;ctx.strokeRect(x-5,y-5,10,10);}
   for(const o of players.values()){if(o.dead||o.cr)continue;let [x,y]=tr2(o.sub.g.position.x,o.sub.g.position.z);const dx=x-Rr,dy=y-Rr,l=Math.hypot(dx,dy);if(l>Rr-12){x=Rr+dx/l*(Rr-12);y=Rr+dy/l*(Rr-12);}ctx.fillStyle=teamOf(o.id)>=0?TEAMC[teamOf(o.id)]:o.color;ctx.strokeStyle='#021820';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.fill();ctx.stroke();}
   {const mk=(x,z,col,sz,shape,force)=>{let [a,b]=tr2(x,z);const dx=a-Rr,dy=b-Rr,l=Math.hypot(dx,dy);if(l>Rr-12){if(!force)return;a=Rr+dx/l*(Rr-12);b=Rr+dy/l*(Rr-12);}ctx.fillStyle=col;ctx.strokeStyle='#021820';ctx.lineWidth=3;ctx.beginPath();if(shape==='star'){for(let k=0;k<10;k++){const r=k%2?sz*.45:sz,an=k*Math.PI/5-Math.PI/2;ctx.lineTo(a+Math.cos(an)*r,b+Math.sin(an)*r);}}else if(shape==='sq'){ctx.rect(a-sz,b-sz,sz*2,sz*2);}else ctx.arc(a,b,sz,0,Math.PI*2);ctx.closePath();ctx.stroke();ctx.fill();};
    if(EV&&EV.x!=null)mk(EV.x,EV.z,'#ffd56c',13,'star',true);
@@ -5495,11 +5557,13 @@ function drawMap(){
   for(let z=-Math.floor(HZ/200)*200;z<=HZ;z+=200){const [,b]=m(0,z);mc.beginPath();mc.moveTo(pad,b);mc.lineTo(Wc-pad,b);mc.stroke();mc.fillText(z,6,b+5);}
   const zc={ice:'#bfeaff',volcano:'#ff6a3a',abyss:'#3a5aff',crystal:'#c07aff',lagoon:'#3ae0d0',sunken:'#9ab0a0',bluehole:'#3a8aff',canyon:'#d0703a',coral:'#ff7a8a',kelp:'#5fbf5a',grass:'#a8c860',wreck:'#b08050',arch:'#9aa4a8',jelly:'#9fe8ff',trench:'#9a7cff',temple:'#e0c060',graveyard:'#c08a5a',dunes:'#e8d8a0'};
   mc.textBaseline='alphabetic';
-  for(const q of ZONES){const [x0,y0]=m(q.x[0],q.z[0]),[x1,y1]=m(q.x[1],q.z[1]);mc.fillStyle=zc[q.id]+'1f';mc.strokeStyle=zc[q.id]+'cc';mc.lineWidth=2;mc.setLineDash([8,5]);mc.fillRect(x0,y0,x1-x0,y1-y0);mc.strokeRect(x0,y0,x1-x0,y1-y0);mc.setLineDash([]);
-    const big=(x1-x0)>150,fs=big?22:15,txt=T.zones[q.id];mc.font='800 '+fs+'px system-ui';const tw=mc.measureText(txt).width;
-    mc.fillStyle='rgba(2,16,26,.72)';mc.fillRect(x0+8,y0+8,tw+14,fs+10);mc.fillStyle=zc[q.id];mc.fillRect(x0+8,y0+8,3,fs+10);mc.fillStyle='#fff';mc.fillText(txt,x0+17,y0+8+fs);}
+  for(const q of ZONES){const [x0,y0]=m(q.x[0],q.z[0]),[x1,y1]=m(q.x[1],q.z[1]);mc.fillStyle=(zc[q.id]||'#6f9291')+'1f';mc.strokeStyle=(zc[q.id]||'#6f9291')+'cc';mc.lineWidth=2;mc.setLineDash([8,5]);mc.fillRect(x0,y0,x1-x0,y1-y0);mc.strokeRect(x0,y0,x1-x0,y1-y0);mc.setLineDash([]);
+    const big=(x1-x0)>150,fs=big?22:15,txt=T.zones[q.id]||(q.id.startsWith('frontier')?tl(OCEAN_SITES[4+Number(q.id.slice(8))].tr,OCEAN_SITES[4+Number(q.id.slice(8))].en):T.zones.open);mc.font='800 '+fs+'px system-ui';const tw=mc.measureText(txt).width;
+    mc.fillStyle='rgba(2,16,26,.72)';mc.fillRect(x0+8,y0+8,tw+14,fs+10);mc.fillStyle=zc[q.id]||'#6f9291';mc.fillRect(x0+8,y0+8,3,fs+10);mc.fillStyle='#fff';mc.fillText(txt,x0+17,y0+8+fs);}
+  if(OCEAN_EXP.target>=0){const target=OCEAN_EXP.sites[OCEAN_EXP.target],[ax,ay]=m(sub.position.x,sub.position.z),[bx,by]=m(target.x,target.z);mc.strokeStyle='#a9d9cd';mc.lineWidth=2;mc.setLineDash([7,6]);mc.beginPath();mc.moveTo(ax,ay);mc.lineTo(bx,by);mc.stroke();mc.setLineDash([]);mc.beginPath();mc.arc(bx,by,12,0,Math.PI*2);mc.stroke();}
   // harabeler
-  for(const q of DEEP_CAVES){const [a,b]=m(q.ex,q.ez);mc.strokeStyle='#82c9bc';mc.lineWidth=2;mc.beginPath();mc.arc(a,b,7,Math.PI,Math.PI*2);mc.lineTo(a+7,b+5);mc.lineTo(a-7,b+5);mc.closePath();mc.stroke();mc.font='700 12px system-ui';mc.fillStyle='#bce5dc';mc.fillText(tl('Mağara girişi','Cave entrance'),a+11,b+4);}
+  for(const site of OCEAN_SITES){const [sx,sz]=m(site.x*WS*2,site.z*WS);mc.fillStyle=save.myst.includes('ocean-survey-'+OCEAN_SITES.indexOf(site))?'#d4bd80':'#82c9bc';mc.font='11px system-ui';mc.fillText(tl(site.tr,site.en),sx,sz);}
+  for(const q of DEEP_CAVES){mc.strokeStyle='#5c8b8b';mc.lineWidth=1.5;mc.setLineDash([3,4]);mc.beginPath();q.path.forEach((p,i)=>{const [px,py]=m(p.x,p.z);if(i===0)mc.moveTo(px,py);else mc.lineTo(px,py);});mc.stroke();mc.setLineDash([]);const [a,b]=m(q.ex,q.ez);mc.strokeStyle='#82c9bc';mc.lineWidth=2;mc.beginPath();mc.arc(a,b,7,Math.PI,Math.PI*2);mc.lineTo(a+7,b+5);mc.lineTo(a-7,b+5);mc.closePath();mc.stroke();mc.font='700 12px system-ui';mc.fillStyle='#bce5dc';mc.fillText(tl('Mağara girişi','Cave entrance'),a+11,b+4);}
   for(const q of MYSTS){if(!save.myst.includes(q.id))continue;const [a,b]=m(q.x,q.z);mc.font='900 22px system-ui';mc.fillStyle='#e8ddc0';mc.fillText(q.ic,a-11,b+8);mc.font='800 12px system-ui';const t=tl(q.tr,q.en),tw=mc.measureText(t).width;mc.fillStyle='rgba(2,16,26,.7)';mc.fillRect(a-tw/2-4,b+12,tw+8,16);mc.fillStyle='#e8ddc0';mc.fillText(t,a-tw/2,b+25);}
   for(const r of RUINS){const [a,b]=m(r.x,r.z),got=save.ruins.includes(r.id);
     mc.save();mc.translate(a,b);mc.fillStyle=got?'#ffd56c':'rgba(255,255,255,.75)';mc.strokeStyle='#021820';mc.lineWidth=3;
@@ -6161,13 +6225,13 @@ function perfShow(dt){
 function loop(){
   if(CFG.saver&&performance.now()-lastT<30){requestAnimationFrame(loop);return;}
   if(isTouch){const n0=performance.now();if(innerHeight>innerWidth||(QC.cap&&n0-lastT<QC.cap)){if(innerHeight>innerWidth)lastT=n0;requestAnimationFrame(loop);return;}}
-  const now=performance.now(),rawDt=(now-lastT)/1000,dt=Math.min(rawDt,.05);lastT=now;frameN++;if(running)govern(rawDt);
-  pollGamepad(dt);shipTick(dt);expeditionTick(dt);
+  const now=performance.now(),rawDt=(now-lastT)/1000,dt=Math.min(rawDt,.05);lastT=now;frameN++;const paused=shouldPauseExpedition();setWorldPaused(paused);if(running&&!paused)govern(rawDt);
+  pollGamepad(dt);pauseExpeditionLabel.style.display=paused?'block':'none';if(paused){for(const k in keys)keys[k]=false;gunHeld=false;renderer.render(scene,camera);requestAnimationFrame(loop);return;}shipTick(dt);expeditionTick(dt);
   const t=worldTime();U.t.value=t;U.cam.value.copy(camera.position);
   let spd=0;
   if(running){const r=updateSub(dt);spd=r.spd;if(IN.on){if(dead)exitInterior(true);else updateInterior(dt,now);}if(!IN.on){updateCamera(dt);aimSearchlight(dt);}}
   else{const a=now*.00005;camera.position.set(Math.sin(a)*90,-4,Math.cos(a)*55);camera.lookAt(0,-18,0);}
-  updateEnv(dt);deepTick(dt,t);updateBiomes(t);
+  updateEnv(dt);updateTerrainTiles(dt);deepTick(dt,t);oceanExpeditionTick(dt,t);oceanSalvageTick(dt);updateBiomes(t);
   if(running&&!dead&&sub.position.y>SURF-1.4&&Math.hypot(subVel.x,subVel.z)>3&&Math.random()<dt*9)addPuff(sub.position.x+rr(-1.2,1.2),SURF+.3,sub.position.z+rr(-1.2,1.2),0xdff6ff,rr(-.4,.4),rr(.1,.6),rr(-.4,.4),.9,2.6,.35,1.6);
   updateRemotes(dt,now);
   {const B=U.bend.value,sp0=sub.position;B[0].set(sp0.x,sp0.y,sp0.z,running&&!dead&&sub.visible?5+subSc*3+Math.hypot(subVel.x,subVel.z)*.7:0);let bi=1;for(const o of players.values()){if(bi>2)break;if(o.dead||o.cr)continue;const q=o.sub.g.position;B[bi++].set(q.x,q.y,q.z,7);}for(;bi<3;bi++)B[bi].w=0;}
@@ -6209,6 +6273,7 @@ function loop(){
 
 /* ================= Başlangıç / lobi ================= */
 function enterGame(){
+  if(typeof SALVAGE!=='undefined'&&SALVAGE.active){const item=SALVAGE.active;item.root.position.copy(item.start);item.progress=0;if(!colliders.includes(item.col))colliders.push(item.col);cgDirty=true;SALVAGE.active=null;SALVAGE.line.visible=false;}
   SHIP.key='';SHIP.entered=false;SHIP.boarded=false;SHIP.t=0;
   applyLoadout(true);if(fp)camPitch=0;
   if(!pvpQuest()&&save.quests.some(q=>q.k==='pk')){save.quests=save.quests.map(q=>q.k==='pk'?newQuest():q);persist();}
@@ -8138,7 +8203,7 @@ function cfgRow(it){
   if(it.sw)return `<div class="cfgR"><span>${nm}${ds}</span><div class="cfgSw">${it.sw.map((c,i)=>`<i data-k="${it.k}" data-v="${i}" class="${v===i?'on':''}" style="background:${c}"></i>`).join('')}</div></div>`;
   return `<div class="cfgR"><span>${nm}${ds}</span><div class="seg">${it.o.map(o=>`<button data-k="${it.k}" data-v="${o[0]}" class="${v===o[0]?'on':''}">${esc(o[tr?1:2])}</button>`).join('')}</div></div>`;
 }
-const KEYS_TR=[['W A S D','Sür ve dön'],['Q / E','Alçal / yüksel'],['SHIFT','Hızlan (boost)'],['Sol tık','Makineli top (basılı tut)'],['Sağ tık / Y','Seçili silah (torpido…)'],['[ ]','Silah değiştir (ileri/geri)'],['1–4','Torpido · Salvo · Mayın · EMP'],['5 / C','Kalkan'],['6 / R','Onarım'],['7 / V','Şok dalgası'],['8 / N','Ağ'],['9 / X','Yakın saldırı'],['0 / J','Özel silah'],['Z','İşaret (ping)'],['SPACE','Sonar'],['F','Yem'],['L','Işık'],['O','Sessiz seyir'],['B','Kamera (1./3. şahıs)'],['I','İçeri gir / çık'],['M','Harita'],['T','Tür kataloğu'],['K','Profil'],['G','Tersane'],['P','Fotoğraf'],['H','Mürettebat'],['TAB','Skor tablosu'],[', / F2','Ayarlar']];
+const KEYS_TR=[['W A S D','Sür ve dön'],['Q / E','Alçal / yüksel'],['SHIFT','Hızlan (boost)'],['Sol tık','Makineli top (basılı tut)'],['Sağ tık / Y','Seçili silah (torpido…)'],['[ ]','Silah değiştir (ileri/geri)'],['1–4','Torpido · Salvo · Mayın · EMP'],['5 / C','Kalkan'],['6 / R','Onarım'],['7 / V','Şok dalgası'],['8 / N','Ağ'],['9 / X','Yakın saldırı'],['0 / J','Özel silah'],['Z','İşaret (ping)'],['SPACE','Sonar'],['F','Yakında kurtarma / istasyon; uzakta yem'],['L','Işık'],['O','Sessiz seyir'],['B','Kamera (1./3. şahıs)'],['I','İçeri gir / çık'],['M','Harita'],['T','Tür kataloğu'],['K','Profil'],['G','Tersane'],['P','Fotoğraf'],['H','Mürettebat'],['TAB','Skor tablosu'],[', / F2','Ayarlar']];
 function cfgBody(){
   const tr=lang==='tr';
   if(cfgTab===CFGS.length){ // kontrol listesi
@@ -8902,7 +8967,7 @@ function diverAttack(){
   for(const st of structs)if(st.alive&&Math.hypot(st.x-p.x,st.y-p.y,st.z-p.z)<reach+st.r){hurtStruct(st,power*.4,false,p);break;}
   return true;
 }
-function diverInteract(){if(!DIVE.on||DIVE.returnT>0)return;for(const tr of TREAS)if(tr.alive&&Math.hypot(tr.x-sub.position.x,tr.y-sub.position.y,tr.z-sub.position.z)<4){collectTreasure(tr,performance.now());return;}if(sub.position.distanceTo(DIVE.park)<14){finishDive(false);return;}doSonar();updateMyst(.1,worldTime());toast('Sonar çevredeki canlıları ve geçitleri taradı.');}
+function diverInteract(){if(!DIVE.on||DIVE.returnT>0)return;if(oceanSalvageInteract())return;for(const tr of TREAS)if(tr.alive&&Math.hypot(tr.x-sub.position.x,tr.y-sub.position.y,tr.z-sub.position.z)<4){collectTreasure(tr,performance.now());return;}if(sub.position.distanceTo(DIVE.park)<14){finishDive(false);return;}doSonar();updateMyst(.1,worldTime());toast('Sonar çevredeki canlıları ve geçitleri taradı.');}
 // More plant silhouettes: broad sea lettuce, red branching dulse and long ribbon wrack.
 for(let variant=0;variant<3;variant++){
   const parts=[];for(let k=0;k<5;k++){const g=new THREE.PlaneGeometry(variant===0?1.1:.22,1,2,12);g.translate(0,.5,0);const a=g.attributes.position;for(let i=0;i<a.count;i++){const y=a.getY(i);a.setX(i,a.getX(i)*(variant===0?Math.sin(y*Math.PI)*1.3+.15:1-y*.5)+Math.sin(y*13+k)*.12);a.setZ(i,Math.sin(y*8+k)*.14*y);}g.rotateY(k*2.4);parts.push(g);}
@@ -8927,8 +8992,215 @@ function expeditionTick(dt){instrumentsButton.style.display=running?'block':'non
   diveStatus.textContent=DIVE.on?`DALGIÇ · CAN ${Math.ceil(DIVE.hp)} · HAVA ${Math.ceil(DIVE.oxygen)}% · ${['','TÜFEK','MIZRAK','YUMRUK'][DIVE.weapon]} · Denizaltı ${Math.round(sub.position.distanceTo(DIVE.park))} m${DIVE.returnT>0?' · YENİDEN DOĞUŞ':''}`:DIVE.anchor?'ÇAPA SABİT · V ile dalış':'H: Çapa bırak · V: Suya dal';
 }
 
+/* Ocean expedition: bounded geometry, habitat landmarks and authoritative patrols. */
+const OCEAN_EXP={sites:[],smokers:[],plume:0,timer:0,nearest:null,target:-1,resumeT:0};
+const oceanPanel=document.createElement('div');oceanPanel.id='oceanExpedition';oceanPanel.style.cssText='position:fixed;left:14px;top:110px;max-width:260px;padding:9px 12px;color:#c4dce2;background:rgba(3,17,25,.8);border-left:2px solid #6b929e;font:12px/1.6 system-ui;pointer-events:none;z-index:12;display:none';document.body.appendChild(oceanPanel);
+const oceanDestination=document.createElement('select');oceanDestination.id='oceanDestination';oceanDestination.setAttribute('aria-label',tl('Keşif hedefi','Exploration destination'));oceanDestination.style.cssText='pointer-events:auto;width:100%;background:#132a34;color:#c4dce2;border:1px solid #45616a;padding:5px;margin-bottom:6px';oceanDestination.add(new Option(tl('En yakın keşif alanı','Nearest exploration site'),'-1'));oceanDestination.onchange=()=>{OCEAN_EXP.target=Number(oceanDestination.value);OCEAN_EXP.exitMode=false;OCEAN_EXP.timer=0;};oceanPanel.appendChild(oceanDestination);const oceanInfo=document.createElement('div');oceanPanel.appendChild(oceanInfo);
+const oceanExit=document.createElement('button');oceanExit.className='btn';oceanExit.id='oceanExitRoute';oceanExit.style.cssText='pointer-events:auto;padding:4px 8px;margin-top:5px;font-size:11px;display:none';oceanExit.textContent=tl('ÇIKIŞ ROTASINI İZLE','FOLLOW EXIT ROUTE');oceanExit.onclick=()=>{OCEAN_EXP.exitMode=!OCEAN_EXP.exitMode;OCEAN_EXP.timer=0;};oceanPanel.appendChild(oceanExit);const stationButton=document.createElement('button');stationButton.id='oceanStationService';stationButton.className='btn';stationButton.style.cssText='pointer-events:auto;padding:4px 8px;margin-top:5px;font-size:11px;display:none';stationButton.textContent=tl('İSTASYON · F','STATION · F');stationButton.onclick=oceanStationService;oceanPanel.appendChild(stationButton);
+const oceanWaypoint=document.createElement('div');oceanWaypoint.id='oceanWaypoint';oceanWaypoint.style.cssText='position:fixed;z-index:14;color:#afdedb;border:1px solid #7aaba9;padding:4px 7px;font:11px system-ui;pointer-events:none;transform:translate(-50%,-50%);display:none;background:rgba(2,17,24,.55)';document.body.appendChild(oceanWaypoint);
+const oceanResponsive=document.createElement('style');oceanResponsive.textContent='.touch #touch{z-index:15}.touch:has(.ttop.open) #divePanel{visibility:hidden}.touch #instrumentToggle{left:14px!important;right:auto!important;top:46px!important;min-height:28px;font-size:10px!important;padding:4px 8px!important}@media(max-height:500px){#oceanExpedition{top:80px!important;max-height:175px;overflow-y:auto;pointer-events:auto;max-width:195px!important;padding:5px 8px!important;font-size:10px!important}#oceanDestination{font-size:10px;padding:2px!important}}';document.head.appendChild(oceanResponsive);
+function oceanMapPick(event){
+ if(event.target!==$('mapC'))return false;const rect=$('mapC').getBoundingClientRect(),x=(event.clientX-rect.left)/rect.width*1400,y=(event.clientY-rect.top)/rect.height*820;
+ let best=-1,d=35;OCEAN_EXP.sites.forEach((site,i)=>{const sx=40+(site.x+HX)*1320/TW,sy=40+(site.z+HZ)*740/TD,dd=Math.hypot(x-sx,y-sy);if(dd<d){best=i;d=dd;}});
+ if(best<0)return false;OCEAN_EXP.target=best;oceanDestination.value=String(best);OCEAN_EXP.exitMode=false;OCEAN_EXP.timer=0;toast(tl('Rota seçildi: ','Route selected: ')+tl(OCEAN_EXP.sites[best].tr,OCEAN_EXP.sites[best].en));return true;
+}
+const pauseExpeditionLabel=document.createElement('div');pauseExpeditionLabel.id='pauseExpeditionLabel';pauseExpeditionLabel.textContent=tl('SEFER DURAKLATILDI','EXPEDITION PAUSED');pauseExpeditionLabel.style.cssText='display:none;position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:120;background:#102732;color:#bbd8d6;border:1px solid #46636d;padding:5px 12px;font:12px system-ui;pointer-events:none';document.body.appendChild(pauseExpeditionLabel);
+const expeditionJournal=document.createElement('div');expeditionJournal.id='expeditionJournal';expeditionJournal.className='modal';expeditionJournal.style.display='none';expeditionJournal.innerHTML='<div class="card" style="max-width:740px;max-height:85vh;overflow:auto"><div id="expeditionJournalBody"></div><button class="btn" id="closeExpeditionJournal">'+tl('KAPAT','CLOSE')+'</button></div>';document.body.appendChild(expeditionJournal);expeditionJournal.setAttribute('role','dialog');expeditionJournal.setAttribute('aria-modal','true');expeditionJournal.setAttribute('aria-label',tl('Sefer defteri','Expedition journal'));const journalClose=$('closeExpeditionJournal');journalClose.style.cssText='position:sticky;top:0;float:right;z-index:2;margin-bottom:6px';journalClose.parentElement.prepend(journalClose);
+function renderExpeditionJournal(){
+ const done=OCEAN_EXP.sites.filter(s=>s.surveyed).length;const body=$('expeditionJournalBody');body.innerHTML='<h2>'+tl('SEFER DEFTERİ','EXPEDITION JOURNAL')+'</h2><p>'+done+'/'+OCEAN_EXP.sites.length+' '+tl('bölge araştırıldı. Havzayı haritala, sonar kullan ve düşük hızda numune al.','regions surveyed. Chart the basin, use sonar and collect samples at low speed.')+'</p>'+OCEAN_EXP.sites.map((site,i)=>'<div style="padding:12px 0;border-bottom:1px solid #29434d"><b>'+esc(tl(site.tr,site.en))+'</b><small style="display:block;margin:5px 0;color:#a6bdc5">'+Math.round(SURF-site.y)+' m · '+[0,1,2].filter(j=>save.myst.includes('ocean-salvage-'+i+'-'+j)).length+'/3 '+tl('kurtarma','recoveries')+' · '+(site.visited?tl('Haritalandı','Charted'):tl('Keşfedilmedi','Uncharted'))+' · '+(site.scanned?tl('Sonar tamam','Sonar complete'):tl('Sonar bekliyor','Awaiting sonar'))+' · '+(site.surveyed?tl('İstasyon açık','Station online'):tl('İstasyon kilitli','Station locked'))+'</small><button class="btn" data-destination="'+i+'">'+tl('ROTAYI SEÇ','SET COURSE')+'</button></div>').join('');
+ body.querySelectorAll('[data-destination]').forEach(button=>button.onclick=()=>{OCEAN_EXP.target=Number(button.dataset.destination);OCEAN_EXP.exitMode=false;oceanDestination.value=String(OCEAN_EXP.target);OCEAN_EXP.timer=0;expeditionJournal.style.display='none';});
+}
+const journalButton=document.createElement('button');journalButton.id='openExpeditionJournal';journalButton.className='btn';journalButton.textContent=tl('SEFER DEFTERİ','EXPEDITION JOURNAL');journalButton.style.cssText='pointer-events:auto;font-size:11px;padding:4px 8px;margin-top:5px';journalButton.onclick=()=>{for(const k in keys)keys[k]=false;gunHeld=false;renderExpeditionJournal();expeditionJournal.style.display='grid';$('closeExpeditionJournal').focus();if(document.pointerLockElement)document.exitPointerLock();};oceanPanel.appendChild(journalButton);$('closeExpeditionJournal').onclick=()=>expeditionJournal.style.display='none';expeditionJournal.onclick=e=>{if(e.target===expeditionJournal)expeditionJournal.style.display='none';};
+function oceanNavigation(){
+ const p=sub.position,near=DEEP_GRID.get(Math.floor(p.x/64)+','+Math.floor(p.z/64));let closest=null,d=Infinity;
+ if(near)for(const q of near){if(q.m.gone||q.i<5)continue;const dd=Math.hypot(q.x-p.x,q.y-p.y,q.z-p.z);if(dd<q.R*.88&&dd<d){d=dd;closest=q;}}
+ stationButton.style.display=OCEAN_EXP.sites.some(s=>s.station&&sub.position.distanceTo(s.station.position)<20)?'':'none';
+ OCEAN_EXP.cave=closest;if(!closest)OCEAN_EXP.exitMode=false;oceanExit.setAttribute('aria-pressed',String(!!OCEAN_EXP.exitMode));oceanExit.textContent=OCEAN_EXP.exitMode?tl('ÇIKIŞ ROTASINI KAPAT','HIDE EXIT ROUTE'):tl('ÇIKIŞ ROTASINI İZLE','FOLLOW EXIT ROUTE');oceanExit.style.display=closest?'':'none';
+ let target=null,label='';
+ if(closest&&OCEAN_EXP.exitMode){target=closest.m.path[Math.max(0,closest.i-4)];label=tl('Çıkış rotası','Exit route');}
+ else if(OCEAN_EXP.target>=0){const site=OCEAN_EXP.sites[OCEAN_EXP.target];target=site.surveyed&&site.station?{x:site.station.position.x,y:site.station.position.y+6,z:site.station.position.z}:{x:site.x,y:site.y+12,z:site.z};label=site.surveyed?tl('Saha istasyonu','Field station'):tl(site.tr,site.en);}
+ if(!target||document.body.classList.contains('hideInstruments')){oceanWaypoint.style.display='none';return;}
+ const v=new THREE.Vector3(target.x,target.y,target.z).project(camera),dist=Math.hypot(target.x-p.x,target.y-p.y,target.z-p.z);oceanWaypoint.style.display=v.z>-1&&v.z<1&&Math.abs(v.x)<.85&&Math.abs(v.y)<.75?'block':'none';oceanWaypoint.style.left=(v.x*.5+.5)*innerWidth+'px';oceanWaypoint.style.top=(-v.y*.5+.5)*innerHeight+'px';oceanWaypoint.textContent=label+' · '+Math.round(dist)+' m';
+ if(closest&&OCEAN_EXP.exitMode)oceanInfo.textContent=label+' '+dirArrow(target.x,target.z)+' · '+Math.round(dist)+' m\n'+tl('Sonraki geçit derinliği ','Next passage depth ')+Math.round(SURF-target.y)+' m';
+}
+function inCaveVoid(x,y,z,pad=0){const near=DEEP_GRID.get(Math.floor(x/64)+','+Math.floor(z/64));return !!near&&near.some(q=>!q.m.gone&&Math.hypot(x-q.x,y-q.y,z-q.z)<q.R*.75+pad);}
+function excavateCaveCorridors(){
+ const structures=new Set(),clusters=new Set();
+ for(const c of colliders){if(c.gate||c.cave||c.st&&(c.st.cave||c.st.myst))continue;
+  const nearby=DEEP_GRID.get(Math.floor(c.x/64)+','+Math.floor(c.z/64));if(!nearby)continue;
+  const intrudes=nearby.some(q=>!q.m.gone&&Math.hypot(c.x-q.x,c.y-q.y,c.z-q.z)<q.R*.62+c.r);
+  if(!intrudes)continue;if(c.oceanCluster)clusters.add(c.oceanCluster);else if(c.st&&c.st.kind==='rock')structures.add(c.st);
+ }
+ for(const st of structures)if(st.alive)destroyStruct(st,true,new THREE.Vector3(st.x,st.y,st.z));
+ const remove=new Set();for(const cluster of clusters){for(const i of cluster.indices)cluster.mesh.setMatrixAt(i,_zero);cluster.mesh.instanceMatrix.needsUpdate=true;for(const c of cluster.cols)remove.add(c);}
+ for(let i=colliders.length-1;i>=0;i--)if(remove.has(colliders[i]))colliders.splice(i,1);cgDirty=true;
+ return {structures:structures.size,clusters:clusters.size};
+}
+function updateCaveVisibility(){
+ const p=camera.position,range=Math.max(160,Math.min(strR,300));
+ for(const m of DEEP_CAVES){let d2=Infinity;for(const q of m.path){const dx=q.x-p.x,dy=q.y-p.y,dz=q.z-p.z;d2=Math.min(d2,dx*dx+dy*dy+dz*dz);}const visible=!m.gone&&d2<(range+m.Rr*1.6)**2;for(const object of [m.rockMesh,m.ruins,m.endWall,m.ped])if(object)object.visible=visible;for(const glow of m.glows||[])glow.visible=visible;}
+ for(const site of OCEAN_EXP.sites)if(site.station)site.station.visible=p.distanceTo(site.station.position)<range+40;
+}
+function buildTerrainTiles(){
+ if(TERRAIN.tiles.length)return;
+ const source=FLOORG,cols=source.parameters.widthSegments,rows=source.parameters.heightSegments,pos=source.attributes.position,indices=source.index.array,step=32;
+ for(let z=0;z<rows;z+=step)for(let x=0;x<cols;x+=step){
+  const w=Math.min(step,cols-x),h=Math.min(step,rows-z),data=new Uint32Array(w*h*6),box=new THREE.Box3();let k=0;
+  for(let j=z;j<z+h;j++)for(let i=x;i<x+w;i++){const start=(j*cols+i)*6;for(let a=0;a<6;a++){const v=indices[start+a];data[k++]=v;box.expandByPoint(new THREE.Vector3(pos.getX(v),pos.getY(v),pos.getZ(v)));}}
+  const geo=new THREE.BufferGeometry();for(const [name,attr] of Object.entries(source.attributes))geo.setAttribute(name,attr);geo.setIndex(new THREE.BufferAttribute(data,1));geo.boundingBox=box;geo.boundingSphere=box.getBoundingSphere(new THREE.Sphere());
+  const mesh=new THREE.Mesh(geo,TERRAIN.mesh.material);mesh.name='ocean-floor-tile';scene.add(mesh);TERRAIN.tiles.push({mesh,box});
+ }
+ scene.remove(TERRAIN.mesh);updateTerrainTiles(1,true);
+}
+function updateTerrainTiles(dt,force=false){
+ TERRAIN.time-=dt;if(!force&&TERRAIN.time>0)return;TERRAIN.time=.25;
+ updateCaveVisibility();
+ const p=camera.position,range=Math.max(180,strR)+65;
+ for(const tile of TERRAIN.tiles){const b=tile.box,dx=Math.max(b.min.x-p.x,0,p.x-b.max.x),dz=Math.max(b.min.z-p.z,0,p.z-b.max.z);tile.mesh.visible=dx*dx+dz*dz<range*range;}
+}
+function makeFieldStation(site){
+ const g=new THREE.Group();g.position.set(site.x+22,floorH(site.x+22,site.z+8),site.z+8);scene.add(g);site.station=g;site.serviceAt=-Infinity;
+ const steel=new THREE.MeshStandardMaterial({color:0x5d696c,metalness:.65,roughness:.55}),paint=new THREE.MeshStandardMaterial({color:0x9a853e,metalness:.2,roughness:.8}),glass=new THREE.MeshStandardMaterial({color:0x263e45,metalness:.2,roughness:.2});
+ const put=(geo,mat,x,y,z)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);g.add(m);return m;};
+ put(new THREE.CylinderGeometry(2.8,3.2,.7,12),steel,0,.35,0);put(new THREE.BoxGeometry(3.8,1.6,2.4),paint,0,1.6,0);put(new THREE.CylinderGeometry(.55,.55,1.8,12),steel,0,3.1,0);put(new THREE.SphereGeometry(.8,12,8),glass,0,4.2,0);
+ for(const sign of [-1,1]){put(new THREE.BoxGeometry(.16,3,.16),steel,sign*2.2,1.7,0);put(new THREE.BoxGeometry(1.4,.3,1.4),steel,sign*2.2,.2,0);const p=new THREE.Vector3(sign*2.2,1.6,0);g.localToWorld(p);addCol(p.x,p.y,p.z,.8);}
+ const label=put(new THREE.BoxGeometry(2.4,.45,.08),new THREE.MeshStandardMaterial({color:0x9ec8b3,emissive:0x2b493c,emissiveIntensity:.5}),0,2.05,1.25);label.name='field-station-status';const p=g.position;addCol(p.x,p.y+1.5,p.z,2.3);
+}
+function oceanStationService(){
+ if(!running||dead||DIVE.on||MODES[MS.mode].match)return false;
+ const site=OCEAN_EXP.sites.find(s=>s.station&&sub.position.distanceTo(s.station.position)<20);if(!site)return false;
+ if(!site.surveyed){toast(tl('İstasyonu açmak için bölge araştırmasını tamamla','Complete the regional survey to activate this station'));return true;}
+ if(subVel.length()>2){toast(tl('İstasyona yavaş yaklaş','Approach the station slowly'));return true;}
+ const threat=enemies.some(e=>!e.dead&&Math.hypot(e.x-sub.position.x,e.y-sub.position.y,e.z-sub.position.z)<55);if(threat){toast(tl('Yakında tehdit var — ikmal beklemede','Nearby threat — servicing on hold'));return true;}
+ const remaining=120-(worldTime()-site.serviceAt);if(remaining>0){toast(tl('İkmal hazırlanıyor: ','Service ready in: ')+Math.ceil(remaining)+' s');return true;}
+ site.serviceAt=worldTime();hull=Math.min(HULL_MAX,hull+HULL_MAX*.4);battery=Math.min(100,battery+60);torpAmmo=Math.min(TORP_MAX,torpAmmo+2);toast(tl('Saha istasyonu: gövde onarıldı, batarya ve torpido ikmali yapıldı','Field station: hull repaired, battery and torpedoes replenished'));return true;
+}
+function buildOceanExpedition(){
+  const stone=geologyMaterial();
+  const rocks=[],clusters=[];
+  for(let si=0;si<OCEAN_SITES.length;si++){
+    const def=OCEAN_SITES[si],x=def.x*WS*2,z=def.z*WS,y=floorH(x,z),site={...def,x,z,y,id:'ocean-'+si,slots:[],active:false,cleared:false,visited:save.myst.includes('ocean-'+si),scanned:save.myst.includes('ocean-scan-'+si),surveyed:save.myst.includes('ocean-survey-'+si),sample:0};OCEAN_EXP.sites.push(site);makeFieldStation(site);oceanDestination.add(new Option(tl(def.tr,def.en),String(si)));
+    // Asymmetric clusters follow local geology instead of forming a ring of identical towers.
+    const count=isTouch?18:36;
+    for(let j=0;j<count;j++){
+      const noise=hash2(si*47+j*3.7,j*11.3),a=noise*Math.PI*2,r=50+hash2(j+91,si+7)*110;
+      let bx=x+Math.cos(a)*r,bz=z+Math.sin(a)*r*.7,h=12+noise*31,w=5+noise*5;
+      if(def.kind==='basalt'){bx=x+(j%6-2.5)*24;bz=z+(Math.floor(j/6)-2)*20;h=20+noise*58;w=7;}
+      if(def.kind==='canyon'){bx=x+(j%9-4)*23;bz=z+(j%2?1:-1)*(45+noise*22);h=25+noise*36;w=12;}
+      if(def.kind==='limestone'){h=18+noise*40;w=12+noise*6;}
+      if(def.kind==='vents'){h=6+noise*12;w=2+noise*2;}
+      if(def.kind==='shelf'){h=5+noise*9;w=10+noise*13;}
+      const by=floorH(bx,bz),palette=def.kind==='limestone'?['#8b8b7b','#737d78']:def.kind==='basalt'||def.kind==='vents'?['#3d474b','#4b5354']:['#5c686a','#69716b'];
+      // Multiple offset beds grow from the seabed, giving layered rather than stacked ball silhouettes.
+      const cluster={indices:[],cols:[]};clusters.push(cluster);
+      for(let tier=0;tier<3;tier++){
+        const sy=h*(.3-tier*.055),sx=w*(1.2-tier*.16),cy=by+h*(.13+tier*.24);
+        cluster.indices.push(rocks.length);rocks.push({x:bx+Math.sin(j*2.1+tier)*w*.12,y:cy,z:bz+Math.cos(j+tier)*w*.13,sx,sy,sz:w*(.85-tier*.08),ry:a*.17,rx:.06*Math.sin(j),c:palette[tier%2]});
+      }
+      for(let k=2;k<h*.78;k+=5){const c=addCol(bx,by+k,bz,w*.8);c.oceanCluster=cluster;cluster.cols.push(c);}
+      if(def.kind==='vents'&&j%4===0)OCEAN_EXP.smokers.push({x:bx,y:by+h*.8,z:bz});
+    }
+    // Dedicated pool: never borrow survival or other game mode enemies.
+    for(let j=0;j<2;j++){const e=addSlot(si===1?'eel':'shark',x,y+15,z,'ocean');e.oceanSite=site;site.slots.push(e);}
+  }
+  const rockMesh=inst(rockGeo(907),stone,rocks,true);for(const cluster of clusters)cluster.mesh=rockMesh;
+  // Open stone rims identify shelter niches; centres stay open for living animals.
+  for(const group of DEEP_FISH){
+    const q=group.q,root=new THREE.Group();root.position.set(q.x-Math.sin(q.a)*15,q.y-8,q.z+Math.cos(q.a)*15);root.rotation.y=-q.a;scene.add(root);group.nest=root;
+    const rim=new THREE.Mesh(mergeS(Array.from({length:9},(_,i)=>{const a=i/8*Math.PI,r=group.sp==='moray'?3:5;return P(rockGeo(i+q.x),'#475250',[Math.cos(a)*r,Math.sin(a)*r,0],[0,i*.7,i*.3],[1.2,1.3,1.8]);}).concat([P(rockGeo(q.z),'#3c4948',[0,-6,0],[0,.3,0],[6,6,4])])),new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,bumpMap:rockRelief,bumpScale:.1}));root.add(rim);rim.rotation.y=Math.PI/2;
+    // Rim is outside the centreline navigation envelope.
+    for(let j=0;j<10;j++){const a=j/10*Math.PI*2;const v=new THREE.Vector3(0,Math.sin(a)*3,Math.cos(a)*3);root.localToWorld(v);addCol(v.x,v.y,v.z,.8);}
+  }
+  // One route-bound animal patrol in each cavern. Positions use existing network snapshots.
+  for(const m of DEEP_CAVES){const q=m.path[26],e=addSlot('eel',q.x,q.y,q.z,'ocean');e.oceanCave=m;}
+  cgDirty=true;
+}
+function oceanExpeditionTick(dt,t){
+  const enabled=running&&!MODES[MS.mode].match&&!dead;
+  oceanPanel.style.display=enabled&&!IN.on&&!document.body.classList.contains('hideInstruments')?'block':'none';
+  if(!enabled){oceanWaypoint.style.display='none';if(net.mode!=='client'&&MODES[MS.mode].match){for(const e of enemies)if(e.pool==='ocean'){if(!e.dead)deactivateSlot(e);e.oceanActivated=false;}for(const site of OCEAN_EXP.sites)if(!site.cleared)site.active=false;}return;}
+  OCEAN_EXP.resumeT-=dt;if(OCEAN_EXP.resumeT<=0){OCEAN_EXP.resumeT=15;saveOceanResume();}
+  OCEAN_EXP.plume-=dt;if(OCEAN_EXP.plume<=0){OCEAN_EXP.plume=.22;for(const v of OCEAN_EXP.smokers)if(Math.hypot(camera.position.x-v.x,camera.position.y-v.y,camera.position.z-v.z)<180)addPuff(v.x,v.y,v.z,0x343e40,.1,.65,.08,1.4,7,.22,3);}
+  let nearest=null,dist=Infinity;
+  for(const site of OCEAN_EXP.sites){
+    const d=Math.hypot(sub.position.x-site.x,sub.position.y-site.y-12,sub.position.z-site.z);if(d<dist){dist=d;nearest=site;}
+    if(d<42&&!site.visited){site.visited=true;if(!save.myst.includes(site.id)){save.myst.push(site.id);save.gold+=240;persist();refreshGold();toast(tl(site.tr,site.en)+' · '+tl('Havza haritalandı +240 altın','Basin charted +240 gold'));}}
+    if(!site.surveyed){site.sample=surveyStep(site.sample,{charted:site.visited,scanned:site.scanned,distance:d,speed:subVel.length(),dt});if(site.sample>=8){site.surveyed=true;const key='ocean-survey-'+OCEAN_EXP.sites.indexOf(site);if(!save.myst.includes(key)){save.myst.push(key);save.gold+=300;persist();refreshGold();toast(tl('Bilimsel tarama tamamlandı · +300 altın','Scientific survey complete · +300 gold'));}}}
+    if(net.mode!=='client'&&d<110&&!site.active&&!site.cleared){site.active=true;site.slots.forEach((e,j)=>activateSlot(e,site.x+(j?28:-28),site.y+18,site.z+(j?18:-18)));toast(tl('Sonar: bölgede avcı hareketi','Sonar: predator activity in the basin'));}
+    if(site.active&&site.slots.every(e=>e.dead))site.cleared=true;
+  }
+  if(net.mode!=='client')for(const e of enemies){if(!e.oceanCave)continue;const m=e.oceanCave,q=m.path[26];if(!e.oceanActivated&&sub.position.distanceTo(new THREE.Vector3(q.x,q.y,q.z))<85){e.oceanActivated=true;activateSlot(e,q.x,q.y,q.z);}}
+  if(OCEAN_EXP.target>=0){nearest=OCEAN_EXP.sites[OCEAN_EXP.target];dist=Math.hypot(sub.position.x-nearest.x,sub.position.y-nearest.y-12,sub.position.z-nearest.z);}
+  OCEAN_EXP.nearest=nearest;OCEAN_EXP.timer-=dt;
+  if(nearest&&OCEAN_EXP.timer<=0){OCEAN_EXP.timer=.3;oceanInfo.textContent=tl(nearest.tr,nearest.en)+' · '+Math.round(dist)+' m '+dirArrow(nearest.x,nearest.z)+'\n'+tl('Derinlik ','Depth ')+Math.round(SURF-sub.position.y)+' m · '+tl('Havza tabanı ','Basin floor ')+Math.round(SURF-nearest.y)+' m\n'+(nearest.visited?tl('Haritalandı','Charted'):tl('Tabana yaklaş ve havzayı incele','Approach the floor to chart the basin'))+'\n'+(nearest.surveyed?tl('Araştırma tamamlandı','Survey complete'):!nearest.scanned?tl('Havzada sonar kullan','Use sonar in the basin'):tl('Numune: yavaş seyir ','Sampling: slow ahead ')+Math.round(nearest.sample/8*100)+'%')+(nearest.cleared?' · '+tl('Devriye etkisiz','Patrol cleared'):'');oceanPanel.style.whiteSpace='pre-line';}
+  oceanNavigation();
+}
+function oceanSurveyPulse(p){
+ if(!running||dead||MODES[MS.mode].match)return;
+ for(let i=0;i<OCEAN_EXP.sites.length;i++){const site=OCEAN_EXP.sites[i];if(site.scanned||!site.visited||Math.hypot(p.x-site.x,p.y-site.y-12,p.z-site.z)>95)continue;site.scanned=true;save.myst.push('ocean-scan-'+i);persist();toast(tl('Taban tarandı — bölgede 8 saniye yavaş seyret','Seabed scanned — cruise slowly here for 8 seconds'));}
+}
+function saveOceanResume(){if(!running||dead||net.mode!=='solo'||MS.mode!=='free'||DIVE.on)return;store.set('aqua-ocean-resume',JSON.stringify({version:1,p:r3(sub.position),yaw:camYaw,target:OCEAN_EXP.target}));}
+function readOceanResume(){try{return safeResume(JSON.parse(store.get('aqua-ocean-resume')||'null'),{hx:HX,hz:HZ,surface:SURF,limit:DEEP_LIMIT});}catch{return null;}}
+const resumeExpedition=document.createElement('button');resumeExpedition.id='resumeExpedition';resumeExpedition.className='btn';resumeExpedition.textContent=tl('SON SEFERDEN DEVAM ET','RESUME LAST EXPEDITION');resumeExpedition.style.display=readOceanResume()?'':'none';$('soloBtn').after(resumeExpedition);
+resumeExpedition.onclick=()=>{const r=readOceanResume();if(!r)return;readLobby();net.mode='solo';MS.mode='free';MS.eq=false;enterGame();sub.position.set(...r.p);const ground=floorQ(r.p[0],r.p[2],r.p[1]);sub.position.y=Math.max(sub.position.y,ground+5);subVel.set(0,0,0);camYaw=subYaw=r.yaw;OCEAN_EXP.target=r.target;oceanDestination.value=String(r.target);updateCamera(1);updateTerrainTiles(1,true);toast(tl('Son sefer konumuna dönüldü','Last expedition position restored'));};
+addEventListener('pagehide',saveOceanResume);addEventListener('visibilitychange',()=>setWorldPaused(shouldPauseExpedition()));
+function oceanPatrolAI(e,dt){
+  if(!e.oceanCave)return false;const m=e.oceanCave;
+  if(m.gone){deactivateSlot(e);return true;}
+  const a=20+(Math.sin(worldTime()*.07+e.i)*.5+.5)*12,i=Math.floor(a),u=a-i,q=m.path[i],r=m.path[i+1];
+  let tx=q.x+(r.x-q.x)*u,ty=q.y+(r.y-q.y)*u,tz=q.z+(r.z-q.z)*u;
+  // Pursue only targets within the same local passage; never cut through rock.
+  const d=sub.position.distanceTo(new THREE.Vector3(e.x,e.y,e.z));if(d<24&&Math.abs(sub.position.y-ty)<12){tx=sub.position.x;ty=sub.position.y;tz=sub.position.z;if(d<e.r+4&&e.cd<=0){const tg=enemyTargets().find(a=>a.pos.distanceTo(sub.position)<2);if(tg)hitTarget(tg,7,'eel',false,0,0,0,e);e.cd=2;}}
+  steer(e,tx,ty,tz,d<24?7:4,1.6,dt);
+  let best=m.path[20],bd=Infinity;for(let j=18;j<=34;j++){const q=m.path[j],dd=Math.hypot(e.x-q.x,e.z-q.z);if(dd<bd){bd=dd;best=q;}}
+  const lim=best.R*.48,dx=e.x-best.x,dz=e.z-best.z,hd=Math.hypot(dx,dz);if(hd>lim){e.x=best.x+dx/hd*lim;e.z=best.z+dz/hd*lim;}e.y=clamp(e.y,best.y-best.R*.4,best.y+best.R*.4);return true;
+}
+buildOceanExpedition();
+function updateOceanLanguage(){if(!document.getElementById('oceanRecover'))return;recoverButton.textContent=tl('KURTAR · F','RECOVER · F');pauseExpeditionLabel.textContent=tl('SEFER DURAKLATILDI','EXPEDITION PAUSED');journalButton.textContent=tl('SEFER DEFTERİ','EXPEDITION JOURNAL');stationButton.textContent=tl('İSTASYON · F','STATION · F');resumeExpedition.textContent=tl('SON SEFERDEN DEVAM ET','RESUME LAST EXPEDITION');oceanExit.textContent=tl('ÇIKIŞ ROTASINI İZLE','FOLLOW EXIT ROUTE');oceanDestination.options[0].textContent=tl('En yakın keşif alanı','Nearest exploration site');OCEAN_EXP.sites.forEach((r,i)=>oceanDestination.options[i+1].textContent=tl(r.tr,r.en));journalClose.textContent=T.close;expeditionJournal.setAttribute('aria-label',tl('Sefer defteri','Expedition journal'));oceanDestination.setAttribute('aria-label',tl('Keşif hedefi','Exploration destination'));}
+
+
+// Recoverable field equipment: persistent finds, visible winch, cancellable recovery.
+const SALVAGE={items:[],active:null,line:null};
+const recoverButton=document.createElement('button');recoverButton.id='oceanRecover';recoverButton.className='btn';recoverButton.textContent=tl('KURTAR · F','RECOVER · F');recoverButton.style.cssText='pointer-events:auto;padding:4px 8px;font-size:11px;display:none;margin-top:5px';recoverButton.onclick=oceanSalvageInteract;oceanPanel.appendChild(recoverButton);
+function buildOceanSalvage(){
+ const steel=new THREE.MeshStandardMaterial({color:0x687577,metalness:.6,roughness:.65}),rust=new THREE.MeshStandardMaterial({color:0x78644c,metalness:.25,roughness:.9}),dark=new THREE.MeshStandardMaterial({color:0x24363d,metalness:.3,roughness:.4});
+ for(let i=0;i<OCEAN_EXP.sites.length;i++)for(let j=0;j<3;j++){
+  const site=OCEAN_EXP.sites[i],id='ocean-salvage-'+i+'-'+j;if(save.myst.includes(id))continue;
+  let x=site.x+(j-1)*65,z=site.z+75+(j%2)*15,y=floorH(x,z)+1.1;for(let attempt=0;attempt<8&&inCaveVoid(x,y,z,8);attempt++){z=clamp(z+40,-HZ+25,HZ-25);x=clamp(x+(j-1)*10,-HX+25,HX-25);y=floorH(x,z)+1.1;}const root=new THREE.Group();root.position.set(x,y,z);root.rotation.y=i*1.17+j;scene.add(root);
+  const put=(geo,mat,x,y,z)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);root.add(m);return m;};
+  if(j===0){put(new THREE.BoxGeometry(2.6,1.2,1.6),steel,0,0,0);for(const s of [-1,1]){const t=put(new THREE.CylinderGeometry(.35,.35,1.4,10),dark,s*1.4,0,0);t.rotation.x=Math.PI/2;}put(new THREE.SphereGeometry(.3,10,8),dark,0,0,1);}
+  else if(j===1){put(new THREE.BoxGeometry(2.4,1.8,2),rust,0,0,0);for(const x of [-.85,.85])put(new THREE.BoxGeometry(.14,1.9,2.1),steel,x,0,0);}
+  else{put(new THREE.BoxGeometry(2.2,.35,1.6),steel,0,-.4,0);for(let k=0;k<4;k++)put(new THREE.CylinderGeometry(.18,.18,1.6,8),rust,(k-1.5)*.45,.3,0);}
+  const col=addCol(x,y,z,1.5);SALVAGE.items.push({id,site,kind:j,root,start:root.position.clone(),col,progress:0,done:false,seen:0});
+ }
+ const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3));SALVAGE.line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:0x93a7a9}));SALVAGE.line.frustumCulled=false;SALVAGE.line.visible=false;scene.add(SALVAGE.line);
+}
+function oceanSalvageScan(p){const now=performance.now(),range=170*mxF('srad');for(const item of SALVAGE.items)if(!item.done&&p.distanceTo(item.root.position)<range)item.seen=now+20000;}
+function oceanSalvageInteract(){
+ if(!running||dead||MODES[MS.mode].match)return false;if(SALVAGE.active)return true;
+ const reach=DIVE.on?4:Math.max(10,subSc*4),item=SALVAGE.items.find(s=>!s.done&&sub.position.distanceTo(s.root.position)<reach);
+ if(!item)return false;if(subVel.length()>2){toast(tl('Kurtarma için yavaşla','Slow down to recover equipment'));return true;}
+ const ci=colliders.indexOf(item.col);if(ci>=0){colliders.splice(ci,1);cgDirty=true;}SALVAGE.active=item;toast(tl('Kurtarma başladı — konumu 3 saniye koru','Recovery started — hold position for 3 seconds'));return true;
+}
+function oceanSalvageTick(dt){
+ const enabled=running&&!dead&&!MODES[MS.mode].match;
+ let nearest=null,bd=Infinity;
+ for(const item of SALVAGE.items){if(item.done)continue;const d=sub.position.distanceTo(item.root.position);item.root.visible=camera.position.distanceTo(item.root.position)<200;if(d<bd){bd=d;nearest=item;}}
+ recoverButton.style.display=enabled&&nearest&&bd<(DIVE.on?4:Math.max(10,subSc*4))?'':'none';
+ const item=SALVAGE.active;if(!item)return;
+ if(!enabled||subVel.length()>2||sub.position.distanceTo(item.start)>(DIVE.on?6:Math.max(14,subSc*5))){item.root.position.copy(item.start);item.progress=0;if(!colliders.includes(item.col)){colliders.push(item.col);cgDirty=true;}SALVAGE.active=null;SALVAGE.line.visible=false;recoverButton.textContent=tl('KURTAR · F','RECOVER · F');return;}
+ item.progress=Math.min(3,item.progress+dt);item.root.position.lerpVectors(item.start,new THREE.Vector3(sub.position.x,sub.position.y-2,sub.position.z),item.progress/3);
+ const positions=SALVAGE.line.geometry.attributes.position;positions.setXYZ(0,item.root.position.x,item.root.position.y,item.root.position.z);positions.setXYZ(1,sub.position.x,sub.position.y-1,sub.position.z);positions.needsUpdate=true;SALVAGE.line.visible=true;
+ recoverButton.textContent=tl('KURTARMA ','RECOVERY ')+Math.round(item.progress/3*100)+'%';
+ if(item.progress>=3){item.done=true;scene.remove(item.root);const i=colliders.indexOf(item.col);if(i>=0)colliders.splice(i,1);cgDirty=true;SALVAGE.active=null;SALVAGE.line.visible=false;recoverButton.textContent=tl('KURTAR · F','RECOVER · F');if(!save.myst.includes(item.id)){save.myst.push(item.id);save.loot++;addGold(120,true);gainXp(40);addScore(SC.treasure);qEvent('trs','');persist();toast(tl('Ekipman kurtarıldı · +120 altın · +40 deneyim','Equipment recovered · +120 gold · +40 XP'));}}
+}
+buildOceanSalvage();
+
 drawSign();
+const caveExcavation=excavateCaveCorridors();
+supportCheck(true,new THREE.Vector3());
 carveEntrances();
+buildTerrainTiles();
 requestAnimationFrame(loop);
 </script>
 </body>

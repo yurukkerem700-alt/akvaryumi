@@ -18,7 +18,7 @@ export async function checkDeepExpedition(page){
     for(let i=0;i<900;i++)updateRelics(1);
     return {area:TW*TD/(1120*640*(BIGW?4:1)),descent:m.path[0].y-m.path.at(-1).y,bottom,ordinary,stayed,doors,reward,once,chest:m.deepLid.rotation.x<0,fish:DEEP_FISH.length,headHit:enemyBodyHit(e,head,1),networkY:v3([0,-230,0]).y,broken,cleaned:!relics.includes(bone)&&!colliders.some(c=>c.relic===bone)};
   })()`));
-  assert.ok(Math.abs(report.area-4)<1e-10);
+  assert.ok(Math.abs(report.area-8)<1e-10);
   assert.ok(report.descent>140&&report.bottom<report.ordinary-100);
   for(const key of ['stayed','doors','once','chest','headHit','broken','cleaned'])assert.equal(report[key],true,key);
   assert.ok(report.reward>=1200&&report.fish>=12);

@@ -1,0 +1,11 @@
+"AppBuild"
+{
+	"AppID" "REPLACE_STEAM_APP_ID"
+	"Desc" "Akvaryum Seferi 2026.10.31"
+	"ContentRoot" "..\dist-desktop\"
+	"BuildOutput" "..\steam-output\"
+	"Depots"
+	{
+		"REPLACE_DEPOT_ID_WIN" { "FileMapping" { "LocalPath" "win-unpacked\*" "DepotPath" "." "recursive" "1" } }
+	}
+}

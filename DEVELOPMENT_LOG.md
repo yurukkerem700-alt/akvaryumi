@@ -1,6 +1,6 @@
 # Kesintisiz geliştirme kaydı
 
-Kullanıcı talimatı: Dur komutuna kadar oyunu geliştir; tamamlanan adımın ardından sıradakini kendin seç. Yerel geliştirme sürer; canlı yayın yok.
+Kullanıcı talimatı: Dur komutuna kadar oyunu geliştir; tamamlanan adımın ardından sıradakini kendin seç. Kullanıcının sonraki talimatıyla testleri geçen içerik mevcut GitHub/Vercel yayınına alınır; kalan ağ doğrulaması sürer.
 
 ## Tamamlanan ilk çalışma grubu
 - Bilimsel araştırma ve kalıcı ödül döngüsü.
@@ -32,3 +32,10 @@ Kullanıcı talimatı: Dur komutuna kadar oyunu geliştir; tamamlanan adımın a
 
 ## Mevcut doğrulama durumu
 Saf fonksiyon testlerinin 10'u geçti. Mobil 852×393 görünümünde arayüz, taban kapsamı ve kurtarma grupları geçti. Son sürümün tam masaüstü tarayıcı paketi çalışıyor. Sonraki geliştirmeye geçmeden bu paketin sonucu incelenecek.
+
+## Yayına hazırlık
+- Kullanıcı tamamlanan içerik için canlı yayın yetkisi verdi.
+- Son tam masaüstü tarayıcı paketi geçti; mobil arayüz, taban ve kurtarma kontrolleri geçti.
+- Uzak ana daldaki haftalık görev açılış düzeltmesi ve mağaza kabukları korundu.
+- Mağaza paketleyicisine depths.mjs, expeditions.mjs ve taranmış kaya dokuları eklendi; paket hazırlama kontrolü geçti.
+- İki oyunculu yerel WebRTC testi henüz tamamlanmadı; yeni ağ düzeltmesi bu yayına dahil değildir.

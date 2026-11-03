@@ -510,7 +510,7 @@ window.addEventListener('error',function(e){if(e&&e.target&&e.target.tagName==='
 <script>
 /* Sürüm denetimi: version.json değişirse yeni sürüm arka planda indirilir ve ana menüde GÜNCELLE uyarısı çıkar */
 (function(){
-  var BUILD='2026.11.03-7',reg=null,ready=false,busy=false;
+  var BUILD='2026.11.03-8',reg=null,ready=false,busy=false;
   window.__BUILD=BUILD;
   function bar(){var b=document.getElementById('updBar');if(b)b.style.display='flex';ready=true;}
   function check(){
@@ -739,19 +739,31 @@ const FG=2,FGX=Math.ceil(TW/FG)+4,FGZ=Math.ceil(TD/FG)+4,fgrid=new Float32Array(
 function fnode(i,j){const k=j*FGX+i;let v=fgrid[k];if(v!==v){v=floorH((i-2)*FG-HX,(j-2)*FG-HZ);fgrid[k]=v;}return v;}
 function floorQ(x,z,y=Infinity){const u=(x+HX)/FG+2,v=(z+HZ)/FG+2;let i=Math.floor(u),j=Math.floor(v);if(i<0)i=0;else if(i>FGX-2)i=FGX-2;if(j<0)j=0;else if(j>FGZ-2)j=FGZ-2;const fu=u-i,fv=v-j,a=fnode(i,j),b=fnode(i+1,j),c=fnode(i,j+1),d=fnode(i+1,j+1);return deepFloor(x,z,y,a+(b-a)*fu+(c-a)*fv+(a-b-c+d)*fu*fv);}
 function deepFloor(x,z,y,base){
-  const near=DEEP_GRID.get(Math.floor(x/64)+','+Math.floor(z/64));if(!near)return base;let out=base,best=Infinity;
-  for(const q of near){if(q.m.gone)continue;const dx=x-q.x,dz=z-q.z,d=Math.hypot(dx,dz),R=q.R;if(d>R+3)continue;
+  const near=DEEP_GRID.get(Math.floor(x/64)+','+Math.floor(z/64));if(!near)return base;let out=base,best=Infinity,insideBottom=null;
+  for(const q of near){const dx=x-q.x,dz=z-q.z,d=Math.hypot(dx,dz),R=q.R;
     const lateral=-Math.sin(q.a)*dx+Math.cos(q.a)*dz,along=Math.cos(q.a)*dx+Math.sin(q.a)*dz;
-    if(Math.abs(along)>5||Math.abs(lateral)>R*.96)continue;
+    if(q.i>=2&&Math.abs(along)<R*2.8){const roof=Math.min(SURF-8,q.y+R*1.1+8),blend=1-sm(R*1.28,R*2.8,Math.hypot(lateral,along));if(roof>base&&blend>0)out=Math.max(out,base+(roof-base)*blend);}
+    if(d>R+3||Math.abs(along)>5||Math.abs(lateral)>R*.96)continue;
     const bottom=q.y-R*.79*Math.sqrt(Math.max(.08,1-(lateral/R)**2));
-    if(q.i<8){const k=1-sm(R*.73,R*1.02,Math.abs(lateral));out=Math.min(out,base+(bottom-base)*k);}
-    if(Number.isFinite(y)&&Math.abs(y-q.y)<R*1.05&&d<best){out=bottom;best=d;}
-  }return out;
+    if(q.i<2){const k=1-sm(R*.73,R*1.02,Math.abs(lateral));out=Math.min(out,base+(bottom-base)*k);}
+    if(!q.m.gone&&Number.isFinite(y)&&(lateral/R)**2+((y-q.y)/(R*.79))**2<1.12&&d<best){insideBottom=bottom;best=d;}
+  }
+  for(const q of near){if(q.i!==0)continue;const dx=x-q.x,dz=z-q.z,along=Math.cos(q.a)*dx+Math.sin(q.a)*dz,lateral=-Math.sin(q.a)*dx+Math.cos(q.a)*dz,R=q.R;if(along<12&&along>-R*2.4&&Math.abs(lateral)<R){const bottom=q.y-R*.79*Math.sqrt(Math.max(0,1-(lateral/R)**2)),k=(1-sm(R*.78,R,Math.abs(lateral)))*sm(-R*2.4,-R*.7,along);out=Math.min(out,base+(bottom-base)*k);}}
+  return insideBottom===null?out:insideBottom;
 }
 function registerDeepCave(m){
-  DEEP_CAVES.push(m);m.path.forEach((q,i)=>{q.i=i;q.m=m;q.R=m.Rr*q.f;const r=q.R+4;for(let x=Math.floor((q.x-r)/64);x<=Math.floor((q.x+r)/64);x++)for(let z=Math.floor((q.z-r)/64);z<=Math.floor((q.z+r)/64);z++){const k=x+','+z;let a=DEEP_GRID.get(k);if(!a){a=[];DEEP_GRID.set(k,a);}a.push(q);}});
+  DEEP_CAVES.push(m);m.path.forEach((q,i)=>{q.i=i;q.m=m;q.R=m.Rr*q.f;const r=q.R*2.8+16;for(let x=Math.floor((q.x-r)/64);x<=Math.floor((q.x+r)/64);x++)for(let z=Math.floor((q.z-r)/64);z<=Math.floor((q.z+r)/64);z++){const k=x+','+z;let a=DEEP_GRID.get(k);if(!a){a=[];DEEP_GRID.set(k,a);}a.push(q);}});
 }
-function carveEntrances(){const p=FLOORG.attributes.position;for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i);p.setY(i,deepFloor(x,z,Infinity,floorH(x,z)));}p.needsUpdate=true;FLOORG.computeVertexNormals();FLOORG.computeBoundingSphere();}
+function surfaceFloor(x,z){return deepFloor(x,z,Infinity,floorH(x,z));}
+function carveEntrances(){
+ const p=FLOORG.attributes.position,c=FLOORG.attributes.color,indices=FLOORG.index;
+ for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),base=floorH(x,z),h=surfaceFloor(x,z);p.setY(i,h);if(h>base+2){const k=clamp((h-base)/12,0,1);c.setXYZ(i,c.getX(i)*(1-k)+.29*k,c.getY(i)*(1-k)+.34*k,c.getZ(i)*(1-k)+.35*k);}}
+ // Remove only terrain triangles that pass through the navigable cavern volume.
+ // Degenerate indices preserve the shared grid topology used by terrain tiles.
+ const inside=(x,y,z)=>{const near=DEEP_GRID.get(Math.floor(x/64)+','+Math.floor(z/64));if(!near)return false;return near.some(q=>{if(q.m.gone)return false;const dx=x-q.x,dz=z-q.z,along=Math.cos(q.a)*dx+Math.sin(q.a)*dz,side=-Math.sin(q.a)*dx+Math.cos(q.a)*dz;return Math.abs(along)<6.5&&(side/q.R)**2+((y-q.y)/(q.R*.79))**2<1.025;});};
+ for(let i=0;i<indices.count;i+=3){const a=indices.getX(i),b=indices.getX(i+1),d=indices.getX(i+2),x=(p.getX(a)+p.getX(b)+p.getX(d))/3,y=(p.getY(a)+p.getY(b)+p.getY(d))/3,z=(p.getZ(a)+p.getZ(b)+p.getZ(d))/3;let cut=inside(x,y,z);if(!cut&&DEEP_GRID.has(Math.floor(x/64)+','+Math.floor(z/64)))for(const pair of [[a,b],[b,d],[d,a]]){for(const t of [.25,.5,.75]){const u=pair[0],v=pair[1];if(inside(p.getX(u)*(1-t)+p.getX(v)*t,p.getY(u)*(1-t)+p.getY(v)*t,p.getZ(u)*(1-t)+p.getZ(v)*t)){cut=true;break;}}if(cut)break;}if(cut){indices.setX(i+1,a);indices.setX(i+2,a);}}
+ indices.needsUpdate=true;c.needsUpdate=true;p.needsUpdate=true;FLOORG.computeVertexNormals();FLOORG.computeBoundingSphere();
+}
 const ZONES=[
   {id:'frontier0',x:[-1055,-865],z:[-250,-130]},
   {id:'frontier1',x:[-835,-645],z:[120,240]},
@@ -3627,7 +3639,7 @@ function caveBuild(m){
   for(let i=0;i<=n;i++){
     const f=.96+.1*Math.sin(i*.28+phase)+.65*Math.exp(-(((i-22)/4)**2))+.75*Math.exp(-(((i-37)/4)**2));
     let ground=-1e9;for(const u of [-1,-.5,0,.5,1])ground=Math.max(ground,floorH(x-Math.sin(a)*Rr*f*u,z+Math.cos(a)*Rr*f*u));
-    let y=Math.max(DEEP_LIMIT+Rr*2,floorH(m.x,m.z)+Rr*.62-310*Math.pow(i/n,1.05)+Math.sin(i*.21)*2);prevY=y;
+    let y=Math.max(DEEP_LIMIT+Rr*2,floorH(m.x,m.z)-Rr*.2-310*Math.pow(i/n,1.05)+Math.sin(i*.21)*2);prevY=y;
     main.push({x,y,z,a,f});a+=Math.sin(i*.31+phase)*.035;
     if(Math.abs(x+Math.cos(a)*step)>HX-70||Math.abs(z+Math.sin(a)*step)>HZ-70)a+=.16;
     x+=Math.cos(a)*step;z+=Math.sin(a)*step;
@@ -3645,7 +3657,7 @@ function caveBuild(m){
     }
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.setIndex(idx);const uv=[];for(let i=0;i<rings;i++)for(let j=0;j<=K;j++)uv.push(j/K,i*.13);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();
-  const mat=geologyMaterial();
+  const mat=geologyMaterial();mat.side=THREE.BackSide;
   const shell=new THREE.Mesh(g,mat);scene.add(shell);m.rockMesh=shell;m.dome=null;
   /* Collision samples track the visible skin. They leave the centre clear for a Titan. */
   const cols=[];for(let i=0;i<rings;i++)for(let j=0;j<24;j++){
@@ -3987,7 +3999,7 @@ function nukePulse(Z,k){
   nukeHit(Z,d,Z.mine,dx,dz,l,k);
 }
 function nukeCave(m,pos){
-  m.gone=true;m.orbGone=true;for(const o of [m.dome,m.cm,m.ped,m.orb,m.spr,m.beacon,m.sealSpr,m.rockMesh,m.endWall,m.flanks,m.shelves,m.ruins,...(m.glows||[])])if(o)o.visible=false;
+  m.gone=true;m.orbGone=true;for(const o of [m.dome,m.cm,m.ped,m.orb,m.spr,m.beacon,m.sealSpr,m.portal,m.rockMesh,m.endWall,m.flanks,m.shelves,m.ruins,...(m.glows||[])])if(o)o.visible=false;
   if(m.shellStruct){for(const c of m.shellStruct.cols){const i=colliders.indexOf(c);if(i>=0)colliders.splice(i,1);}m.shellStruct.alive=false;cgDirty=true;}
   if(m.seal&&m.seal.alive)destroyStruct(m.seal,true,pos);
   addPuff(m.x,m.fy+m.R*.4,m.z,0x9a948a,0,.6,0,m.R*.6,m.R*2.6,.45,12);
@@ -4880,6 +4892,7 @@ function renderWpn(){
   const names=[T.w1,T.w2,T.w3,T.w4,T.w5,T.w6,T.w7,T.w8,T.w9,curSub&&curSub.spc?tl(curSub.sn[0],curSub.sn[1]).toUpperCase():null,nukeOwned()?tl('NÜKLEER','NUCLEAR'):null,...GEARS.map(g=>hasGear(g.id)?g.ic+' '+tl(g.sh[0],g.sh[1]):null)];
   $('wpn').innerHTML=names.map((n,i)=>n==null?'':`<div class="slot ${((i===weapon||(i===10&&weapon===4))&&!netArmed&&i!==4)||(i===7&&netArmed)?'on':''}${i===10?' nk':''}" data-w="${i}"><kbd>${i===9?0:i===10?'U':i>10?'·':i+1}</kbd><span>${esc(n)}</span><b id="wc${i}">–</b></div>`).join('');
   updateWpnHUD();
+  const toggle=document.createElement('button');toggle.id='weaponShelfToggle';toggle.className='btn';const open=document.body.classList.contains('weaponShelfOpen');toggle.textContent=open?tl('DARALT','COLLAPSE'):tl('TÜM SİLAHLAR','ALL WEAPONS');toggle.setAttribute('aria-expanded',String(open));toggle.style.cssText='font-size:10px;padding:5px 8px;max-width:92px';toggle.onclick=()=>{document.body.classList.toggle('weaponShelfOpen');store.set('aqua-weapon-shelf',document.body.classList.contains('weaponShelfOpen')?'1':'0');renderWpn();};$('wpn').appendChild(toggle);
 }
 function setWeapon(i){if(i>=11&&i<=14){const g=GW(i);if(!hasGear(g.id)){toast('🔒 '+tl(g.tr,g.en)+tl(' — Tersane\'den satın al',' — buy it at the Shipyard'));return;}if(netArmed){netArmed=false;setNetProp();}weapon=i;renderWpn();return;}if(i===10){if(!nukeOwned()){toast('☢ '+tl('Nükleer torpido yok — Tersane\'den satın al','No nuclear torpedo — buy one at the Shipyard'));return;}if(netArmed){netArmed=false;setNetProp();}weapon=4;renderWpn();return;}if(i===9){doSpecial();return;}if(i<4&&netArmed){netArmed=false;setNetProp();}if(i===4){doShield();return;}if(i===5){doRepair();return;}if(i===6){doShock();return;}if(i===7){doNet();return;}if(i===8){doMelee();return;}weapon=i;renderWpn();}
 function updateWpnHUD(){
@@ -5372,7 +5385,7 @@ function updateCamera(dt){
     const cd=camD(),lenW=hullLen(),ahead=lenW*.14;
     const want=_tmp.set(t.x-Math.sin(camYaw)*cp*cd,t.y+1.4*subSc+lenW*.05+Math.sin(camPitch)*cd,t.z-Math.cos(camYaw)*cp*cd);
     const afloat=t.y>SURF-2.2;
-    if(t.y<floorH(t.x,t.z)-12&&floorQ(want.x,want.z,want.y)>t.y+8){want.lerp(t,.8);if(floorQ(want.x,want.z,want.y)>t.y+8)want.copy(t).add(new THREE.Vector3(0,1.3,0));}
+    if(t.y<surfaceFloor(t.x,t.z)-8&&floorQ(want.x,want.z,want.y)>t.y+8){want.lerp(t,.8);if(floorQ(want.x,want.z,want.y)>t.y+8)want.copy(t).add(new THREE.Vector3(0,1.3,0));}
     want.x=clamp(want.x,-HX+.8,HX-.8);want.z=clamp(want.z,-HZ+.8,HZ-.8);want.y=afloat?clamp(want.y,SURF+.9,SURF+34):clamp(want.y,floorQ(want.x,want.z,want.y)+.8,SURF-.6);
     camera.position.lerp(want,1-Math.exp(-14*dt));
     camera.lookAt(t.x+Math.sin(camYaw)*ahead,t.y+1.2*subSc+cd*.11+(afloat?Math.max(0,-camPitch)*cd*3.4:0),t.z+Math.cos(camYaw)*ahead);
@@ -8975,7 +8988,22 @@ for(let variant=0;variant<3;variant++){
   regFlora(inst(merge(parts),stdMat({roughness:.9,side:THREE.DoubleSide},'expedition-algae-'+variant,{v:'transformed.x+=sin(uT*.8+position.y*2.)*.12*position.y;',caus:.6}),list,true),list,3,true);
 }
 // Eroded boulders frame each mouth; no luminous doorway or artificial ring.
-for(const m of DEEP_CAVES){const q=m.path[0],rocks=[];for(let i=0;i<14;i++){const a=i/14*Math.PI,r=m.Rr;rocks.push({x:q.x-Math.sin(q.a)*Math.cos(a)*r,y:q.y+Math.sin(a)*r*.78,z:q.z+Math.cos(q.a)*Math.cos(a)*r,sx:rr(2.3,4.8),sy:rr(2,4),sz:rr(2.5,5),ry:rr(0,6.28),c:'#6b7066'});}inst(rockGeo(m.x+91),caveRockMat,rocks,true);}
+function buildCavePortal(m){
+ const q=m.path[0],R=q.R,inner=m.rockMesh.geometry.attributes.position,N=48,stride=6,positions=[],colors=[],indices=[],outer=[],color=new THREE.Color('#58615c');
+ const bulge=(p,t,angle)=>p.add(new THREE.Vector3(-Math.cos(q.a),0,-Math.sin(q.a)).multiplyScalar(Math.sin(t*Math.PI)*R*.15*(1+.25*Math.cos(angle*4))));
+ for(let j=0;j<=N;j++){
+  const angle=j/N*Math.PI*2,rough=1+.09*Math.sin(angle*3+m.x*.01)+.045*Math.cos(angle*5+m.x*.02),side=Math.cos(angle)*R*2.15*rough;
+  const y=Math.min(SURF-9,q.y+Math.sin(angle)*R*1.48*rough),x=q.x-Math.sin(q.a)*side,z=q.z+Math.cos(q.a)*side;
+  outer.push(new THREE.Vector3(x,y,z));const start=new THREE.Vector3(inner.getX(j),inner.getY(j),inner.getZ(j));
+  for(let k=0;k<=4;k++){const v=bulge(start.clone().lerp(outer[j],k/4),k/4,angle);positions.push(v.x,v.y,v.z);}
+  const bx=x+Math.cos(q.a)*18,bz=z+Math.sin(q.a)*18;positions.push(bx,Math.min(y,surfaceFloor(bx,bz)+2),bz);
+  for(let k=0;k<stride;k++){const shade=.94+.06*Math.sin(angle*3+k*.7);colors.push(color.r*shade,color.g*shade,color.b*shade);}
+  if(j<N){const v=j*stride,next=v+stride;for(let k=0;k<5;k++)indices.push(v+k,v+k+1,next+k,next+k,v+k+1,next+k+1);}
+ }
+ const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.setIndex(indices);geo.computeVertexNormals();m.portal=new THREE.Mesh(geo,geologyMaterial());m.portal.name='integrated-cave-portal';scene.add(m.portal);
+ for(let j=0;j<N;j++){const start=new THREE.Vector3(inner.getX(j),inner.getY(j),inner.getZ(j)),end=outer[j],steps=Math.ceil(start.distanceTo(end)/6);for(let k=1;k<=steps;k++){const p=bulge(start.clone().lerp(end,k/steps),k/steps,j/N*Math.PI*2),c=addCol(p.x,p.y,p.z,4.8);c.cave=m.id;c.st=m.shellStruct;m.shellStruct.cols.push(c);}}
+}
+for(const m of DEEP_CAVES)buildCavePortal(m);
 let diveUiT=0;
 function clearRemoteDive(p){if(p.diveHuman){scene.remove(p.diveHuman.root);p.diveHuman.root.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose();}});p.diveHuman=null;}if(p.diveBoat){scene.remove(p.diveBoat);p.diveBoat=null;}}
 function remoteDiver(p,dt){
@@ -8984,11 +9012,12 @@ function remoteDiver(p,dt){
   if(!p.diveHuman){p.diveHuman=makeHuman();scene.add(p.diveHuman.root);p.diveBoat=p.sub.g.clone(true);p.diveBoat.visible=true;p.diveBoat.position.copy(p.divePark);p.diveBoat.traverse(o=>{if(o.isMesh&&!o.material.transparent)o.visible=true;});scene.add(p.diveBoat);p.diveHuman.root.position.copy(p.pos);}
   const h=p.diveHuman,k=1-Math.exp(-10*dt),t=worldTime(),move=clamp(p.vel.length()/3,0,1),kick=Math.sin(t*5+p.yaw);h.root.position.lerp(p.pos,k);h.root.rotation.set((Math.PI*.43-p.pitch)*move,p.yaw,0,'YXZ');h.L.sh.rotation.x=-1.8+kick*.6*move;h.R.sh.rotation.x=-1.8-kick*.6*move;h.LL.hp.rotation.x=kick*.4*move;h.RL.hp.rotation.x=-kick*.4*move;h.LL.kn.rotation.x=.2+Math.max(0,-kick)*.6;h.RL.kn.rotation.x=.2+Math.max(0,kick)*.6;return true;
 }
+document.body.classList.toggle('weaponShelfOpen',store.get('aqua-weapon-shelf')==='1');
 const instrumentsButton=document.createElement('button');instrumentsButton.className='btn';instrumentsButton.id='instrumentToggle';instrumentsButton.style.cssText='position:fixed;right:14px;top:60px;z-index:22;padding:6px 10px;font-size:11px';document.body.appendChild(instrumentsButton);
 function toggleInstruments(){const hide=!document.body.classList.contains('hideInstruments');document.body.classList.toggle('hideInstruments',hide);store.set('aqua-hide-instruments',hide?'1':'0');instrumentsButton.textContent=hide?'Göstergeleri aç':'Göstergeleri kapat';instrumentsButton.setAttribute('aria-expanded',String(!hide));}
 instrumentsButton.onclick=toggleInstruments;if(store.get('aqua-hide-instruments')==='1')document.body.classList.add('hideInstruments');instrumentsButton.textContent=document.body.classList.contains('hideInstruments')?'Göstergeleri aç':'Göstergeleri kapat';
 function expeditionTick(dt){instrumentsButton.style.display=running?'block':'none';
-  divePanel.style.display=running&&!IN.on?'block':'none';diveUiT-=dt;if(diveUiT>0)return;diveUiT=.2;
+  divePanel.style.display=running&&!IN.on?'block':'none';divePanel.classList.toggle('activeDive',DIVE.on);diveStatus.style.display=DIVE.on||DIVE.anchor?'':'none';[...diveButtons.children].forEach((b,i)=>b.style.display=DIVE.on||i<2?'':'none');diveUiT-=dt;if(diveUiT>0)return;diveUiT=.2;
   diveStatus.textContent=DIVE.on?`DALGIÇ · CAN ${Math.ceil(DIVE.hp)} · HAVA ${Math.ceil(DIVE.oxygen)}% · ${['','TÜFEK','MIZRAK','YUMRUK'][DIVE.weapon]} · Denizaltı ${Math.round(sub.position.distanceTo(DIVE.park))} m${DIVE.returnT>0?' · YENİDEN DOĞUŞ':''}`:DIVE.anchor?'ÇAPA SABİT · V ile dalış':'H: Çapa bırak · V: Suya dal';
 }
 
@@ -8998,7 +9027,7 @@ const oceanPanel=document.createElement('div');oceanPanel.id='oceanExpedition';o
 const oceanDestination=document.createElement('select');oceanDestination.id='oceanDestination';oceanDestination.setAttribute('aria-label',tl('Keşif hedefi','Exploration destination'));oceanDestination.style.cssText='pointer-events:auto;width:100%;background:#132a34;color:#c4dce2;border:1px solid #45616a;padding:5px;margin-bottom:6px';oceanDestination.add(new Option(tl('En yakın keşif alanı','Nearest exploration site'),'-1'));oceanDestination.onchange=()=>{OCEAN_EXP.target=Number(oceanDestination.value);OCEAN_EXP.exitMode=false;OCEAN_EXP.timer=0;};oceanPanel.appendChild(oceanDestination);const oceanInfo=document.createElement('div');oceanPanel.appendChild(oceanInfo);
 const oceanExit=document.createElement('button');oceanExit.className='btn';oceanExit.id='oceanExitRoute';oceanExit.style.cssText='pointer-events:auto;padding:4px 8px;margin-top:5px;font-size:11px;display:none';oceanExit.textContent=tl('ÇIKIŞ ROTASINI İZLE','FOLLOW EXIT ROUTE');oceanExit.onclick=()=>{OCEAN_EXP.exitMode=!OCEAN_EXP.exitMode;OCEAN_EXP.timer=0;};oceanPanel.appendChild(oceanExit);const stationButton=document.createElement('button');stationButton.id='oceanStationService';stationButton.className='btn';stationButton.style.cssText='pointer-events:auto;padding:4px 8px;margin-top:5px;font-size:11px;display:none';stationButton.textContent=tl('İSTASYON · F','STATION · F');stationButton.onclick=oceanStationService;oceanPanel.appendChild(stationButton);
 const oceanWaypoint=document.createElement('div');oceanWaypoint.id='oceanWaypoint';oceanWaypoint.style.cssText='position:fixed;z-index:14;color:#afdedb;border:1px solid #7aaba9;padding:4px 7px;font:11px system-ui;pointer-events:none;transform:translate(-50%,-50%);display:none;background:rgba(2,17,24,.55)';document.body.appendChild(oceanWaypoint);
-const oceanResponsive=document.createElement('style');oceanResponsive.textContent='.touch #touch{z-index:15}.touch:has(.ttop.open) #divePanel{visibility:hidden}.touch #instrumentToggle{left:14px!important;right:auto!important;top:46px!important;min-height:28px;font-size:10px!important;padding:4px 8px!important}@media(max-height:500px){#oceanExpedition{top:80px!important;max-height:175px;overflow-y:auto;pointer-events:auto;max-width:195px!important;padding:5px 8px!important;font-size:10px!important}#oceanDestination{font-size:10px;padding:2px!important}}';document.head.appendChild(oceanResponsive);
+const oceanResponsive=document.createElement('style');oceanResponsive.textContent='body:not(.weaponShelfOpen) #wpn .slot:not(.on):not([data-w="0"]):not([data-w="2"]):not([data-w="4"]):not([data-w="5"]){display:none}body:not(.weaponShelfOpen) #wpn{max-width:min(96vw,560px)}'+'#divePanel:not(.activeDive){padding:5px 7px!important;max-width:220px!important}#divePanel:not(.activeDive) button{font-size:10px!important}#divePanel:not(.activeDive)>div:last-child{margin-top:0!important}'+'.touch #touch{z-index:15}.touch:has(.ttop.open) #divePanel{visibility:hidden}.touch #instrumentToggle{left:14px!important;right:auto!important;top:46px!important;min-height:28px;font-size:10px!important;padding:4px 8px!important}@media(max-height:500px){#oceanExpedition{top:80px!important;max-height:175px;overflow-y:auto;pointer-events:auto;max-width:195px!important;padding:5px 8px!important;font-size:10px!important}#oceanDestination{font-size:10px;padding:2px!important}}';document.head.appendChild(oceanResponsive);
 function oceanMapPick(event){
  if(event.target!==$('mapC'))return false;const rect=$('mapC').getBoundingClientRect(),x=(event.clientX-rect.left)/rect.width*1400,y=(event.clientY-rect.top)/rect.height*820;
  let best=-1,d=35;OCEAN_EXP.sites.forEach((site,i)=>{const sx=40+(site.x+HX)*1320/TW,sy=40+(site.z+HZ)*740/TD,dd=Math.hypot(x-sx,y-sy);if(dd<d){best=i;d=dd;}});
@@ -9011,6 +9040,7 @@ function renderExpeditionJournal(){
  body.querySelectorAll('[data-destination]').forEach(button=>button.onclick=()=>{OCEAN_EXP.target=Number(button.dataset.destination);OCEAN_EXP.exitMode=false;oceanDestination.value=String(OCEAN_EXP.target);OCEAN_EXP.timer=0;expeditionJournal.style.display='none';});
 }
 const journalButton=document.createElement('button');journalButton.id='openExpeditionJournal';journalButton.className='btn';journalButton.textContent=tl('SEFER DEFTERİ','EXPEDITION JOURNAL');journalButton.style.cssText='pointer-events:auto;font-size:11px;padding:4px 8px;margin-top:5px';journalButton.onclick=()=>{for(const k in keys)keys[k]=false;gunHeld=false;renderExpeditionJournal();expeditionJournal.style.display='grid';$('closeExpeditionJournal').focus();if(document.pointerLockElement)document.exitPointerLock();};oceanPanel.appendChild(journalButton);$('closeExpeditionJournal').onclick=()=>expeditionJournal.style.display='none';expeditionJournal.onclick=e=>{if(e.target===expeditionJournal)expeditionJournal.style.display='none';};
+function oceanBearing(x,z){const a=Math.atan2(x-sub.position.x,z-sub.position.z)-camYaw;return ['↑','↖','←','↙','↓','↘','→','↗'][((Math.round(a/(Math.PI/4))%8)+8)%8];}
 function oceanNavigation(){
  const p=sub.position,near=DEEP_GRID.get(Math.floor(p.x/64)+','+Math.floor(p.z/64));let closest=null,d=Infinity;
  if(near)for(const q of near){if(q.m.gone||q.i<5)continue;const dd=Math.hypot(q.x-p.x,q.y-p.y,q.z-p.z);if(dd<q.R*.88&&dd<d){d=dd;closest=q;}}
@@ -9021,7 +9051,7 @@ function oceanNavigation(){
  else if(OCEAN_EXP.target>=0){const site=OCEAN_EXP.sites[OCEAN_EXP.target];target=site.surveyed&&site.station?{x:site.station.position.x,y:site.station.position.y+6,z:site.station.position.z}:{x:site.x,y:site.y+12,z:site.z};label=site.surveyed?tl('Saha istasyonu','Field station'):tl(site.tr,site.en);}
  if(!target||document.body.classList.contains('hideInstruments')){oceanWaypoint.style.display='none';return;}
  const v=new THREE.Vector3(target.x,target.y,target.z).project(camera),dist=Math.hypot(target.x-p.x,target.y-p.y,target.z-p.z);oceanWaypoint.style.display=v.z>-1&&v.z<1&&Math.abs(v.x)<.85&&Math.abs(v.y)<.75?'block':'none';oceanWaypoint.style.left=(v.x*.5+.5)*innerWidth+'px';oceanWaypoint.style.top=(-v.y*.5+.5)*innerHeight+'px';oceanWaypoint.textContent=label+' · '+Math.round(dist)+' m';
- if(closest&&OCEAN_EXP.exitMode)oceanInfo.textContent=label+' '+dirArrow(target.x,target.z)+' · '+Math.round(dist)+' m\n'+tl('Sonraki geçit derinliği ','Next passage depth ')+Math.round(SURF-target.y)+' m';
+ if(closest&&OCEAN_EXP.exitMode)oceanInfo.textContent=label+' '+oceanBearing(target.x,target.z)+' · '+Math.round(dist)+' m\n'+tl('Sonraki geçit derinliği ','Next passage depth ')+Math.round(SURF-target.y)+' m';
 }
 function inCaveVoid(x,y,z,pad=0){const near=DEEP_GRID.get(Math.floor(x/64)+','+Math.floor(z/64));return !!near&&near.some(q=>!q.m.gone&&Math.hypot(x-q.x,y-q.y,z-q.z)<q.R*.75+pad);}
 function excavateCaveCorridors(){
@@ -9038,7 +9068,7 @@ function excavateCaveCorridors(){
 }
 function updateCaveVisibility(){
  const p=camera.position,range=Math.max(160,Math.min(strR,300));
- for(const m of DEEP_CAVES){let d2=Infinity;for(const q of m.path){const dx=q.x-p.x,dy=q.y-p.y,dz=q.z-p.z;d2=Math.min(d2,dx*dx+dy*dy+dz*dz);}const visible=!m.gone&&d2<(range+m.Rr*1.6)**2;for(const object of [m.rockMesh,m.ruins,m.endWall,m.ped])if(object)object.visible=visible;for(const glow of m.glows||[])glow.visible=visible;}
+ for(const m of DEEP_CAVES){let d2=Infinity;for(const q of m.path){const dx=q.x-p.x,dy=q.y-p.y,dz=q.z-p.z;d2=Math.min(d2,dx*dx+dy*dy+dz*dz);}const visible=!m.gone&&d2<(range+m.Rr*1.6)**2;for(const object of [m.rockMesh,m.portal,m.ruins,m.endWall,m.ped])if(object)object.visible=visible;for(const glow of m.glows||[])glow.visible=visible;}
  for(const site of OCEAN_EXP.sites)if(site.station)site.station.visible=p.distanceTo(site.station.position)<range+40;
 }
 function buildTerrainTiles(){
@@ -9059,7 +9089,7 @@ function updateTerrainTiles(dt,force=false){
  for(const tile of TERRAIN.tiles){const b=tile.box,dx=Math.max(b.min.x-p.x,0,p.x-b.max.x),dz=Math.max(b.min.z-p.z,0,p.z-b.max.z);tile.mesh.visible=dx*dx+dz*dz<range*range;}
 }
 function makeFieldStation(site){
- const g=new THREE.Group();g.position.set(site.x+22,floorH(site.x+22,site.z+8),site.z+8);scene.add(g);site.station=g;site.serviceAt=-Infinity;
+ const g=new THREE.Group();g.position.set(site.x+22,surfaceFloor(site.x+22,site.z+8),site.z+8);scene.add(g);site.station=g;site.serviceAt=-Infinity;
  const steel=new THREE.MeshStandardMaterial({color:0x5d696c,metalness:.65,roughness:.55}),paint=new THREE.MeshStandardMaterial({color:0x9a853e,metalness:.2,roughness:.8}),glass=new THREE.MeshStandardMaterial({color:0x263e45,metalness:.2,roughness:.2});
  const put=(geo,mat,x,y,z)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);g.add(m);return m;};
  put(new THREE.CylinderGeometry(2.8,3.2,.7,12),steel,0,.35,0);put(new THREE.BoxGeometry(3.8,1.6,2.4),paint,0,1.6,0);put(new THREE.CylinderGeometry(.55,.55,1.8,12),steel,0,3.1,0);put(new THREE.SphereGeometry(.8,12,8),glass,0,4.2,0);
@@ -9079,7 +9109,7 @@ function buildOceanExpedition(){
   const stone=geologyMaterial();
   const rocks=[],clusters=[];
   for(let si=0;si<OCEAN_SITES.length;si++){
-    const def=OCEAN_SITES[si],x=def.x*WS*2,z=def.z*WS,y=floorH(x,z),site={...def,x,z,y,id:'ocean-'+si,slots:[],active:false,cleared:false,visited:save.myst.includes('ocean-'+si),scanned:save.myst.includes('ocean-scan-'+si),surveyed:save.myst.includes('ocean-survey-'+si),sample:0};OCEAN_EXP.sites.push(site);makeFieldStation(site);oceanDestination.add(new Option(tl(def.tr,def.en),String(si)));
+    const def=OCEAN_SITES[si],x=def.x*WS*2,z=def.z*WS,y=surfaceFloor(x,z),site={...def,x,z,y,id:'ocean-'+si,slots:[],active:false,cleared:false,visited:save.myst.includes('ocean-'+si),scanned:save.myst.includes('ocean-scan-'+si),surveyed:save.myst.includes('ocean-survey-'+si),sample:0};OCEAN_EXP.sites.push(site);makeFieldStation(site);oceanDestination.add(new Option(tl(def.tr,def.en),String(si)));
     // Asymmetric clusters follow local geology instead of forming a ring of identical towers.
     const count=isTouch?18:36;
     for(let j=0;j<count;j++){
@@ -9090,7 +9120,7 @@ function buildOceanExpedition(){
       if(def.kind==='limestone'){h=18+noise*40;w=12+noise*6;}
       if(def.kind==='vents'){h=6+noise*12;w=2+noise*2;}
       if(def.kind==='shelf'){h=5+noise*9;w=10+noise*13;}
-      const by=floorH(bx,bz),palette=def.kind==='limestone'?['#8b8b7b','#737d78']:def.kind==='basalt'||def.kind==='vents'?['#3d474b','#4b5354']:['#5c686a','#69716b'];
+      const by=surfaceFloor(bx,bz),palette=def.kind==='limestone'?['#8b8b7b','#737d78']:def.kind==='basalt'||def.kind==='vents'?['#3d474b','#4b5354']:['#5c686a','#69716b'];
       // Multiple offset beds grow from the seabed, giving layered rather than stacked ball silhouettes.
       const cluster={indices:[],cols:[]};clusters.push(cluster);
       for(let tier=0;tier<3;tier++){
@@ -9132,7 +9162,7 @@ function oceanExpeditionTick(dt,t){
   if(net.mode!=='client')for(const e of enemies){if(!e.oceanCave)continue;const m=e.oceanCave,q=m.path[26];if(!e.oceanActivated&&sub.position.distanceTo(new THREE.Vector3(q.x,q.y,q.z))<85){e.oceanActivated=true;activateSlot(e,q.x,q.y,q.z);}}
   if(OCEAN_EXP.target>=0){nearest=OCEAN_EXP.sites[OCEAN_EXP.target];dist=Math.hypot(sub.position.x-nearest.x,sub.position.y-nearest.y-12,sub.position.z-nearest.z);}
   OCEAN_EXP.nearest=nearest;OCEAN_EXP.timer-=dt;
-  if(nearest&&OCEAN_EXP.timer<=0){OCEAN_EXP.timer=.3;oceanInfo.textContent=tl(nearest.tr,nearest.en)+' · '+Math.round(dist)+' m '+dirArrow(nearest.x,nearest.z)+'\n'+tl('Derinlik ','Depth ')+Math.round(SURF-sub.position.y)+' m · '+tl('Havza tabanı ','Basin floor ')+Math.round(SURF-nearest.y)+' m\n'+(nearest.visited?tl('Haritalandı','Charted'):tl('Tabana yaklaş ve havzayı incele','Approach the floor to chart the basin'))+'\n'+(nearest.surveyed?tl('Araştırma tamamlandı','Survey complete'):!nearest.scanned?tl('Havzada sonar kullan','Use sonar in the basin'):tl('Numune: yavaş seyir ','Sampling: slow ahead ')+Math.round(nearest.sample/8*100)+'%')+(nearest.cleared?' · '+tl('Devriye etkisiz','Patrol cleared'):'');oceanPanel.style.whiteSpace='pre-line';}
+  if(nearest&&OCEAN_EXP.timer<=0){OCEAN_EXP.timer=.3;oceanInfo.textContent=tl(nearest.tr,nearest.en)+' · '+Math.round(dist)+' m '+oceanBearing(nearest.x,nearest.z)+'\n'+tl('Derinlik ','Depth ')+Math.round(SURF-sub.position.y)+' m · '+tl('Havza tabanı ','Basin floor ')+Math.round(SURF-nearest.y)+' m\n'+(nearest.visited?tl('Haritalandı','Charted'):tl('Tabana yaklaş ve havzayı incele','Approach the floor to chart the basin'))+'\n'+(nearest.surveyed?tl('Araştırma tamamlandı','Survey complete'):!nearest.scanned?tl('Havzada sonar kullan','Use sonar in the basin'):tl('Numune: yavaş seyir ','Sampling: slow ahead ')+Math.round(nearest.sample/8*100)+'%')+(nearest.cleared?' · '+tl('Devriye etkisiz','Patrol cleared'):'');oceanPanel.style.whiteSpace='pre-line';}
   oceanNavigation();
 }
 function oceanSurveyPulse(p){
@@ -9166,7 +9196,7 @@ function buildOceanSalvage(){
  const steel=new THREE.MeshStandardMaterial({color:0x687577,metalness:.6,roughness:.65}),rust=new THREE.MeshStandardMaterial({color:0x78644c,metalness:.25,roughness:.9}),dark=new THREE.MeshStandardMaterial({color:0x24363d,metalness:.3,roughness:.4});
  for(let i=0;i<OCEAN_EXP.sites.length;i++)for(let j=0;j<3;j++){
   const site=OCEAN_EXP.sites[i],id='ocean-salvage-'+i+'-'+j;if(save.myst.includes(id))continue;
-  let x=site.x+(j-1)*65,z=site.z+75+(j%2)*15,y=floorH(x,z)+1.1;for(let attempt=0;attempt<8&&inCaveVoid(x,y,z,8);attempt++){z=clamp(z+40,-HZ+25,HZ-25);x=clamp(x+(j-1)*10,-HX+25,HX-25);y=floorH(x,z)+1.1;}const root=new THREE.Group();root.position.set(x,y,z);root.rotation.y=i*1.17+j;scene.add(root);
+  let x=site.x+(j-1)*65,z=site.z+75+(j%2)*15,y=surfaceFloor(x,z)+1.1;for(let attempt=0;attempt<8&&inCaveVoid(x,y,z,8);attempt++){z=clamp(z+40,-HZ+25,HZ-25);x=clamp(x+(j-1)*10,-HX+25,HX-25);y=surfaceFloor(x,z)+1.1;}const root=new THREE.Group();root.position.set(x,y,z);root.rotation.y=i*1.17+j;scene.add(root);
   const put=(geo,mat,x,y,z)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);root.add(m);return m;};
   if(j===0){put(new THREE.BoxGeometry(2.6,1.2,1.6),steel,0,0,0);for(const s of [-1,1]){const t=put(new THREE.CylinderGeometry(.35,.35,1.4,10),dark,s*1.4,0,0);t.rotation.x=Math.PI/2;}put(new THREE.SphereGeometry(.3,10,8),dark,0,0,1);}
   else if(j===1){put(new THREE.BoxGeometry(2.4,1.8,2),rust,0,0,0);for(const x of [-.85,.85])put(new THREE.BoxGeometry(.14,1.9,2.1),steel,x,0,0);}
@@ -9197,6 +9227,7 @@ function oceanSalvageTick(dt){
 buildOceanSalvage();
 
 drawSign();
+for(const t of TREAS){const ground=surfaceFloor(t.x,t.z);if(t.y<ground+.2){const rise=ground+.25-t.y;t.y+=rise;t.by+=rise;t.g.position.y+=rise;t.spr.position.y+=rise;}}
 const caveExcavation=excavateCaveCorridors();
 supportCheck(true,new THREE.Vector3());
 carveEntrances();

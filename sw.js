@@ -4,7 +4,7 @@
 
    Yeni service worker kurulurken dosyaları arka planda indirir; kullanıcı menüde GÜNCELLE'ye basınca devreye girer. */
 
-const VER='2026.11.03-7';
+const VER='2026.11.03-8';
 
 const CACHE='akvaryum-'+VER;
 

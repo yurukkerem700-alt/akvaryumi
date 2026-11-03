@@ -1,3 +1,11 @@
+## 03.11.2026-8 — Mağara ve gösterge düzeltmeleri
+
+- Mağara tünelleri deniz tabanına gömüldü; girişlere kesintisiz, dokulu kaya yüzeyi ve yaklaşma kanalı eklendi. İç yüzeyler dışarıdan açık boru gibi çizilmez.
+- Mağara hacmini kesen arazi üçgenleri temizlenir; takip kamerası mağara içindeki açıklığa uyum sağlar.
+- Keşif panelindeki ham HTML yön metni düz ok işaretleriyle düzeltildi.
+- Silah paneli varsayılan olarak dar görünür; TÜM SİLAHLAR düğmesi genişletir. Dalış paneli seyir sırasında küçülür.
+- İstasyonlar ve kurtarma buluntuları güncel taban yüksekliğine yerleştirilir.
+
 ## 03.11.2026-7 — Güvenli geçitler ve mobil arayüz
 
 - Mağara merkez rotalarını kesen çevre kayaları kazı hacmine göre hem görünümden hem fiziksel çarpışmadan kaldırılır. Desteksiz kalan parçalar başlangıçta temizlenir. Mağara duvarı, kapı ve mühür çarpışmaları korunur.

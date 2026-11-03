@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 export async function checkInterface(page){
  assert.equal(await page.locator('#expeditionJournal').isVisible(),false);
  await page.evaluate(()=>window.__ev("document.getElementById('soloBtn').onclick();oceanExpeditionTick(.1,worldTime())"));
+ assert.doesNotMatch(await page.locator('#oceanExpedition').innerText(), /<span|class=|transform:/);
+ await page.evaluate(()=>window.__ev('renderWpn()'));
+ const shelf=page.locator('#weaponShelfToggle');assert.equal(await shelf.count(),1);
+ const wasOpen=await shelf.getAttribute('aria-expanded');if(await shelf.isVisible())await shelf.click();else await shelf.evaluate(e=>e.click());assert.notEqual(await shelf.getAttribute('aria-expanded'),wasOpen);if(await shelf.isVisible())await shelf.click();else await shelf.evaluate(e=>e.click());
  await page.locator('#oceanDestination').focus();await page.keyboard.press('w');
  assert.equal(await page.evaluate(()=>window.__ev('!!keys.w')),false);
  await page.locator('#openExpeditionJournal').click();

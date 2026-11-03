@@ -39,3 +39,12 @@ Saf fonksiyon testlerinin 10'u geçti. Mobil 852×393 görünümünde arayüz, t
 - Uzak ana daldaki haftalık görev açılış düzeltmesi ve mağaza kabukları korundu.
 - Mağaza paketleyicisine depths.mjs, expeditions.mjs ve taranmış kaya dokuları eklendi; paket hazırlama kontrolü geçti.
 - İki oyunculu yerel WebRTC testi henüz tamamlanmadı; yeni ağ düzeltmesi bu yayına dahil değildir.
+
+## 03.11.2026-8 — Ekran görüntüsüne göre mağara ve HUD onarımı
+- Kullanıcı ekran görüntüsündeki açık boru görünümü, boncuk dizisi giriş ve keşif panelindeki HTML metni ele alındı.
+- Arazi örtüsü, yaklaşma kanalı, sürekli kaya girişi, iç yüzey malzemesi ve mağara kamerası düzenlendi. Görsel arazi üçgenleri boşluğu kesiyorsa kaldırılır; topoloji indeksleri korunur.
+- Silah rafı katlanabilir, dalış kontrolleri seyirde kompakt. Yön göstergesi textContent ile uyumlu düz Unicode okları kullanır.
+- 10 saf test, masaüstü arayüz, 16 araç × 14 mağara / 26.208 geçiş, derin akış ve simülasyon kontrolleri geçti. Mobil arayüz ve arazi kontrolü geçti. Yeni arazi regresyonu tüm mağaralarda örtü ve giriş geometrisini doğruladı; araştırma testi geçti.
+- Yerel iki istemcili WebRTC denemesi daha önce bağlantı, derin konum, devriye, ölüm ve ayrılma senkronizasyonunda geçti. İki fiziksel cihaz / farklı NAT denemesi hâlâ yapılmadı.
+- Sonraki oturum: tüm mağara girişlerini gerçek oynanış kameralarıyla farklı açılardan incele; keskin kum/kaya geçişlerini yumuşat; mağara içindeki dekor, ışık ve kaya dağılımını geliştirmeye devam et. Fotogerçekçilik tamamlanmış değildir.
+- Kullanıcı limit yaklaşırken mevcut tamamlanmış ilerlemeyi kaydedip yayına alma talimatı verdi. Yeni kapsam başlatılmayacak.
